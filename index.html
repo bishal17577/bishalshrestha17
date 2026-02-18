@@ -3,94 +3,125 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-    <title>Bishal Shrestha - Advanced Portfolio | Ethical Hacking & Digital Creation</title>
+    <title>Bishal Shrestha - Advanced Portfolio | Ethical Hacker & Digital Creator</title>
     
     <!-- SEO Meta Tags -->
-    <meta name="description" content="Bishal Shrestha - Professional Ethical Hacker, Graphic Designer, Digital Marketer, Video Editor & Cyber Security Expert. 5+ years experience.">
-    <meta name="keywords" content="ethical hacking, graphic design, digital marketing, affiliate marketing, video editing, web designing, cyber security, nepal">
+    <meta name="description" content="Bishal Shrestha - Award-winning Ethical Hacker, Creative Director & Digital Innovator. 5+ years of excellence in cybersecurity and digital creation.">
+    <meta name="keywords" content="ethical hacking, graphic design, digital marketing, affiliate marketing, video editing, web designing, cyber security">
     <meta name="author" content="Bishal Shrestha">
     
-    <!-- Open Graph -->
-    <meta property="og:title" content="Bishal Shrestha - Digital Creator & Security Expert">
-    <meta property="og:description" content="Professional portfolio showcasing expertise in cybersecurity, design, and digital marketing">
-    <meta property="og:image" content="https://via.placeholder.com/1200x630/2563eb/ffffff?text=Bishal+Shrestha">
+    <!-- Open Graph / Social Media -->
+    <meta property="og:title" content="Bishal Shrestha - Digital Architect & Security Expert">
+    <meta property="og:description" content="Pushing boundaries in cybersecurity and digital creativity">
+    <meta property="og:image" content="https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-1.2.1&auto=format&fit=crop&w=1200&q=80">
     
-    <!-- Font Awesome 6 -->
+    <!-- Font Awesome 6 Pro (using free version) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Google Fonts - Modern Typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- AOS Animation Library -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    
+    <!-- Swiper JS for sliders -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css" />
     
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-storage.js"></script>
     
     <style>
-        /* ===== ADVANCED CSS VARIABLES ===== */
+        /* ===== ADVANCED CSS VARIABLES & THEMING ===== */
         :root {
-            --primary-100: #dbeafe;
-            --primary-200: #bfdbfe;
-            --primary-300: #93c5fd;
-            --primary-400: #60a5fa;
-            --primary-500: #3b82f6;
-            --primary-600: #2563eb;
-            --primary-700: #1d4ed8;
-            --primary-800: #1e40af;
-            --primary-900: #1e3a8a;
+            /* Modern Color Palette */
+            --primary-50: #eef2ff;
+            --primary-100: #e0e7ff;
+            --primary-200: #c7d2fe;
+            --primary-300: #a5b4fc;
+            --primary-400: #818cf8;
+            --primary-500: #6366f1;
+            --primary-600: #4f46e5;
+            --primary-700: #4338ca;
+            --primary-800: #3730a3;
+            --primary-900: #312e81;
             
+            --secondary-50: #f5f3ff;
+            --secondary-100: #ede9fe;
+            --secondary-200: #ddd6fe;
+            --secondary-300: #c4b5fd;
+            --secondary-400: #a78bfa;
             --secondary-500: #8b5cf6;
             --secondary-600: #7c3aed;
             --secondary-700: #6d28d9;
+            --secondary-800: #5b21b6;
+            --secondary-900: #4c1d95;
             
-            --success: #10b981;
-            --warning: #f59e0b;
-            --danger: #ef4444;
-            --info: #3b82f6;
+            --accent-500: #06b6d4;
+            --success-500: #10b981;
+            --warning-500: #f59e0b;
+            --danger-500: #ef4444;
             
-            --dark: #0f172a;
-            --dark-light: #1e293b;
-            --light: #f8fafc;
-            --gray-100: #f1f5f9;
-            --gray-200: #e2e8f0;
-            --gray-300: #cbd5e1;
-            --gray-400: #94a3b8;
-            --gray-500: #64748b;
-            --gray-600: #475569;
-            --gray-700: #334155;
-            --gray-800: #1e293b;
-            --gray-900: #0f172a;
+            --dark-50: #f8fafc;
+            --dark-100: #f1f5f9;
+            --dark-200: #e2e8f0;
+            --dark-300: #cbd5e1;
+            --dark-400: #94a3b8;
+            --dark-500: #64748b;
+            --dark-600: #475569;
+            --dark-700: #334155;
+            --dark-800: #1e293b;
+            --dark-900: #0f172a;
             
-            --white: #ffffff;
-            --black: #000000;
+            --glass-white: rgba(255, 255, 255, 0.25);
+            --glass-border: rgba(255, 255, 255, 0.18);
+            --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
             
-            --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-            --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
-            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-            --shadow-md: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-            --shadow-lg: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+            /* Gradients */
+            --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradient-secondary: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --gradient-accent: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --gradient-dark: linear-gradient(135deg, #1e1e2f 0%, #2d2d44 100%);
+            --gradient-cyber: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+            
+            /* Shadows */
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            --shadow-md: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 20px 25px -5px rgb(0 0 0 / 0.1);
             --shadow-xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
-            --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+            --shadow-2xl: 0 30px 60px -15px rgb(0 0 0 / 0.3);
             --shadow-inner: inset 0 2px 4px 0 rgb(0 0 0 / 0.05);
+            --shadow-glow: 0 0 20px rgba(79, 70, 229, 0.5);
+            --shadow-neon: 0 0 5px #4f46e5, 0 0 20px #4f46e5, 0 0 40px #4f46e5;
             
-            --radius-xs: 0.125rem;
+            /* Typography */
+            --font-primary: 'Inter', sans-serif;
+            --font-display: 'Space Grotesk', sans-serif;
+            
+            /* Spacing */
+            --section-spacing: 6rem;
+            --container-padding: 2rem;
+            
+            /* Transitions */
+            --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+            --transition: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-slow: 500ms cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-bounce: 500ms cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            
+            /* Border Radius */
             --radius-sm: 0.25rem;
-            --radius: 0.375rem;
-            --radius-md: 0.5rem;
-            --radius-lg: 0.75rem;
-            --radius-xl: 1rem;
-            --radius-2xl: 1.5rem;
-            --radius-3xl: 2rem;
+            --radius: 0.5rem;
+            --radius-md: 0.75rem;
+            --radius-lg: 1rem;
+            --radius-xl: 1.5rem;
+            --radius-2xl: 2rem;
+            --radius-3xl: 2.5rem;
             --radius-full: 9999px;
-            
-            --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
-            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            --transition-slow: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-            --transition-bounce: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
         }
 
-        /* ===== RESET & BASE ===== */
+        /* ===== RESET & BASE STYLES ===== */
         * {
             margin: 0;
             padding: 0;
@@ -100,15 +131,38 @@
         html {
             scroll-behavior: smooth;
             scroll-padding-top: 80px;
+            font-size: 16px;
         }
 
         body {
-            font-family: var(--font-sans);
-            background: var(--light);
-            color: var(--gray-900);
+            font-family: var(--font-primary);
+            background: var(--dark-50);
+            color: var(--dark-900);
             line-height: 1.6;
             overflow-x: hidden;
             position: relative;
+        }
+
+        /* Custom Cursor */
+        .cursor {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--primary-600);
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+            transition: all 0.1s ease;
+            transition-property: width, height, border, transform;
+            transform: translate(-50%, -50%);
+            mix-blend-mode: difference;
+        }
+
+        .cursor.active {
+            width: 50px;
+            height: 50px;
+            border-color: var(--secondary-500);
+            background: rgba(79, 70, 229, 0.1);
         }
 
         /* ===== CUSTOM SCROLLBAR ===== */
@@ -117,112 +171,167 @@
         }
 
         ::-webkit-scrollbar-track {
-            background: var(--gray-200);
+            background: var(--dark-200);
+            border-radius: var(--radius-full);
         }
 
         ::-webkit-scrollbar-thumb {
-            background: linear-gradient(135deg, var(--primary-600), var(--secondary-600));
+            background: var(--gradient-primary);
             border-radius: var(--radius-full);
-            border: 3px solid var(--gray-200);
+            border: 3px solid var(--dark-200);
         }
 
         ::-webkit-scrollbar-thumb:hover {
-            background: linear-gradient(135deg, var(--primary-700), var(--secondary-700));
+            background: var(--gradient-secondary);
         }
 
         /* ===== TYPOGRAPHY ===== */
         h1, h2, h3, h4, h5, h6 {
+            font-family: var(--font-display);
             font-weight: 700;
             line-height: 1.3;
             margin-bottom: 1rem;
         }
 
         h1 {
-            font-size: clamp(2.5rem, 6vw, 4rem);
-            background: linear-gradient(135deg, var(--primary-600), var(--secondary-600), var(--primary-600));
+            font-size: clamp(3rem, 8vw, 5rem);
+            letter-spacing: -0.02em;
+            background: var(--gradient-primary);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            background-size: 200% 200%;
-            animation: gradientFlow 8s ease infinite;
-        }
-
-        @keyframes gradientFlow {
-            0%, 100% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-        }
-
-        h2 {
-            font-size: clamp(2rem, 5vw, 2.8rem);
+            background-clip: text;
             position: relative;
             display: inline-block;
-            margin-bottom: 2rem;
         }
 
-        h2::after {
+        h1::after {
             content: '';
             position: absolute;
             bottom: -10px;
             left: 0;
-            width: 80px;
+            width: 100px;
             height: 4px;
-            background: linear-gradient(90deg, var(--primary-600), var(--secondary-600));
+            background: var(--gradient-primary);
             border-radius: var(--radius-full);
-            transition: width var(--transition);
+            animation: expandWidth 2s ease infinite;
         }
 
-        h2:hover::after {
-            width: 120px;
+        @keyframes expandWidth {
+            0%, 100% { width: 100px; }
+            50% { width: 150px; }
+        }
+
+        h2 {
+            font-size: clamp(2.5rem, 6vw, 3.5rem);
+            position: relative;
+            display: inline-block;
+        }
+
+        h2 .highlight {
+            color: var(--primary-600);
+            position: relative;
+            display: inline-block;
+        }
+
+        h2 .highlight::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 30%;
+            background: var(--primary-200);
+            z-index: -1;
+            transform: skewX(-15deg);
         }
 
         h3 {
-            font-size: clamp(1.25rem, 3vw, 1.5rem);
+            font-size: clamp(1.5rem, 4vw, 2rem);
         }
 
         p {
-            color: var(--gray-600);
+            color: var(--dark-600);
             margin-bottom: 1.5rem;
-            font-size: 1.05rem;
-        }
-
-        a {
-            text-decoration: none;
-            color: inherit;
+            font-size: 1.1rem;
         }
 
         /* ===== LAYOUT ===== */
         .container {
-            max-width: 1280px;
+            max-width: 1400px;
             margin: 0 auto;
-            padding: 0 2rem;
+            padding: 0 var(--container-padding);
         }
 
         .section {
-            padding: 5rem 0;
+            padding: var(--section-spacing) 0;
             position: relative;
+            overflow: hidden;
+        }
+
+        .section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: var(--gradient-primary);
+            opacity: 0.3;
         }
 
         .section-title {
             text-align: center;
-            margin-bottom: 3rem;
+            margin-bottom: 4rem;
         }
 
         .section-title h2 {
             margin-bottom: 1rem;
         }
 
-        .section-title h2::after {
-            left: 50%;
-            transform: translateX(-50%);
-            width: 100px;
-        }
-
-        .section-title h2:hover::after {
-            width: 150px;
-        }
-
         .section-title p {
             max-width: 600px;
             margin: 0 auto;
+            font-size: 1.2rem;
+        }
+
+        /* ===== BACKGROUND ELEMENTS ===== */
+        .bg-element {
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            background: var(--gradient-primary);
+            filter: blur(100px);
+            opacity: 0.1;
+            z-index: -1;
+            animation: float 20s ease-in-out infinite;
+        }
+
+        .bg-element-1 {
+            top: 10%;
+            left: -150px;
+        }
+
+        .bg-element-2 {
+            bottom: 20%;
+            right: -150px;
+            background: var(--gradient-secondary);
+            animation-delay: -5s;
+        }
+
+        .bg-element-3 {
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--gradient-accent);
+            animation-delay: -10s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            25% { transform: translate(10px, -10px) scale(1.1); }
+            50% { transform: translate(-10px, 20px) scale(0.9); }
+            75% { transform: translate(-20px, -10px) scale(1.05); }
         }
 
         /* ===== NAVIGATION ===== */
@@ -231,18 +340,17 @@
             top: 0;
             left: 0;
             width: 100%;
-            background: rgba(255, 255, 255, 0.9);
+            background: rgba(255, 255, 255, 0.8);
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
-            border-bottom: 1px solid rgba(37, 99, 235, 0.1);
+            border-bottom: 1px solid rgba(79, 70, 229, 0.1);
             z-index: 1000;
             transition: var(--transition);
         }
 
         .navbar.scrolled {
-            background: rgba(255, 255, 255, 0.98);
+            background: rgba(255, 255, 255, 0.95);
             box-shadow: var(--shadow-lg);
-            border-bottom-color: transparent;
         }
 
         .nav-container {
@@ -255,11 +363,17 @@
         .logo {
             font-size: 2rem;
             font-weight: 800;
-            background: linear-gradient(135deg, var(--primary-600), var(--secondary-600));
+            background: var(--gradient-primary);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            text-decoration: none;
             position: relative;
             z-index: 100;
+            transition: var(--transition);
+        }
+
+        .logo:hover {
+            transform: scale(1.05);
         }
 
         .logo::after {
@@ -267,7 +381,7 @@
             position: absolute;
             width: 100%;
             height: 100%;
-            background: linear-gradient(135deg, var(--primary-600), var(--secondary-600));
+            background: var(--gradient-primary);
             filter: blur(20px);
             opacity: 0.3;
             z-index: -1;
@@ -282,7 +396,7 @@
 
         .nav-link {
             text-decoration: none;
-            color: var(--gray-700);
+            color: var(--dark-700);
             font-weight: 500;
             font-size: 1rem;
             padding: 0.5rem 1rem;
@@ -299,7 +413,7 @@
             transform: translateX(-50%);
             width: 0;
             height: 2px;
-            background: linear-gradient(90deg, var(--primary-600), var(--secondary-600));
+            background: var(--gradient-primary);
             transition: width var(--transition);
         }
 
@@ -316,16 +430,16 @@
         .profile-icon {
             width: 45px;
             height: 45px;
-            background: linear-gradient(135deg, var(--primary-600), var(--secondary-600));
+            background: var(--gradient-primary);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: var(--white);
+            color: white;
             font-weight: 600;
             font-size: 1.2rem;
             cursor: pointer;
-            border: 3px solid var(--white);
+            border: 3px solid white;
             box-shadow: var(--shadow-md);
             transition: var(--transition-bounce);
             position: relative;
@@ -342,7 +456,7 @@
             width: 100%;
             height: 100%;
             border-radius: 50%;
-            background: linear-gradient(135deg, var(--primary-600), var(--secondary-600));
+            background: var(--gradient-primary);
             filter: blur(10px);
             opacity: 0.3;
             z-index: -1;
@@ -353,16 +467,16 @@
             position: absolute;
             top: 90px;
             right: 20px;
-            background: var(--white);
+            background: white;
             border-radius: var(--radius-xl);
             box-shadow: var(--shadow-2xl);
-            width: 280px;
+            width: 300px;
             opacity: 0;
             visibility: hidden;
             transform: translateY(-20px) scale(0.95);
             transition: var(--transition-bounce);
             z-index: 1001;
-            border: 1px solid var(--gray-200);
+            border: 1px solid rgba(79, 70, 229, 0.1);
             overflow: hidden;
         }
 
@@ -379,26 +493,26 @@
             right: 25px;
             width: 20px;
             height: 20px;
-            background: var(--white);
+            background: white;
             transform: rotate(45deg);
-            border-left: 1px solid var(--gray-200);
-            border-top: 1px solid var(--gray-200);
+            border-left: 1px solid rgba(79, 70, 229, 0.1);
+            border-top: 1px solid rgba(79, 70, 229, 0.1);
         }
 
         .dropdown-header {
             padding: 1.5rem;
-            background: linear-gradient(135deg, var(--primary-600), var(--secondary-600));
-            color: var(--white);
+            background: var(--gradient-primary);
+            color: white;
         }
 
         .dropdown-header h4 {
             margin-bottom: 0.25rem;
-            color: var(--white);
+            color: white;
         }
 
         .dropdown-header p {
             margin: 0;
-            color: rgba(255, 255, 255, 0.8);
+            color: rgba(255, 255, 255, 0.9);
             font-size: 0.9rem;
         }
 
@@ -407,9 +521,10 @@
             align-items: center;
             gap: 1rem;
             padding: 1rem 1.5rem;
-            color: var(--gray-700);
+            color: var(--dark-700);
+            text-decoration: none;
             transition: var(--transition);
-            border-bottom: 1px solid var(--gray-200);
+            border-bottom: 1px solid var(--dark-200);
         }
 
         .dropdown-item:last-child {
@@ -417,7 +532,7 @@
         }
 
         .dropdown-item:hover {
-            background: var(--gray-100);
+            background: var(--primary-50);
             padding-left: 2rem;
             color: var(--primary-600);
         }
@@ -440,7 +555,7 @@
         .menu-toggle span {
             width: 30px;
             height: 3px;
-            background: linear-gradient(90deg, var(--primary-600), var(--secondary-600));
+            background: var(--gradient-primary);
             border-radius: var(--radius-full);
             transition: var(--transition-bounce);
         }
@@ -468,16 +583,6 @@
             padding-top: 80px;
         }
 
-        .hero::before {
-            content: '';
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(circle at 10% 20%, rgba(37, 99, 235, 0.1) 0%, transparent 50%),
-                        radial-gradient(circle at 90% 80%, rgba(124, 58, 237, 0.1) 0%, transparent 50%);
-            pointer-events: none;
-        }
-
         .hero-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -487,15 +592,21 @@
 
         .hero-badge {
             display: inline-block;
-            padding: 0.5rem 1rem;
-            background: linear-gradient(135deg, rgba(37, 99, 235, 0.1), rgba(124, 58, 237, 0.1));
+            padding: 0.5rem 1.5rem;
+            background: linear-gradient(135deg, rgba(79, 70, 229, 0.1), rgba(124, 58, 237, 0.1));
             border-radius: var(--radius-full);
             color: var(--primary-600);
             font-weight: 600;
             font-size: 0.9rem;
             margin-bottom: 1.5rem;
-            border: 1px solid rgba(37, 99, 235, 0.2);
+            border: 1px solid rgba(79, 70, 229, 0.2);
             backdrop-filter: blur(5px);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
         }
 
         .hero-content h1 {
@@ -503,7 +614,7 @@
         }
 
         .hero-content p {
-            font-size: 1.2rem;
+            font-size: 1.3rem;
             margin-bottom: 2rem;
             max-width: 500px;
         }
@@ -516,6 +627,7 @@
 
         .hero-image {
             position: relative;
+            perspective: 1000px;
         }
 
         .hero-image img {
@@ -525,6 +637,12 @@
             animation: morphing 10s ease-in-out infinite;
             border: 4px solid rgba(255, 255, 255, 0.3);
             backdrop-filter: blur(5px);
+            transform-style: preserve-3d;
+            transition: var(--transition-slow);
+        }
+
+        .hero-image:hover img {
+            transform: rotateY(10deg) rotateX(5deg) scale(1.05);
         }
 
         @keyframes morphing {
@@ -536,20 +654,21 @@
 
         .floating-card {
             position: absolute;
-            background: rgba(255, 255, 255, 0.9);
+            background: var(--glass-white);
             backdrop-filter: blur(10px);
             padding: 1rem 1.5rem;
             border-radius: var(--radius-full);
-            box-shadow: var(--shadow-xl);
+            box-shadow: var(--glass-shadow);
             display: flex;
             align-items: center;
             gap: 0.5rem;
             animation: float 6s ease-in-out infinite;
-            border: 1px solid rgba(255, 255, 255, 0.5);
+            border: 1px solid var(--glass-border);
+            color: white;
         }
 
         .floating-card i {
-            color: var(--primary-600);
+            color: var(--primary-500);
             font-size: 1.2rem;
         }
 
@@ -565,11 +684,6 @@
             animation-delay: 2s;
         }
 
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-20px); }
-        }
-
         /* Stats */
         .stats-grid {
             display: flex;
@@ -580,22 +694,49 @@
 
         .stat-item {
             text-align: center;
+            position: relative;
+        }
+
+        .stat-item::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: -1.5rem;
+            height: 100%;
+            width: 1px;
+            background: var(--gradient-primary);
+            opacity: 0.3;
+        }
+
+        .stat-item:last-child::after {
+            display: none;
         }
 
         .stat-number {
-            font-size: 2.5rem;
+            font-size: 3rem;
             font-weight: 800;
-            background: linear-gradient(135deg, var(--primary-600), var(--secondary-600));
+            background: var(--gradient-primary);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             line-height: 1;
+            position: relative;
+            display: inline-block;
+        }
+
+        .stat-number::before {
+            content: '+';
+            position: absolute;
+            top: 0;
+            right: -20px;
+            font-size: 2rem;
+            color: var(--primary-600);
         }
 
         .stat-label {
-            color: var(--gray-600);
-            font-size: 0.9rem;
+            color: var(--dark-600);
+            font-size: 1rem;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 2px;
         }
 
         /* ===== BUTTONS ===== */
@@ -604,7 +745,7 @@
             align-items: center;
             justify-content: center;
             gap: 0.5rem;
-            padding: 0.8rem 2rem;
+            padding: 1rem 2.5rem;
             border-radius: var(--radius-full);
             font-weight: 600;
             font-size: 1rem;
@@ -615,6 +756,7 @@
             position: relative;
             overflow: hidden;
             z-index: 1;
+            text-decoration: none;
         }
 
         .btn::before {
@@ -625,7 +767,7 @@
             width: 0;
             height: 0;
             border-radius: 50%;
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.3);
             transform: translate(-50%, -50%);
             transition: width 0.6s, height 0.6s;
             z-index: -1;
@@ -637,14 +779,14 @@
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, var(--primary-600), var(--secondary-600));
-            color: var(--white);
+            background: var(--gradient-primary);
+            color: white;
             box-shadow: var(--shadow-md);
         }
 
         .btn-primary:hover {
             transform: translateY(-2px);
-            box-shadow: var(--shadow-xl);
+            box-shadow: var(--shadow-xl), var(--shadow-glow);
         }
 
         .btn-outline {
@@ -654,8 +796,8 @@
         }
 
         .btn-outline:hover {
-            background: linear-gradient(135deg, var(--primary-600), var(--secondary-600));
-            color: var(--white);
+            background: var(--gradient-primary);
+            color: white;
             border-color: transparent;
             transform: translateY(-2px);
         }
@@ -667,19 +809,20 @@
         /* ===== SKILLS SECTION ===== */
         .skills-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
             gap: 2rem;
         }
 
         .skill-card {
-            background: var(--white);
+            background: white;
             padding: 2rem;
             border-radius: var(--radius-2xl);
             box-shadow: var(--shadow);
             transition: var(--transition-bounce);
             position: relative;
             overflow: hidden;
-            border: 1px solid var(--gray-200);
+            border: 1px solid var(--dark-200);
+            cursor: pointer;
         }
 
         .skill-card::before {
@@ -689,7 +832,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(135deg, var(--primary-600), var(--secondary-600));
+            background: var(--gradient-primary);
             opacity: 0;
             transition: opacity var(--transition);
             z-index: 0;
@@ -699,29 +842,46 @@
             opacity: 0.05;
         }
 
+        .skill-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 0;
+            background: var(--gradient-primary);
+            transition: height var(--transition-slow);
+        }
+
+        .skill-card:hover::after {
+            height: 100%;
+        }
+
         .skill-card:hover {
             transform: translateY(-10px) scale(1.02);
             box-shadow: var(--shadow-2xl);
         }
 
         .skill-icon {
-            width: 70px;
-            height: 70px;
-            background: linear-gradient(135deg, rgba(37, 99, 235, 0.1), rgba(124, 58, 237, 0.1));
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--primary-100), var(--secondary-100));
             border-radius: 20px;
             display: flex;
             align-items: center;
             justify-content: center;
             margin-bottom: 1.5rem;
-            font-size: 2rem;
+            font-size: 2.5rem;
             color: var(--primary-600);
             transition: var(--transition-bounce);
+            position: relative;
+            z-index: 1;
         }
 
         .skill-card:hover .skill-icon {
             transform: scale(1.1) rotate(360deg);
-            background: linear-gradient(135deg, var(--primary-600), var(--secondary-600));
-            color: var(--white);
+            background: var(--gradient-primary);
+            color: white;
         }
 
         .skill-card h3 {
@@ -740,36 +900,39 @@
             flex-wrap: wrap;
             gap: 0.5rem;
             margin-top: 1.5rem;
+            position: relative;
+            z-index: 1;
         }
 
         .skill-tag {
             padding: 0.25rem 1rem;
-            background: var(--gray-100);
+            background: var(--dark-100);
             border-radius: var(--radius-full);
             font-size: 0.8rem;
-            color: var(--gray-700);
+            color: var(--dark-700);
             transition: var(--transition);
         }
 
         .skill-card:hover .skill-tag {
-            background: var(--white);
+            background: white;
             box-shadow: var(--shadow-sm);
         }
 
         /* ===== PROJECT CARDS ===== */
         .projects-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
             gap: 2rem;
         }
 
         .project-card {
-            background: var(--white);
+            background: white;
             border-radius: var(--radius-2xl);
             overflow: hidden;
             box-shadow: var(--shadow);
             transition: var(--transition-bounce);
             position: relative;
+            cursor: pointer;
         }
 
         .project-card:hover {
@@ -787,7 +950,7 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
-            transition: transform 0.6s ease;
+            transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .project-card:hover .project-image img {
@@ -802,8 +965,8 @@
         }
 
         .project-category {
-            background: linear-gradient(135deg, var(--primary-600), var(--secondary-600));
-            color: var(--white);
+            background: var(--gradient-primary);
+            color: white;
             padding: 0.3rem 1rem;
             border-radius: var(--radius-full);
             font-size: 0.8rem;
@@ -813,6 +976,7 @@
 
         .project-content {
             padding: 1.5rem;
+            position: relative;
         }
 
         .project-content h3 {
@@ -821,7 +985,7 @@
 
         .project-content p {
             margin-bottom: 1rem;
-            color: var(--gray-600);
+            color: var(--dark-600);
             font-size: 0.95rem;
         }
 
@@ -838,6 +1002,7 @@
             align-items: center;
             gap: 0.3rem;
             transition: var(--transition);
+            text-decoration: none;
         }
 
         .project-link:hover {
@@ -847,8 +1012,8 @@
 
         /* ===== EXTERNAL LINKS SECTION ===== */
         .external-links {
-            background: linear-gradient(135deg, var(--primary-900), var(--secondary-700));
-            padding: 4rem 0;
+            background: var(--gradient-cyber);
+            padding: 5rem 0;
             position: relative;
             overflow: hidden;
         }
@@ -860,11 +1025,30 @@
             height: 200%;
             background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 50%);
             animation: rotate 20s linear infinite;
+            top: -50%;
+            left: -50%;
+        }
+
+        .external-links::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent 45%, rgba(255,255,255,0.05) 50%, transparent 55%);
+            background-size: 200% 200%;
+            animation: shine 10s linear infinite;
         }
 
         @keyframes rotate {
             from { transform: rotate(0deg); }
             to { transform: rotate(360deg); }
+        }
+
+        @keyframes shine {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
         }
 
         .external-grid {
@@ -880,52 +1064,80 @@
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.2);
             border-radius: var(--radius-2xl);
-            padding: 2rem;
+            padding: 2.5rem 1.5rem;
             text-align: center;
-            color: var(--white);
+            color: white;
             transition: var(--transition-bounce);
             cursor: pointer;
             text-decoration: none;
             display: block;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .external-card::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .external-card:hover::before {
+            width: 300px;
+            height: 300px;
         }
 
         .external-card:hover {
             transform: translateY(-10px) scale(1.05);
             background: rgba(255, 255, 255, 0.2);
             border-color: rgba(255, 255, 255, 0.3);
+            box-shadow: var(--shadow-2xl);
         }
 
         .external-icon {
-            width: 80px;
-            height: 80px;
+            width: 100px;
+            height: 100px;
             background: rgba(255, 255, 255, 0.2);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             margin: 0 auto 1.5rem;
-            font-size: 2.5rem;
+            font-size: 3rem;
             transition: var(--transition-bounce);
+            position: relative;
+            z-index: 1;
         }
 
         .external-card:hover .external-icon {
-            transform: rotate(360deg);
-            background: var(--white);
+            transform: rotate(360deg) scale(1.1);
+            background: white;
             color: var(--primary-600);
         }
 
         .external-card h3 {
-            color: var(--white);
+            color: white;
             margin-bottom: 0.5rem;
+            font-size: 1.5rem;
         }
 
         .external-card p {
             color: rgba(255, 255, 255, 0.8);
-            font-size: 0.9rem;
+            font-size: 0.95rem;
             margin: 0;
         }
 
         /* ===== TESTIMONIALS ===== */
+        .testimonials {
+            background: linear-gradient(135deg, var(--dark-50) 0%, white 100%);
+        }
+
         .testimonials-slider {
             position: relative;
             overflow: hidden;
@@ -943,45 +1155,73 @@
         }
 
         .testimonial-content {
-            background: var(--white);
+            background: white;
             border-radius: var(--radius-2xl);
-            padding: 2rem;
-            box-shadow: var(--shadow);
+            padding: 3rem;
+            box-shadow: var(--shadow-xl);
             position: relative;
+            border: 1px solid var(--dark-200);
         }
 
         .testimonial-content::before {
             content: '"';
             position: absolute;
             top: -20px;
-            left: 20px;
-            font-size: 6rem;
+            left: 30px;
+            font-size: 8rem;
             color: var(--primary-200);
             font-family: serif;
             opacity: 0.5;
+        }
+
+        .testimonial-content::after {
+            content: '';
+            position: absolute;
+            bottom: -20px;
+            right: 30px;
+            width: 40px;
+            height: 40px;
+            background: var(--gradient-primary);
+            border-radius: 50%;
+            opacity: 0.2;
+        }
+
+        .testimonial-text {
+            font-size: 1.2rem;
+            font-style: italic;
+            margin-bottom: 2rem;
+            position: relative;
+            z-index: 1;
         }
 
         .testimonial-author {
             display: flex;
             align-items: center;
             gap: 1rem;
-            margin-top: 1.5rem;
         }
 
         .author-avatar {
-            width: 60px;
-            height: 60px;
+            width: 70px;
+            height: 70px;
             border-radius: 50%;
             object-fit: cover;
+            border: 3px solid var(--primary-600);
         }
 
         .author-info h4 {
             margin-bottom: 0.25rem;
+            font-size: 1.2rem;
         }
 
         .author-info p {
             margin: 0;
-            font-size: 0.9rem;
+            font-size: 0.95rem;
+            color: var(--dark-500);
+        }
+
+        .testimonial-rating {
+            margin-left: auto;
+            color: #ffc107;
         }
 
         .slider-dots {
@@ -992,17 +1232,17 @@
         }
 
         .dot {
-            width: 10px;
-            height: 10px;
+            width: 12px;
+            height: 12px;
             border-radius: 50%;
-            background: var(--gray-300);
+            background: var(--dark-300);
             cursor: pointer;
             transition: var(--transition);
         }
 
         .dot.active {
-            width: 30px;
-            background: linear-gradient(90deg, var(--primary-600), var(--secondary-600));
+            width: 40px;
+            background: var(--gradient-primary);
             border-radius: var(--radius-full);
         }
 
@@ -1014,60 +1254,75 @@
         }
 
         .contact-info-card {
-            background: var(--white);
+            background: white;
             border-radius: var(--radius-2xl);
-            padding: 2rem;
-            box-shadow: var(--shadow);
+            padding: 2.5rem;
+            box-shadow: var(--shadow-xl);
+            border: 1px solid var(--dark-200);
         }
 
         .contact-item {
             display: flex;
             align-items: center;
-            gap: 1rem;
-            padding: 1rem;
-            background: var(--gray-100);
-            border-radius: var(--radius-lg);
+            gap: 1.5rem;
+            padding: 1.5rem;
+            background: linear-gradient(135deg, var(--dark-50) 0%, white 100%);
+            border-radius: var(--radius-xl);
             margin-bottom: 1rem;
             transition: var(--transition);
+            border: 1px solid transparent;
         }
 
         .contact-item:hover {
             transform: translateX(10px);
-            background: linear-gradient(135deg, var(--primary-600), var(--secondary-600));
-            color: var(--white);
+            background: var(--gradient-primary);
+            color: white;
+            border-color: white;
         }
 
         .contact-item:hover i,
-        .contact-item:hover a {
-            color: var(--white);
+        .contact-item:hover a,
+        .contact-item:hover span {
+            color: white;
         }
 
         .contact-icon {
-            width: 50px;
-            height: 50px;
-            background: var(--white);
+            width: 60px;
+            height: 60px;
+            background: white;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             color: var(--primary-600);
-            font-size: 1.2rem;
+            font-size: 1.5rem;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+
+        .contact-item:hover .contact-icon {
+            transform: rotate(360deg);
+            background: var(--gradient-primary);
+            color: white;
         }
 
         .contact-details h4 {
             margin-bottom: 0.25rem;
         }
 
-        .contact-details a {
-            color: var(--gray-600);
+        .contact-details a,
+        .contact-details span {
+            color: var(--dark-600);
             transition: var(--transition);
+            text-decoration: none;
         }
 
         .contact-form {
-            background: var(--white);
+            background: white;
             border-radius: var(--radius-2xl);
-            padding: 2rem;
-            box-shadow: var(--shadow);
+            padding: 2.5rem;
+            box-shadow: var(--shadow-xl);
+            border: 1px solid var(--dark-200);
         }
 
         .form-group {
@@ -1078,37 +1333,37 @@
             display: block;
             margin-bottom: 0.5rem;
             font-weight: 500;
-            color: var(--gray-700);
+            color: var(--dark-700);
         }
 
         .form-control {
             width: 100%;
             padding: 1rem 1.5rem;
-            border: 2px solid var(--gray-200);
-            border-radius: var(--radius-full);
+            border: 2px solid var(--dark-200);
+            border-radius: var(--radius-xl);
             font-size: 1rem;
             transition: var(--transition);
-            background: var(--gray-100);
+            background: var(--dark-50);
         }
 
         .form-control:focus {
             outline: none;
             border-color: var(--primary-600);
-            background: var(--white);
-            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+            background: white;
+            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
         }
 
         textarea.form-control {
             border-radius: var(--radius-2xl);
             resize: vertical;
-            min-height: 120px;
+            min-height: 150px;
         }
 
         /* ===== FOOTER ===== */
         .footer {
-            background: var(--gray-900);
-            color: var(--white);
-            padding: 4rem 0 2rem;
+            background: var(--dark-900);
+            color: white;
+            padding: 5rem 0 2rem;
             position: relative;
             overflow: hidden;
         }
@@ -1120,7 +1375,19 @@
             left: 0;
             right: 0;
             height: 4px;
-            background: linear-gradient(90deg, var(--primary-600), var(--secondary-600), var(--primary-600));
+            background: var(--gradient-primary);
+        }
+
+        .footer::after {
+            content: '';
+            position: absolute;
+            bottom: -50px;
+            right: -50px;
+            width: 200px;
+            height: 200px;
+            background: var(--gradient-primary);
+            filter: blur(100px);
+            opacity: 0.2;
         }
 
         .footer-grid {
@@ -1128,12 +1395,14 @@
             grid-template-columns: 2fr 1fr 1fr 1.5fr;
             gap: 3rem;
             margin-bottom: 3rem;
+            position: relative;
+            z-index: 1;
         }
 
         .footer-logo {
             font-size: 2rem;
             font-weight: 800;
-            background: linear-gradient(135deg, var(--primary-400), var(--secondary-400));
+            background: var(--gradient-primary);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             display: inline-block;
@@ -1141,11 +1410,11 @@
         }
 
         .footer-about p {
-            color: var(--gray-400);
+            color: var(--dark-400);
         }
 
         .footer-links h3 {
-            color: var(--white);
+            color: white;
             font-size: 1.2rem;
             margin-bottom: 1.5rem;
         }
@@ -1159,13 +1428,14 @@
         }
 
         .footer-links a {
-            color: var(--gray-400);
+            color: var(--dark-400);
             transition: var(--transition);
             display: inline-block;
+            text-decoration: none;
         }
 
         .footer-links a:hover {
-            color: var(--white);
+            color: white;
             transform: translateX(5px);
         }
 
@@ -1176,32 +1446,38 @@
         }
 
         .footer-social a {
-            width: 40px;
-            height: 40px;
+            width: 45px;
+            height: 45px;
             background: rgba(255, 255, 255, 0.1);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: var(--white);
+            color: white;
             transition: var(--transition-bounce);
+            text-decoration: none;
+            font-size: 1.2rem;
         }
 
         .footer-social a:hover {
-            background: linear-gradient(135deg, var(--primary-600), var(--secondary-600));
+            background: var(--gradient-primary);
             transform: translateY(-3px) rotate(360deg);
+            box-shadow: var(--shadow-glow);
         }
 
         .footer-bottom {
             text-align: center;
             padding-top: 2rem;
             border-top: 1px solid rgba(255, 255, 255, 0.1);
-            color: var(--gray-400);
+            color: var(--dark-400);
+            position: relative;
+            z-index: 1;
         }
 
         .footer-bottom a {
-            color: var(--white);
+            color: white;
             transition: var(--transition);
+            text-decoration: none;
         }
 
         .footer-bottom a:hover {
@@ -1231,9 +1507,9 @@
         }
 
         .modal-content {
-            background: var(--white);
+            background: white;
             border-radius: var(--radius-2xl);
-            padding: 2rem;
+            padding: 2.5rem;
             width: 90%;
             max-width: 450px;
             position: relative;
@@ -1250,23 +1526,23 @@
             position: absolute;
             top: 1rem;
             right: 1rem;
-            width: 35px;
-            height: 35px;
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
-            background: var(--gray-100);
+            background: var(--dark-100);
             border: none;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.2rem;
-            color: var(--gray-600);
+            font-size: 1.5rem;
+            color: var(--dark-600);
             transition: var(--transition);
         }
 
         .modal-close:hover {
-            background: var(--danger);
-            color: var(--white);
+            background: var(--danger-500);
+            color: white;
             transform: rotate(90deg);
         }
 
@@ -1280,7 +1556,7 @@
         }
 
         .modal-header p {
-            color: var(--gray-500);
+            color: var(--dark-500);
         }
 
         /* ===== ADMIN PANEL ===== */
@@ -1288,9 +1564,9 @@
             display: none;
             margin-top: 3rem;
             padding: 2rem;
-            background: var(--white);
+            background: white;
             border-radius: var(--radius-2xl);
-            box-shadow: var(--shadow);
+            box-shadow: var(--shadow-xl);
         }
 
         .admin-panel.active {
@@ -1304,99 +1580,207 @@
             margin-bottom: 2rem;
         }
 
-        .upload-area {
-            border: 3px dashed var(--primary-300);
-            padding: 3rem;
-            text-align: center;
-            border-radius: var(--radius-2xl);
+        .admin-tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .admin-tab {
+            padding: 0.5rem 1.5rem;
+            border: none;
+            background: var(--dark-100);
             cursor: pointer;
+            border-radius: var(--radius-full);
+            font-weight: 500;
             transition: var(--transition);
-            background: var(--gray-100);
         }
 
-        .upload-area:hover {
-            border-color: var(--primary-600);
-            background: rgba(37, 99, 235, 0.05);
+        .admin-tab.active {
+            background: var(--gradient-primary);
+            color: white;
         }
 
-        .upload-area i {
-            font-size: 3rem;
-            color: var(--primary-600);
+        .admin-content {
+            display: none;
+        }
+
+        .admin-content.active {
+            display: block;
+        }
+
+        .info-grid {
+            display: grid;
+            gap: 1.5rem;
+        }
+
+        .info-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background: var(--dark-100);
+            border-radius: var(--radius);
+        }
+
+        .info-item label {
+            font-weight: 600;
+            min-width: 120px;
+        }
+
+        .info-item input,
+        .info-item textarea {
+            flex: 1;
+            padding: 0.5rem;
+            border: 1px solid var(--dark-300);
+            border-radius: var(--radius);
+        }
+
+        .social-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background: var(--dark-100);
+            border-radius: var(--radius);
             margin-bottom: 1rem;
         }
 
-        .photo-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 1rem;
-            margin-top: 2rem;
-        }
-
-        .photo-item {
-            position: relative;
-            border-radius: var(--radius-lg);
-            overflow: hidden;
-            box-shadow: var(--shadow);
-            aspect-ratio: 1;
-        }
-
-        .photo-item img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transition: var(--transition);
-        }
-
-        .photo-item:hover img {
-            transform: scale(1.1);
-        }
-
-        .photo-actions {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
-            padding: 1rem;
+        .social-item i {
+            width: 40px;
+            height: 40px;
+            background: var(--gradient-primary);
+            border-radius: 50%;
             display: flex;
-            gap: 0.5rem;
+            align-items: center;
             justify-content: center;
-            opacity: 0;
-            transform: translateY(100%);
-            transition: var(--transition);
+            color: white;
         }
 
-        .photo-item:hover .photo-actions {
-            opacity: 1;
-            transform: translateY(0);
+        .social-item input {
+            flex: 1;
+            padding: 0.5rem;
+            border: 1px solid var(--dark-300);
+            border-radius: var(--radius);
         }
 
-        .photo-actions button {
-            padding: 0.3rem 1rem;
+        .save-btn {
+            background: var(--gradient-primary);
+            color: white;
             border: none;
+            padding: 0.8rem 2rem;
             border-radius: var(--radius-full);
             cursor: pointer;
             font-weight: 600;
+            margin-top: 1rem;
             transition: var(--transition);
         }
 
-        .btn-delete {
-            background: var(--danger);
-            color: var(--white);
+        .save-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-glow);
         }
 
-        .btn-edit {
-            background: var(--primary-600);
-            color: var(--white);
+        .delete-btn {
+            background: var(--danger-500);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius);
+            cursor: pointer;
+            margin-left: 0.5rem;
+            transition: var(--transition);
         }
 
-        .btn-view {
-            background: var(--white);
-            color: var(--dark);
+        .delete-btn:hover {
+            background: #dc2626;
+        }
+
+        .project-admin-item,
+        .skill-admin-item {
+            background: var(--dark-100);
+            padding: 1rem;
+            border-radius: var(--radius);
+            margin-bottom: 1rem;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .project-admin-item input,
+        .skill-admin-item input {
+            padding: 0.5rem;
+            border: 1px solid var(--dark-300);
+            border-radius: var(--radius);
+            flex: 1;
+        }
+
+        /* ===== TOAST NOTIFICATIONS ===== */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            padding: 1rem 1.5rem;
+            background: white;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-2xl);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            z-index: 9999;
+            animation: slideInRight 0.3s ease, slideOutRight 0.3s ease 2.7s forwards;
+            border-left: 4px solid var(--primary-600);
+            min-width: 300px;
+        }
+
+        .toast.success {
+            border-left-color: var(--success-500);
+        }
+
+        .toast.error {
+            border-left-color: var(--danger-500);
+        }
+
+        .toast.warning {
+            border-left-color: var(--warning-500);
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideOutRight {
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
+
+        /* ===== LOADING SPINNER ===== */
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid var(--dark-200);
+            border-top-color: var(--primary-600);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
 
         /* ===== RESPONSIVE DESIGN ===== */
-        @media (max-width: 1024px) {
+        @media (max-width: 1200px) {
             .external-grid {
                 grid-template-columns: repeat(2, 1fr);
             }
@@ -1406,44 +1790,11 @@
             }
         }
 
-        @media (max-width: 768px) {
-            .menu-toggle {
-                display: flex;
-            }
-
-            .nav-menu {
-                position: fixed;
-                top: 80px;
-                left: 0;
-                width: 100%;
-                background: var(--white);
-                flex-direction: column;
-                padding: 2rem;
-                gap: 1rem;
-                box-shadow: var(--shadow-lg);
-                transform: translateY(-150%);
-                opacity: 0;
-                transition: var(--transition);
-                border-bottom: 1px solid var(--gray-200);
-                max-height: calc(100vh - 80px);
-                overflow-y: auto;
-            }
-
-            .nav-menu.active {
-                transform: translateY(0);
-                opacity: 1;
-            }
-
-            .nav-link {
-                width: 100%;
-                text-align: center;
-                padding: 1rem;
-            }
-
+        @media (max-width: 992px) {
             .hero-grid {
                 grid-template-columns: 1fr;
                 text-align: center;
-                gap: 2rem;
+                gap: 3rem;
             }
 
             .hero-content p {
@@ -1459,8 +1810,47 @@
                 justify-content: center;
             }
 
+            .stat-item::after {
+                display: none;
+            }
+
             .contact-grid {
                 grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .menu-toggle {
+                display: flex;
+            }
+
+            .nav-menu {
+                position: fixed;
+                top: 80px;
+                left: 0;
+                width: 100%;
+                background: white;
+                flex-direction: column;
+                padding: 2rem;
+                gap: 1rem;
+                box-shadow: var(--shadow-lg);
+                transform: translateY(-150%);
+                opacity: 0;
+                transition: var(--transition);
+                border-bottom: 1px solid var(--dark-200);
+                max-height: calc(100vh - 80px);
+                overflow-y: auto;
+            }
+
+            .nav-menu.active {
+                transform: translateY(0);
+                opacity: 1;
+            }
+
+            .nav-link {
+                width: 100%;
+                text-align: center;
+                padding: 1rem;
             }
 
             .external-grid {
@@ -1484,6 +1874,30 @@
                 left: 50%;
                 transform: translateX(-50%);
             }
+
+            .admin-tabs {
+                justify-content: center;
+            }
+
+            .info-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .info-item label {
+                min-width: auto;
+            }
+
+            .info-item input,
+            .info-item textarea {
+                width: 100%;
+            }
+
+            .toast {
+                left: 20px;
+                right: 20px;
+                min-width: auto;
+            }
         }
 
         @media (max-width: 480px) {
@@ -1499,10 +1913,7 @@
                 width: 100%;
             }
 
-            .projects-grid {
-                grid-template-columns: 1fr;
-            }
-
+            .projects-grid,
             .skills-grid {
                 grid-template-columns: 1fr;
             }
@@ -1512,120 +1923,23 @@
             }
 
             .stat-number {
-                font-size: 2rem;
+                font-size: 2.5rem;
             }
 
             .modal-content {
                 padding: 1.5rem;
             }
         }
-
-        /* ===== ANIMATIONS ===== */
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .animate-fade-up {
-            animation: fadeInUp 0.6s ease forwards;
-        }
-
-        @keyframes slideInLeft {
-            from {
-                opacity: 0;
-                transform: translateX(-30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
-
-        .animate-slide-left {
-            animation: slideInLeft 0.6s ease forwards;
-        }
-
-        @keyframes slideInRight {
-            from {
-                opacity: 0;
-                transform: translateX(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
-
-        .animate-slide-right {
-            animation: slideInRight 0.6s ease forwards;
-        }
-
-        /* Loading Spinner */
-        .spinner {
-            width: 40px;
-            height: 40px;
-            border: 3px solid var(--gray-200);
-            border-top-color: var(--primary-600);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        /* Toast Notifications */
-        .toast {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: var(--white);
-            border-radius: var(--radius-lg);
-            padding: 1rem 1.5rem;
-            box-shadow: var(--shadow-xl);
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            z-index: 9999;
-            animation: slideUp 0.3s ease;
-            border-left: 4px solid var(--primary-600);
-        }
-
-        .toast.success {
-            border-left-color: var(--success);
-        }
-
-        .toast.error {
-            border-left-color: var(--danger);
-        }
-
-        .toast.warning {
-            border-left-color: var(--warning);
-        }
-
-        @keyframes slideUp {
-            from {
-                transform: translateY(100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
-        }
     </style>
 </head>
 <body>
+    <!-- Custom Cursor -->
+    <div class="cursor" id="cursor"></div>
+
     <!-- Navigation -->
     <nav class="navbar" id="navbar">
         <div class="container nav-container">
-            <a href="index.html" class="logo">B.S.</a>
+            <a href="#" class="logo">B.S.</a>
             
             <div class="menu-toggle" id="menuToggle">
                 <span></span>
@@ -1651,7 +1965,7 @@
         <div class="profile-dropdown" id="profileDropdown">
             <div class="dropdown-header" id="dropdownHeader">
                 <h4>Guest User</h4>
-                <p>Please login to access more features</p>
+                <p>Please login to access admin features</p>
             </div>
             <div id="dropdownMenu">
                 <a href="#" class="dropdown-item" onclick="openModal('loginModal')">
@@ -1664,11 +1978,16 @@
         </div>
     </nav>
 
+    <!-- Background Elements -->
+    <div class="bg-element bg-element-1"></div>
+    <div class="bg-element bg-element-2"></div>
+    <div class="bg-element bg-element-3"></div>
+
     <!-- Hero Section -->
     <section id="home" class="hero">
         <div class="container">
             <div class="hero-grid">
-                <div class="hero-content">
+                <div class="hero-content" data-aos="fade-right" data-aos-duration="1000">
                     <span class="hero-badge">
                         <i class="fas fa-shield-alt"></i> Cybersecurity Expert
                     </span>
@@ -1685,29 +2004,29 @@
                     
                     <div class="stats-grid">
                         <div class="stat-item">
-                            <div class="stat-number">5+</div>
+                            <div class="stat-number">5</div>
                             <div class="stat-label">Years Experience</div>
                         </div>
                         <div class="stat-item">
-                            <div class="stat-number">100+</div>
+                            <div class="stat-number">100</div>
                             <div class="stat-label">Projects Done</div>
                         </div>
                         <div class="stat-item">
-                            <div class="stat-number">50+</div>
+                            <div class="stat-number">50</div>
                             <div class="stat-label">Happy Clients</div>
                         </div>
                     </div>
                 </div>
                 
-                <div class="hero-image">
-                    <img src="https://via.placeholder.com/600x600/2563eb/ffffff?text=Bishal+Shrestha" alt="Bishal Shrestha">
+                <div class="hero-image" data-aos="fade-left" data-aos-duration="1000">
+                    <img src="https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80" alt="Bishal Shrestha">
                     <div class="floating-card card-1">
                         <i class="fas fa-shield-alt"></i>
                         <span>Ethical Hacker</span>
                     </div>
                     <div class="floating-card card-2">
                         <i class="fas fa-paint-brush"></i>
-                        <span>Graphic Designer</span>
+                        <span>Creative Director</span>
                     </div>
                 </div>
             </div>
@@ -1717,14 +2036,13 @@
     <!-- External Links Section -->
     <section class="external-links">
         <div class="container">
-            <div class="section-title" style="color: var(--white);">
-                <h2 style="color: var(--white);">My Other Projects</h2>
-                <p style="color: rgba(255,255,255,0.8);">Check out my other amazing websites and tools</p>
+            <div class="section-title" style="color: white;">
+                <h2 style="color: white;">My <span class="highlight">Ecosystem</span></h2>
+                <p style="color: rgba(255,255,255,0.8);">Explore my network of innovative platforms</p>
             </div>
 
-            <div class="external-grid">
-                <!-- Sewa Link -->
-                <a href="https://sewalink.vercel.com" target="_blank" class="external-card">
+            <div class="external-grid" id="externalLinks">
+                <a href="https://sewalink.vercel.com" target="_blank" class="external-card" data-aos="zoom-in" data-aos-delay="0">
                     <div class="external-icon">
                         <i class="fas fa-link"></i>
                     </div>
@@ -1732,8 +2050,7 @@
                     <p>Service Connection Platform</p>
                 </a>
 
-                <!-- Rubi AI -->
-                <a href="#" target="_blank" class="external-card">
+                <a href="#" target="_blank" class="external-card" data-aos="zoom-in" data-aos-delay="100">
                     <div class="external-icon">
                         <i class="fas fa-robot"></i>
                     </div>
@@ -1741,8 +2058,7 @@
                     <p>Advanced AI Assistant</p>
                 </a>
 
-                <!-- Rubi Shop -->
-                <a href="#" target="_blank" class="external-card">
+                <a href="#" target="_blank" class="external-card" data-aos="zoom-in" data-aos-delay="200">
                     <div class="external-icon">
                         <i class="fas fa-store"></i>
                     </div>
@@ -1750,8 +2066,7 @@
                     <p>E-commerce Marketplace</p>
                 </a>
 
-                <!-- Working -->
-                <a href="#" target="_blank" class="external-card">
+                <a href="#" target="_blank" class="external-card" data-aos="zoom-in" data-aos-delay="300">
                     <div class="external-icon">
                         <i class="fas fa-briefcase"></i>
                     </div>
@@ -1765,109 +2080,13 @@
     <!-- Skills Section -->
     <section id="skills" class="section">
         <div class="container">
-            <div class="section-title">
-                <h2>My Expertise</h2>
+            <div class="section-title" data-aos="fade-up">
+                <h2>My <span class="highlight">Expertise</span></h2>
                 <p>Comprehensive skills in cybersecurity, design, and digital marketing</p>
             </div>
 
-            <div class="skills-grid">
-                <!-- Ethical Hacking -->
-                <div class="skill-card">
-                    <div class="skill-icon">
-                        <i class="fas fa-shield-alt"></i>
-                    </div>
-                    <h3>Ethical Hacking</h3>
-                    <p>Certified ethical hacker with expertise in penetration testing and vulnerability assessment.</p>
-                    <div class="skill-tags">
-                        <span class="skill-tag">Penetration Testing</span>
-                        <span class="skill-tag">Network Security</span>
-                        <span class="skill-tag">Vulnerability Assessment</span>
-                    </div>
-                </div>
-
-                <!-- Graphic Design -->
-                <div class="skill-card">
-                    <div class="skill-icon">
-                        <i class="fas fa-paint-brush"></i>
-                    </div>
-                    <h3>Graphic Design</h3>
-                    <p>Creative designer specializing in branding, UI/UX, and visual communication.</p>
-                    <div class="skill-tags">
-                        <span class="skill-tag">Brand Identity</span>
-                        <span class="skill-tag">UI/UX Design</span>
-                        <span class="skill-tag">Adobe Creative Suite</span>
-                    </div>
-                </div>
-
-                <!-- Digital Marketing -->
-                <div class="skill-card">
-                    <div class="skill-icon">
-                        <i class="fas fa-chart-line"></i>
-                    </div>
-                    <h3>Digital Marketing</h3>
-                    <p>Results-driven marketer specializing in SEO, social media, and content strategy.</p>
-                    <div class="skill-tags">
-                        <span class="skill-tag">SEO</span>
-                        <span class="skill-tag">Social Media</span>
-                        <span class="skill-tag">Content Strategy</span>
-                    </div>
-                </div>
-
-                <!-- Affiliate Marketing -->
-                <div class="skill-card">
-                    <div class="skill-icon">
-                        <i class="fas fa-dollar-sign"></i>
-                    </div>
-                    <h3>Affiliate Marketing</h3>
-                    <p>Expert in affiliate marketing strategies and campaign optimization.</p>
-                    <div class="skill-tags">
-                        <span class="skill-tag">Campaign Management</span>
-                        <span class="skill-tag">Conversion Optimization</span>
-                        <span class="skill-tag">Analytics</span>
-                    </div>
-                </div>
-
-                <!-- Video Editing -->
-                <div class="skill-card">
-                    <div class="skill-icon">
-                        <i class="fas fa-video"></i>
-                    </div>
-                    <h3>Video Editing</h3>
-                    <p>Professional video editor creating engaging content for various platforms.</p>
-                    <div class="skill-tags">
-                        <span class="skill-tag">Adobe Premiere</span>
-                        <span class="skill-tag">After Effects</span>
-                        <span class="skill-tag">Color Grading</span>
-                    </div>
-                </div>
-
-                <!-- Web Designing -->
-                <div class="skill-card">
-                    <div class="skill-icon">
-                        <i class="fas fa-code"></i>
-                    </div>
-                    <h3>Web Designing</h3>
-                    <p>Full-stack developer creating responsive and modern websites.</p>
-                    <div class="skill-tags">
-                        <span class="skill-tag">HTML/CSS/JS</span>
-                        <span class="skill-tag">React</span>
-                        <span class="skill-tag">Node.js</span>
-                    </div>
-                </div>
-
-                <!-- Cyber Security -->
-                <div class="skill-card">
-                    <div class="skill-icon">
-                        <i class="fas fa-lock"></i>
-                    </div>
-                    <h3>Cyber Security</h3>
-                    <p>Comprehensive security expert ensuring data protection and network safety.</p>
-                    <div class="skill-tags">
-                        <span class="skill-tag">Network Security</span>
-                        <span class="skill-tag">Cryptography</span>
-                        <span class="skill-tag">Security Auditing</span>
-                    </div>
-                </div>
+            <div class="skills-grid" id="skillsGrid">
+                <!-- Skills will be loaded dynamically -->
             </div>
         </div>
     </section>
@@ -1875,62 +2094,13 @@
     <!-- Projects Section -->
     <section id="projects" class="section">
         <div class="container">
-            <div class="section-title">
-                <h2>Featured Projects</h2>
+            <div class="section-title" data-aos="fade-up">
+                <h2>Featured <span class="highlight">Projects</span></h2>
                 <p>Some of my recent work across different domains</p>
             </div>
 
-            <div class="projects-grid">
-                <!-- Project 1 -->
-                <div class="project-card">
-                    <div class="project-image">
-                        <img src="https://via.placeholder.com/600x400/2563eb/ffffff?text=Security+Audit" alt="Security Audit">
-                        <div class="project-overlay">
-                            <span class="project-category">Security</span>
-                        </div>
-                    </div>
-                    <div class="project-content">
-                        <h3>Corporate Security Audit</h3>
-                        <p>Comprehensive security audit for a major financial institution, identifying and fixing critical vulnerabilities.</p>
-                        <div class="project-links">
-                            <a href="#" class="project-link">View Project <i class="fas fa-arrow-right"></i></a>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Project 2 -->
-                <div class="project-card">
-                    <div class="project-image">
-                        <img src="https://via.placeholder.com/600x400/7c3aed/ffffff?text=Brand+Identity" alt="Brand Identity">
-                        <div class="project-overlay">
-                            <span class="project-category">Design</span>
-                        </div>
-                    </div>
-                    <div class="project-content">
-                        <h3>Brand Identity Design</h3>
-                        <p>Complete brand identity package for a tech startup, including logo, colors, and brand guidelines.</p>
-                        <div class="project-links">
-                            <a href="#" class="project-link">View Project <i class="fas fa-arrow-right"></i></a>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Project 3 -->
-                <div class="project-card">
-                    <div class="project-image">
-                        <img src="https://via.placeholder.com/600x400/06b6d4/ffffff?text=Marketing+Campaign" alt="Marketing Campaign">
-                        <div class="project-overlay">
-                            <span class="project-category">Marketing</span>
-                        </div>
-                    </div>
-                    <div class="project-content">
-                        <h3>Digital Marketing Campaign</h3>
-                        <p>Successful marketing campaign generating 200% ROI for an e-commerce business.</p>
-                        <div class="project-links">
-                            <a href="#" class="project-link">View Project <i class="fas fa-arrow-right"></i></a>
-                        </div>
-                    </div>
-                </div>
+            <div class="projects-grid" id="projectsGrid">
+                <!-- Projects will be loaded dynamically -->
             </div>
         </div>
     </section>
@@ -1938,12 +2108,12 @@
     <!-- About Section -->
     <section id="about" class="section">
         <div class="container">
-            <div class="section-title">
-                <h2>About Me</h2>
-                <p>Get to know more about my journey and expertise</p>
+            <div class="section-title" data-aos="fade-up">
+                <h2>About <span class="highlight">Me</span></h2>
+                <p>Get to know more about my journey</p>
             </div>
 
-            <div style="max-width: 800px; margin: 0 auto; text-align: center;">
+            <div class="about-content" id="aboutContent" style="max-width: 800px; margin: 0 auto; text-align: center;" data-aos="fade-up" data-aos-delay="100">
                 <p>I'm a passionate cybersecurity professional and creative digital creator with over 5 years of experience in the tech industry. My journey began with a curiosity about how systems work and how to make them secure, which led me to pursue ethical hacking and cybersecurity.</p>
                 <p>Over the years, I've expanded my expertise to include graphic design, digital marketing, video editing, and web development. This unique combination of technical security knowledge and creative skills allows me to offer comprehensive solutions to clients.</p>
                 <p>I believe that in today's digital world, security and creativity must go hand in hand. My approach combines technical excellence with aesthetic sensibilities to deliver results that are not only functional but also visually appealing.</p>
@@ -1951,17 +2121,106 @@
         </div>
     </section>
 
+    <!-- Testimonials Section -->
+    <section class="section testimonials">
+        <div class="container">
+            <div class="section-title" data-aos="fade-up">
+                <h2>Client <span class="highlight">Testimonials</span></h2>
+                <p>What people say about working with me</p>
+            </div>
+
+            <div class="testimonials-slider" data-aos="fade-up" data-aos-delay="100">
+                <div class="testimonials-track" id="testimonialsTrack">
+                    <!-- Testimonial 1 -->
+                    <div class="testimonial-card">
+                        <div class="testimonial-content">
+                            <div class="testimonial-text">
+                                "Bishal's expertise in cybersecurity saved our company from potential data breaches. His professional approach and deep knowledge are truly impressive. He doesn't just fix problems; he anticipates them."
+                            </div>
+                            <div class="testimonial-author">
+                                <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=crop&w=100&q=80" alt="Client" class="author-avatar">
+                                <div class="author-info">
+                                    <h4>Ram Kumar</h4>
+                                    <p>CEO, Tech Solutions Nepal</p>
+                                </div>
+                                <div class="testimonial-rating">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Testimonial 2 -->
+                    <div class="testimonial-card">
+                        <div class="testimonial-content">
+                            <div class="testimonial-text">
+                                "The branding package Bishal created transformed our business. His design skills and attention to detail are exceptional. He understood our vision perfectly and delivered beyond expectations."
+                            </div>
+                            <div class="testimonial-author">
+                                <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-1.2.1&auto=format&fit=crop&w=100&q=80" alt="Client" class="author-avatar">
+                                <div class="author-info">
+                                    <h4>Sita Sharma</h4>
+                                    <p>Founder, Creative Studio</p>
+                                </div>
+                                <div class="testimonial-rating">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Testimonial 3 -->
+                    <div class="testimonial-card">
+                        <div class="testimonial-content">
+                            <div class="testimonial-text">
+                                "Our YouTube channel grew 300% after Bishal's video editing and marketing strategy. His creative approach and technical skills are unmatched. Highly recommended!"
+                            </div>
+                            <div class="testimonial-author">
+                                <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-1.2.1&auto=format&fit=crop&w=100&q=80" alt="Client" class="author-avatar">
+                                <div class="author-info">
+                                    <h4>Hari Adhikari</h4>
+                                    <p>Content Creator</p>
+                                </div>
+                                <div class="testimonial-rating">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="slider-dots" id="sliderDots">
+                    <span class="dot active"></span>
+                    <span class="dot"></span>
+                    <span class="dot"></span>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- Contact Section -->
     <section id="contact" class="section">
         <div class="container">
-            <div class="section-title">
-                <h2>Get In Touch</h2>
+            <div class="section-title" data-aos="fade-up">
+                <h2>Get In <span class="highlight">Touch</span></h2>
                 <p>Have a project in mind? Let's discuss how I can help you.</p>
             </div>
 
             <div class="contact-grid">
                 <!-- Contact Info -->
-                <div class="contact-info-card">
+                <div class="contact-info-card" data-aos="fade-right" data-aos-delay="100">
                     <h3 style="margin-bottom: 2rem;">Contact Information</h3>
                     
                     <div class="contact-item">
@@ -1970,9 +2229,9 @@
                         </div>
                         <div class="contact-details">
                             <h4>Phone Numbers</h4>
-                            <a href="tel:9761409400">9761409400</a><br>
-                            <a href="tel:9761614027">9761614027</a><br>
-                            <a href="tel:9761409401">9761409401</a>
+                            <a href="tel:9761409400" id="phone1">9761409400</a><br>
+                            <a href="tel:9761614027" id="phone2">9761614027</a><br>
+                            <a href="tel:9761409401" id="phone3">9761409401</a>
                         </div>
                     </div>
 
@@ -1982,8 +2241,8 @@
                         </div>
                         <div class="contact-details">
                             <h4>WhatsApp</h4>
-                            <a href="https://wa.me/9761614027">9761614027</a><br>
-                            <a href="https://wa.me/9761409400">9761409400</a>
+                            <a href="https://wa.me/9761614027" id="whatsapp1" target="_blank">9761614027</a><br>
+                            <a href="https://wa.me/9761409400" id="whatsapp2" target="_blank">9761409400</a>
                         </div>
                     </div>
 
@@ -1993,7 +2252,7 @@
                         </div>
                         <div class="contact-details">
                             <h4>Email</h4>
-                            <a href="mailto:bishalxtha17@gmail.com">bishalxtha17@gmail.com</a>
+                            <a href="mailto:bishalxtha17@gmail.com" id="email">bishalxtha17@gmail.com</a>
                         </div>
                     </div>
 
@@ -2003,7 +2262,7 @@
                         </div>
                         <div class="contact-details">
                             <h4>Location</h4>
-                            <p>Kathmandu, Nepal</p>
+                            <span id="location">Kathmandu, Nepal</span>
                         </div>
                     </div>
 
@@ -2013,7 +2272,7 @@
                         </div>
                         <div class="contact-details">
                             <h4>YouTube</h4>
-                            <a href="https://www.youtube.com/@VXXTHA" target="_blank">@VXXTHA</a>
+                            <a href="https://youtube.com/@VXXTHA" id="youtube" target="_blank">@VXXTHA</a>
                         </div>
                     </div>
 
@@ -2023,7 +2282,7 @@
                         </div>
                         <div class="contact-details">
                             <h4>GitHub</h4>
-                            <a href="https://github.com/bishal17577" target="_blank">bishal17577</a>
+                            <a href="https://github.com/bishal17577" id="github" target="_blank">bishal17577</a>
                         </div>
                     </div>
 
@@ -2033,34 +2292,26 @@
                         </div>
                         <div class="contact-details">
                             <h4>Facebook</h4>
-                            <a href="https://www.facebook.com/profile.php?id=100066889683996" target="_blank">Bishal Shrestha</a>
+                            <a href="https://facebook.com/profile.php?id=100066889683996" id="facebook" target="_blank">Bishal Shrestha</a>
                         </div>
                     </div>
                 </div>
 
                 <!-- Contact Form -->
-                <div class="contact-form">
+                <div class="contact-form" data-aos="fade-left" data-aos-delay="200">
                     <h3 style="margin-bottom: 2rem;">Send a Message</h3>
                     <form id="contactForm">
                         <div class="form-group">
-                            <label class="form-label">Your Name</label>
-                            <input type="text" class="form-control" placeholder="Enter your full name" required>
+                            <input type="text" class="form-control" name="name" placeholder="Your Name" required>
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Email Address</label>
-                            <input type="email" class="form-control" placeholder="Enter your email" required>
+                            <input type="email" class="form-control" name="email" placeholder="Your Email" required>
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Phone Number</label>
-                            <input type="tel" class="form-control" placeholder="Enter your phone number">
+                            <input type="text" class="form-control" name="subject" placeholder="Subject" required>
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Subject</label>
-                            <input type="text" class="form-control" placeholder="What is this about?" required>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Message</label>
-                            <textarea class="form-control" placeholder="Tell me about your project..." required></textarea>
+                            <textarea class="form-control" name="message" placeholder="Your Message" rows="5" required></textarea>
                         </div>
                         <button type="submit" class="btn btn-primary btn-block">
                             <i class="fas fa-paper-plane"></i> Send Message
@@ -2075,18 +2326,133 @@
     <section id="adminPanel" class="admin-panel">
         <div class="container">
             <div class="admin-header">
-                <h2>Photo Management</h2>
-                <button class="btn btn-primary" onclick="logout()">Logout</button>
+                <h2>Admin Panel</h2>
+                <button class="btn btn-danger" onclick="logout()">Logout</button>
             </div>
 
-            <div class="upload-area" onclick="document.getElementById('fileInput').click()">
-                <i class="fas fa-cloud-upload-alt"></i>
-                <h3>Click to Upload Photos</h3>
-                <p>or drag and drop</p>
-                <input type="file" id="fileInput" accept="image/*" multiple style="display: none;" onchange="uploadPhotos(this.files)">
+            <div class="admin-tabs">
+                <button class="admin-tab active" onclick="switchTab('profile')">Profile</button>
+                <button class="admin-tab" onclick="switchTab('contact')">Contact</button>
+                <button class="admin-tab" onclick="switchTab('social')">Social</button>
+                <button class="admin-tab" onclick="switchTab('projects')">Projects</button>
+                <button class="admin-tab" onclick="switchTab('skills')">Skills</button>
+                <button class="admin-tab" onclick="switchTab('images')">Images</button>
             </div>
 
-            <div id="photoGallery" class="photo-grid"></div>
+            <!-- Profile Tab -->
+            <div id="profileTab" class="admin-content active">
+                <div class="info-grid">
+                    <div class="info-item">
+                        <label>Name:</label>
+                        <input type="text" id="adminName" value="Bishal Shrestha">
+                    </div>
+                    <div class="info-item">
+                        <label>Title:</label>
+                        <input type="text" id="adminTitle" value="Ethical Hacker | Graphic Designer | Digital Marketer | Video Editor | Web Developer | Cyber Security Expert">
+                    </div>
+                    <div class="info-item">
+                        <label>About:</label>
+                        <textarea id="adminAbout" rows="4">I'm a passionate cybersecurity professional and creative digital creator with over 5 years of experience in the tech industry. My journey began with a curiosity about how systems work and how to make them secure, which led me to pursue ethical hacking and cybersecurity.
+
+Over the years, I've expanded my expertise to include graphic design, digital marketing, video editing, and web development. This unique combination of technical security knowledge and creative skills allows me to offer comprehensive solutions to clients.
+
+I believe that in today's digital world, security and creativity must go hand in hand. My approach combines technical excellence with aesthetic sensibilities to deliver results that are not only functional but also visually appealing.</textarea>
+                    </div>
+                    <div class="info-item">
+                        <label>Profile Image URL:</label>
+                        <input type="text" id="adminImage" value="https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80">
+                    </div>
+                    <button class="save-btn" onclick="saveProfile()">Save Changes</button>
+                </div>
+            </div>
+
+            <!-- Contact Tab -->
+            <div id="contactTab" class="admin-content">
+                <div class="info-grid">
+                    <div class="info-item">
+                        <label>Phone 1:</label>
+                        <input type="text" id="adminPhone1" value="9761409400">
+                    </div>
+                    <div class="info-item">
+                        <label>Phone 2:</label>
+                        <input type="text" id="adminPhone2" value="9761614027">
+                    </div>
+                    <div class="info-item">
+                        <label>Phone 3:</label>
+                        <input type="text" id="adminPhone3" value="9761409401">
+                    </div>
+                    <div class="info-item">
+                        <label>WhatsApp 1:</label>
+                        <input type="text" id="adminWhatsapp1" value="9761614027">
+                    </div>
+                    <div class="info-item">
+                        <label>WhatsApp 2:</label>
+                        <input type="text" id="adminWhatsapp2" value="9761409400">
+                    </div>
+                    <div class="info-item">
+                        <label>Email:</label>
+                        <input type="email" id="adminEmail" value="bishalxtha17@gmail.com">
+                    </div>
+                    <div class="info-item">
+                        <label>Location:</label>
+                        <input type="text" id="adminLocation" value="Kathmandu, Nepal">
+                    </div>
+                    <div class="info-item">
+                        <label>YouTube:</label>
+                        <input type="text" id="adminYoutube" value="https://youtube.com/@VXXTHA">
+                    </div>
+                    <div class="info-item">
+                        <label>GitHub:</label>
+                        <input type="text" id="adminGithub" value="https://github.com/bishal17577">
+                    </div>
+                    <div class="info-item">
+                        <label>Facebook:</label>
+                        <input type="text" id="adminFacebook" value="https://facebook.com/profile.php?id=100066889683996">
+                    </div>
+                    <button class="save-btn" onclick="saveContact()">Save Changes</button>
+                </div>
+            </div>
+
+            <!-- Social Tab -->
+            <div id="socialTab" class="admin-content">
+                <div class="info-grid">
+                    <div class="social-item">
+                        <i class="fab fa-linkedin"></i>
+                        <input type="text" id="socialLinkedin" placeholder="LinkedIn URL" value="">
+                    </div>
+                    <div class="social-item">
+                        <i class="fab fa-instagram"></i>
+                        <input type="text" id="socialInstagram" placeholder="Instagram URL" value="">
+                    </div>
+                    <div class="social-item">
+                        <i class="fab fa-twitter"></i>
+                        <input type="text" id="socialTwitter" placeholder="Twitter URL" value="">
+                    </div>
+                    <button class="save-btn" onclick="saveSocial()">Save Changes</button>
+                </div>
+            </div>
+
+            <!-- Projects Tab -->
+            <div id="projectsTab" class="admin-content">
+                <div id="projectsList"></div>
+                <button class="save-btn" onclick="addProject()">Add New Project</button>
+            </div>
+
+            <!-- Skills Tab -->
+            <div id="skillsTab" class="admin-content">
+                <div id="skillsList"></div>
+                <button class="save-btn" onclick="addSkill()">Add New Skill</button>
+            </div>
+
+            <!-- Images Tab -->
+            <div id="imagesTab" class="admin-content">
+                <div class="info-item">
+                    <label>Portfolio Images (URLs):</label>
+                    <textarea id="imageUrls" rows="5" placeholder="Enter image URLs (one per line)"></textarea>
+                </div>
+                <button class="save-btn" onclick="saveImages()">Save Images</button>
+                <div id="imageGallery" class="projects-grid" style="margin-top: 2rem;"></div>
+            </div>
         </div>
     </section>
 
@@ -2095,14 +2461,12 @@
         <div class="container">
             <div class="footer-grid">
                 <div class="footer-about">
-                    <a href="index.html" class="footer-logo">B.S.</a>
+                    <a href="#" class="footer-logo">B.S.</a>
                     <p>Ethical Hacker & Digital Creator with 5+ years of experience. Helping businesses grow securely in the digital world.</p>
-                    <div class="footer-social">
-                        <a href="https://www.youtube.com/@VXXTHA" target="_blank"><i class="fab fa-youtube"></i></a>
+                    <div class="footer-social" id="footerSocial">
+                        <a href="https://youtube.com/@VXXTHA" target="_blank"><i class="fab fa-youtube"></i></a>
                         <a href="https://github.com/bishal17577" target="_blank"><i class="fab fa-github"></i></a>
-                        <a href="https://www.facebook.com/profile.php?id=100066889683996" target="_blank"><i class="fab fa-facebook"></i></a>
-                        <a href="#"><i class="fab fa-linkedin"></i></a>
-                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="https://facebook.com/profile.php?id=100066889683996" target="_blank"><i class="fab fa-facebook"></i></a>
                     </div>
                 </div>
 
@@ -2120,13 +2484,13 @@
                 <div class="footer-links">
                     <h3>Services</h3>
                     <ul>
-                        <li><a href="#">Ethical Hacking</a></li>
-                        <li><a href="#">Graphic Design</a></li>
-                        <li><a href="#">Digital Marketing</a></li>
-                        <li><a href="#">Affiliate Marketing</a></li>
-                        <li><a href="#">Video Editing</a></li>
-                        <li><a href="#">Web Design</a></li>
-                        <li><a href="#">Cyber Security</a></li>
+                        <li>Ethical Hacking</li>
+                        <li>Graphic Design</li>
+                        <li>Digital Marketing</li>
+                        <li>Affiliate Marketing</li>
+                        <li>Video Editing</li>
+                        <li>Web Design</li>
+                        <li>Cyber Security</li>
                     </ul>
                 </div>
 
@@ -2144,8 +2508,7 @@
             <div class="footer-bottom">
                 <p>&copy; 2024 Bishal Shrestha. All rights reserved. | 
                     <a href="#">Privacy Policy</a> | 
-                    <a href="#">Terms of Service</a> | 
-                    <a href="#">Sitemap</a>
+                    <a href="#">Terms of Service</a>
                 </p>
             </div>
         </div>
@@ -2157,22 +2520,29 @@
             <button class="modal-close" onclick="closeModal('loginModal')">&times;</button>
             <div class="modal-header">
                 <h2>Welcome Back</h2>
-                <p>Login to access your account and manage photos</p>
+                <p>Login to your account</p>
             </div>
+            
+            <button class="google-btn" onclick="googleSignIn()">
+                <img src="https://www.google.com/favicon.ico" alt="Google" style="width: 20px; height: 20px;">
+                Continue with Google
+            </button>
+            
+            <div class="divider">or</div>
+            
             <form id="loginForm">
                 <div class="form-group">
-                    <label class="form-label">Email Address</label>
-                    <input type="email" class="form-control" id="loginEmail" placeholder="Enter your email" required>
+                    <input type="email" class="form-control" id="loginEmail" placeholder="Email" required>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Password</label>
-                    <input type="password" class="form-control" id="loginPassword" placeholder="Enter your password" required>
+                    <input type="password" class="form-control" id="loginPassword" placeholder="Password" required>
                 </div>
-                <button type="submit" class="btn btn-primary btn-block">Login</button>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Login</button>
             </form>
-            <p style="text-align: center; margin-top: 1rem;">
-                Don't have an account? <a href="#" onclick="closeModal('loginModal'); openModal('signupModal');">Sign Up</a>
-            </p>
+            
+            <div class="auth-toggle">
+                Don't have an account? <a onclick="switchToSignup()">Sign Up</a>
+            </div>
         </div>
     </div>
 
@@ -2182,30 +2552,45 @@
             <button class="modal-close" onclick="closeModal('signupModal')">&times;</button>
             <div class="modal-header">
                 <h2>Create Account</h2>
-                <p>Join to get updates and exclusive content</p>
+                <p>Sign up to get started</p>
             </div>
+            
+            <button class="google-btn" onclick="googleSignIn()">
+                <img src="https://www.google.com/favicon.ico" alt="Google" style="width: 20px; height: 20px;">
+                Continue with Google
+            </button>
+            
+            <div class="divider">or</div>
+            
             <form id="signupForm">
                 <div class="form-group">
-                    <label class="form-label">Full Name</label>
-                    <input type="text" class="form-control" id="signupName" placeholder="Enter your full name" required>
+                    <input type="text" class="form-control" id="signupName" placeholder="Full Name" required>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Email Address</label>
-                    <input type="email" class="form-control" id="signupEmail" placeholder="Enter your email" required>
+                    <input type="email" class="form-control" id="signupEmail" placeholder="Email" required>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Password</label>
-                    <input type="password" class="form-control" id="signupPassword" placeholder="Create a password" required minlength="6">
+                    <input type="password" class="form-control" id="signupPassword" placeholder="Password" required minlength="6">
                 </div>
-                <button type="submit" class="btn btn-primary btn-block">Sign Up</button>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Sign Up</button>
             </form>
-            <p style="text-align: center; margin-top: 1rem;">
-                Already have an account? <a href="#" onclick="closeModal('signupModal'); openModal('loginModal');">Login</a>
-            </p>
+            
+            <div class="auth-toggle">
+                Already have an account? <a onclick="switchToLogin()">Login</a>
+            </div>
         </div>
     </div>
 
+    <!-- Scripts -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <script>
+        // Initialize AOS
+        AOS.init({
+            duration: 1000,
+            once: true,
+            offset: 100
+        });
+
         // ===== FIREBASE CONFIGURATION =====
         const firebaseConfig = {
             apiKey: "AIzaSyDJLnUB8XnXWPEtSRAMuQr9ASmD16HLIJc",
@@ -2220,13 +2605,37 @@
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.firestore();
-        const storage = firebase.storage();
 
         // ===== GLOBAL VARIABLES =====
         let currentUser = null;
         const adminEmail = "bishalxtha17@gmail.com";
 
-        // ===== DOM ELEMENTS =====
+        // ===== CURSOR EFFECT =====
+        const cursor = document.getElementById('cursor');
+        
+        document.addEventListener('mousemove', (e) => {
+            cursor.style.left = e.clientX + 'px';
+            cursor.style.top = e.clientY + 'px';
+        });
+
+        document.addEventListener('mousedown', () => {
+            cursor.classList.add('active');
+        });
+
+        document.addEventListener('mouseup', () => {
+            cursor.classList.remove('active');
+        });
+
+        document.querySelectorAll('a, button, .skill-card, .project-card, .external-card').forEach(el => {
+            el.addEventListener('mouseenter', () => {
+                cursor.classList.add('active');
+            });
+            el.addEventListener('mouseleave', () => {
+                cursor.classList.remove('active');
+            });
+        });
+
+        // ===== NAVIGATION =====
         const navbar = document.getElementById('navbar');
         const menuToggle = document.getElementById('menuToggle');
         const navMenu = document.getElementById('navMenu');
@@ -2237,7 +2646,6 @@
         const dropdownMenu = document.getElementById('dropdownMenu');
         const adminPanel = document.getElementById('adminPanel');
 
-        // ===== NAVIGATION =====
         window.addEventListener('scroll', () => {
             if (window.scrollY > 50) {
                 navbar.classList.add('scrolled');
@@ -2249,9 +2657,19 @@
         menuToggle.addEventListener('click', () => {
             menuToggle.classList.toggle('active');
             navMenu.classList.toggle('active');
+            
+            const spans = menuToggle.querySelectorAll('span');
+            if (menuToggle.classList.contains('active')) {
+                spans[0].style.transform = 'rotate(45deg) translate(8px, 8px)';
+                spans[1].style.opacity = '0';
+                spans[2].style.transform = 'rotate(-45deg) translate(7px, -7px)';
+            } else {
+                spans[0].style.transform = 'none';
+                spans[1].style.opacity = '1';
+                spans[2].style.transform = 'none';
+            }
         });
 
-        // Close menu when clicking outside
         document.addEventListener('click', (e) => {
             if (!navMenu.contains(e.target) && !menuToggle.contains(e.target)) {
                 navMenu.classList.remove('active');
@@ -2293,6 +2711,30 @@
             });
         });
 
+        // ===== TESTIMONIAL SLIDER =====
+        const track = document.getElementById('testimonialsTrack');
+        const dots = document.querySelectorAll('.dot');
+        let currentSlide = 0;
+
+        function updateSlider(index) {
+            track.style.transform = `translateX(-${index * 100}%)`;
+            dots.forEach((dot, i) => {
+                dot.classList.toggle('active', i === index);
+            });
+        }
+
+        dots.forEach((dot, index) => {
+            dot.addEventListener('click', () => {
+                currentSlide = index;
+                updateSlider(currentSlide);
+            });
+        });
+
+        setInterval(() => {
+            currentSlide = (currentSlide + 1) % dots.length;
+            updateSlider(currentSlide);
+        }, 5000);
+
         // ===== MODAL FUNCTIONS =====
         window.openModal = (modalId) => {
             document.getElementById(modalId).classList.add('active');
@@ -2304,7 +2746,16 @@
             document.body.style.overflow = '';
         };
 
-        // Close modal when clicking outside
+        window.switchToSignup = () => {
+            closeModal('loginModal');
+            openModal('signupModal');
+        };
+
+        window.switchToLogin = () => {
+            closeModal('signupModal');
+            openModal('loginModal');
+        };
+
         window.addEventListener('click', (e) => {
             if (e.target.classList.contains('modal')) {
                 e.target.classList.remove('active');
@@ -2313,16 +2764,13 @@
         });
 
         // ===== AUTHENTICATION =====
-        const loginForm = document.getElementById('loginForm');
-        const signupForm = document.getElementById('signupForm');
-
-        loginForm.addEventListener('submit', async (e) => {
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const email = document.getElementById('loginEmail').value;
             const password = document.getElementById('loginPassword').value;
 
             try {
-                const userCredential = await auth.signInWithEmailAndPassword(email, password);
+                await auth.signInWithEmailAndPassword(email, password);
                 showToast('Logged in successfully!', 'success');
                 closeModal('loginModal');
             } catch (error) {
@@ -2330,7 +2778,7 @@
             }
         });
 
-        signupForm.addEventListener('submit', async (e) => {
+        document.getElementById('signupForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const name = document.getElementById('signupName').value;
             const email = document.getElementById('signupEmail').value;
@@ -2339,6 +2787,13 @@
             try {
                 const userCredential = await auth.createUserWithEmailAndPassword(email, password);
                 await userCredential.user.updateProfile({ displayName: name });
+                
+                await db.collection('users').doc(userCredential.user.uid).set({
+                    name: name,
+                    email: email,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
                 showToast('Account created successfully!', 'success');
                 closeModal('signupModal');
             } catch (error) {
@@ -2346,22 +2801,50 @@
             }
         });
 
+        window.googleSignIn = async () => {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            
+            try {
+                const result = await auth.signInWithPopup(provider);
+                
+                await db.collection('users').doc(result.user.uid).set({
+                    name: result.user.displayName,
+                    email: result.user.email,
+                    lastLogin: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true });
+                
+                showToast('Logged in with Google successfully!', 'success');
+                closeModal('loginModal');
+                closeModal('signupModal');
+            } catch (error) {
+                showToast(error.message, 'error');
+            }
+        };
+
+        window.logout = async () => {
+            try {
+                await auth.signOut();
+                showToast('Logged out successfully', 'success');
+                profileDropdown.classList.remove('active');
+            } catch (error) {
+                showToast(error.message, 'error');
+            }
+        };
+
         // ===== AUTH STATE OBSERVER =====
         auth.onAuthStateChanged((user) => {
             currentUser = user;
             
             if (user) {
-                // Update profile icon
                 profileInitial.textContent = user.displayName ? user.displayName.charAt(0).toUpperCase() : 'U';
                 
-                // Update dropdown for logged in user
                 dropdownHeader.innerHTML = `
                     <h4>${user.displayName || 'User'}</h4>
                     <p>${user.email}</p>
                 `;
                 
                 dropdownMenu.innerHTML = `
-                    <a href="#" class="dropdown-item" onclick="viewProfile()">
+                    <a href="#" class="dropdown-item" onclick="showProfile()">
                         <i class="fas fa-user"></i> Profile
                     </a>
                     <a href="#" class="dropdown-item" onclick="logout()">
@@ -2369,20 +2852,18 @@
                     </a>
                 `;
 
-                // Check if admin
                 if (user.email === adminEmail) {
                     adminPanel.classList.add('active');
-                    loadPhotos();
+                    loadAdminData();
                 } else {
                     adminPanel.classList.remove('active');
                 }
             } else {
-                // Reset for guest
                 profileInitial.textContent = 'B';
                 
                 dropdownHeader.innerHTML = `
                     <h4>Guest User</h4>
-                    <p>Please login to access more features</p>
+                    <p>Please login to access admin features</p>
                 `;
                 
                 dropdownMenu.innerHTML = `
@@ -2398,94 +2879,460 @@
             }
         });
 
-        // ===== LOGOUT =====
-        window.logout = async () => {
+        // ===== ADMIN FUNCTIONS =====
+        window.switchTab = (tabName) => {
+            document.querySelectorAll('.admin-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            document.querySelectorAll('.admin-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById(tabName + 'Tab').classList.add('active');
+        };
+
+        window.loadAdminData = async () => {
             try {
-                await auth.signOut();
-                showToast('Logged out successfully', 'success');
-                profileDropdown.classList.remove('active');
+                const doc = await db.collection('settings').doc('portfolio').get();
+                if (doc.exists) {
+                    const data = doc.data();
+                    
+                    if (data.profile) {
+                        document.getElementById('adminName').value = data.profile.name || 'Bishal Shrestha';
+                        document.getElementById('adminTitle').value = data.profile.title || '';
+                        document.getElementById('adminAbout').value = data.profile.about || '';
+                        document.getElementById('adminImage').value = data.profile.image || '';
+                    }
+                    
+                    if (data.contact) {
+                        document.getElementById('adminPhone1').value = data.contact.phone1 || '9761409400';
+                        document.getElementById('adminPhone2').value = data.contact.phone2 || '9761614027';
+                        document.getElementById('adminPhone3').value = data.contact.phone3 || '9761409401';
+                        document.getElementById('adminWhatsapp1').value = data.contact.whatsapp1 || '9761614027';
+                        document.getElementById('adminWhatsapp2').value = data.contact.whatsapp2 || '9761409400';
+                        document.getElementById('adminEmail').value = data.contact.email || 'bishalxtha17@gmail.com';
+                        document.getElementById('adminLocation').value = data.contact.location || 'Kathmandu, Nepal';
+                        document.getElementById('adminYoutube').value = data.contact.youtube || 'https://youtube.com/@VXXTHA';
+                        document.getElementById('adminGithub').value = data.contact.github || 'https://github.com/bishal17577';
+                        document.getElementById('adminFacebook').value = data.contact.facebook || 'https://facebook.com/profile.php?id=100066889683996';
+                    }
+                    
+                    if (data.social) {
+                        document.getElementById('socialLinkedin').value = data.social.linkedin || '';
+                        document.getElementById('socialInstagram').value = data.social.instagram || '';
+                        document.getElementById('socialTwitter').value = data.social.twitter || '';
+                    }
+                    
+                    if (data.images) {
+                        document.getElementById('imageUrls').value = data.images.join('\n');
+                        displayImageGallery(data.images);
+                    }
+                }
+                
+                loadProjects();
+                loadSkills();
+                updateUIFromFirebase();
+                
+            } catch (error) {
+                console.error('Error loading admin data:', error);
+            }
+        };
+
+        window.saveProfile = async () => {
+            const profileData = {
+                name: document.getElementById('adminName').value,
+                title: document.getElementById('adminTitle').value,
+                about: document.getElementById('adminAbout').value,
+                image: document.getElementById('adminImage').value
+            };
+
+            try {
+                await db.collection('settings').doc('portfolio').set({
+                    profile: profileData
+                }, { merge: true });
+                
+                document.getElementById('heroName').textContent = profileData.name;
+                document.getElementById('heroTitle').textContent = profileData.title;
+                document.getElementById('aboutContent').innerHTML = `<p>${profileData.about.replace(/\n/g, '</p><p>')}</p>`;
+                document.getElementById('profileImage').src = profileData.image;
+                
+                showToast('Profile updated successfully!', 'success');
             } catch (error) {
                 showToast(error.message, 'error');
             }
         };
 
-        // ===== PHOTO MANAGEMENT =====
-        window.uploadPhotos = async (files) => {
-            if (!currentUser || currentUser.email !== adminEmail) {
-                showToast('Only admin can upload photos', 'error');
-                return;
-            }
-
-            for (let file of files) {
-                try {
-                    const storageRef = storage.ref(`photos/${Date.now()}_${file.name}`);
-                    await storageRef.put(file);
-                    const url = await storageRef.getDownloadURL();
-                    
-                    await db.collection('photos').add({
-                        url: url,
-                        name: file.name,
-                        uploadedBy: currentUser.email,
-                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                    });
-                    
-                    showToast('Photo uploaded successfully', 'success');
-                } catch (error) {
-                    showToast('Error uploading photo: ' + error.message, 'error');
-                }
-            }
-            
-            loadPhotos();
-        };
-
-        window.loadPhotos = async () => {
-            const gallery = document.getElementById('photoGallery');
-            if (!gallery) return;
+        window.saveContact = async () => {
+            const contactData = {
+                phone1: document.getElementById('adminPhone1').value,
+                phone2: document.getElementById('adminPhone2').value,
+                phone3: document.getElementById('adminPhone3').value,
+                whatsapp1: document.getElementById('adminWhatsapp1').value,
+                whatsapp2: document.getElementById('adminWhatsapp2').value,
+                email: document.getElementById('adminEmail').value,
+                location: document.getElementById('adminLocation').value,
+                youtube: document.getElementById('adminYoutube').value,
+                github: document.getElementById('adminGithub').value,
+                facebook: document.getElementById('adminFacebook').value
+            };
 
             try {
-                const snapshot = await db.collection('photos').orderBy('timestamp', 'desc').get();
+                await db.collection('settings').doc('portfolio').set({
+                    contact: contactData
+                }, { merge: true });
                 
-                gallery.innerHTML = '';
-                snapshot.forEach(doc => {
-                    const photo = doc.data();
-                    const photoItem = document.createElement('div');
-                    photoItem.className = 'photo-item';
-                    photoItem.innerHTML = `
-                        <img src="${photo.url}" alt="${photo.name}">
-                        ${currentUser && currentUser.email === adminEmail ? `
-                            <div class="photo-actions">
-                                <button class="btn-view" onclick="window.open('${photo.url}', '_blank')">View</button>
-                                <button class="btn-delete" onclick="deletePhoto('${doc.id}')">Delete</button>
-                            </div>
-                        ` : ''}
-                    `;
-                    gallery.appendChild(photoItem);
-                });
+                document.getElementById('phone1').href = `tel:${contactData.phone1}`;
+                document.getElementById('phone1').textContent = contactData.phone1;
+                document.getElementById('phone2').href = `tel:${contactData.phone2}`;
+                document.getElementById('phone2').textContent = contactData.phone2;
+                document.getElementById('phone3').href = `tel:${contactData.phone3}`;
+                document.getElementById('phone3').textContent = contactData.phone3;
+                document.getElementById('whatsapp1').href = `https://wa.me/${contactData.whatsapp1}`;
+                document.getElementById('whatsapp1').textContent = contactData.whatsapp1;
+                document.getElementById('whatsapp2').href = `https://wa.me/${contactData.whatsapp2}`;
+                document.getElementById('whatsapp2').textContent = contactData.whatsapp2;
+                document.getElementById('email').href = `mailto:${contactData.email}`;
+                document.getElementById('email').textContent = contactData.email;
+                document.getElementById('location').textContent = contactData.location;
+                document.getElementById('youtube').href = contactData.youtube;
+                document.getElementById('github').href = contactData.github;
+                document.getElementById('facebook').href = contactData.facebook;
+                
+                showToast('Contact info updated successfully!', 'success');
             } catch (error) {
-                console.error('Error loading photos:', error);
+                showToast(error.message, 'error');
             }
         };
 
-        window.deletePhoto = async (photoId) => {
-            if (!currentUser || currentUser.email !== adminEmail) {
-                showToast('Only admin can delete photos', 'error');
-                return;
-            }
+        window.saveSocial = async () => {
+            const socialData = {
+                linkedin: document.getElementById('socialLinkedin').value,
+                instagram: document.getElementById('socialInstagram').value,
+                twitter: document.getElementById('socialTwitter').value
+            };
 
-            if (confirm('Are you sure you want to delete this photo?')) {
-                try {
-                    await db.collection('photos').doc(photoId).delete();
-                    showToast('Photo deleted successfully', 'success');
-                    loadPhotos();
-                } catch (error) {
-                    showToast('Error deleting photo: ' + error.message, 'error');
+            try {
+                await db.collection('settings').doc('portfolio').set({
+                    social: socialData
+                }, { merge: true });
+                
+                updateSocialLinks(socialData);
+                showToast('Social links updated successfully!', 'success');
+            } catch (error) {
+                showToast(error.message, 'error');
+            }
+        };
+
+        window.saveImages = async () => {
+            const urls = document.getElementById('imageUrls').value
+                .split('\n')
+                .map(url => url.trim())
+                .filter(url => url);
+
+            try {
+                await db.collection('settings').doc('portfolio').set({
+                    images: urls
+                }, { merge: true });
+                
+                displayImageGallery(urls);
+                showToast('Images saved successfully!', 'success');
+            } catch (error) {
+                showToast(error.message, 'error');
+            }
+        };
+
+        function displayImageGallery(urls) {
+            const gallery = document.getElementById('imageGallery');
+            gallery.innerHTML = '';
+            
+            urls.forEach(url => {
+                if (url) {
+                    gallery.innerHTML += `
+                        <div class="project-card">
+                            <div class="project-image">
+                                <img src="${url}" alt="Portfolio Image">
+                            </div>
+                            <div class="project-content">
+                                <p>Portfolio Image</p>
+                            </div>
+                        </div>
+                    `;
                 }
+            });
+        }
+
+        // ===== PROJECTS MANAGEMENT =====
+        const loadProjects = async () => {
+            try {
+                const snapshot = await db.collection('projects').orderBy('order').get();
+                const projectsList = document.getElementById('projectsList');
+                projectsList.innerHTML = '';
+                
+                snapshot.forEach(doc => {
+                    const project = doc.data();
+                    projectsList.innerHTML += `
+                        <div class="project-admin-item">
+                            <input type="text" id="project_${doc.id}_name" value="${project.name || ''}" placeholder="Project Name">
+                            <input type="text" id="project_${doc.id}_url" value="${project.url || ''}" placeholder="Project URL">
+                            <input type="text" id="project_${doc.id}_image" value="${project.image || ''}" placeholder="Image URL">
+                            <input type="text" id="project_${doc.id}_desc" value="${project.description || ''}" placeholder="Description">
+                            <button class="save-btn" onclick="updateProject('${doc.id}')">Save</button>
+                            <button class="delete-btn" onclick="deleteProject('${doc.id}')">Delete</button>
+                        </div>
+                    `;
+                });
+            } catch (error) {
+                console.error('Error loading projects:', error);
+            }
+        };
+
+        window.addProject = async () => {
+            try {
+                await db.collection('projects').add({
+                    name: 'New Project',
+                    url: '#',
+                    image: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80',
+                    description: 'Project description',
+                    order: Date.now()
+                });
+                loadProjects();
+                showToast('Project added successfully!', 'success');
+            } catch (error) {
+                showToast(error.message, 'error');
+            }
+        };
+
+        window.updateProject = async (id) => {
+            const name = document.getElementById(`project_${id}_name`).value;
+            const url = document.getElementById(`project_${id}_url`).value;
+            const image = document.getElementById(`project_${id}_image`).value;
+            const desc = document.getElementById(`project_${id}_desc`).value;
+            
+            try {
+                await db.collection('projects').doc(id).update({
+                    name: name,
+                    url: url,
+                    image: image,
+                    description: desc
+                });
+                showToast('Project updated successfully!', 'success');
+            } catch (error) {
+                showToast(error.message, 'error');
+            }
+        };
+
+        window.deleteProject = async (id) => {
+            if (confirm('Are you sure you want to delete this project?')) {
+                try {
+                    await db.collection('projects').doc(id).delete();
+                    loadProjects();
+                    showToast('Project deleted successfully!', 'success');
+                } catch (error) {
+                    showToast(error.message, 'error');
+                }
+            }
+        };
+
+        // ===== SKILLS MANAGEMENT =====
+        const loadSkills = async () => {
+            try {
+                const snapshot = await db.collection('skills').orderBy('order').get();
+                const skillsList = document.getElementById('skillsList');
+                skillsList.innerHTML = '';
+                
+                snapshot.forEach(doc => {
+                    const skill = doc.data();
+                    skillsList.innerHTML += `
+                        <div class="skill-admin-item">
+                            <input type="text" id="skill_${doc.id}_name" value="${skill.name || ''}" placeholder="Skill Name">
+                            <input type="text" id="skill_${doc.id}_icon" value="${skill.icon || ''}" placeholder="Icon Class (e.g., fa-shield-alt)">
+                            <button class="save-btn" onclick="updateSkill('${doc.id}')">Save</button>
+                            <button class="delete-btn" onclick="deleteSkill('${doc.id}')">Delete</button>
+                        </div>
+                    `;
+                });
+            } catch (error) {
+                console.error('Error loading skills:', error);
+            }
+        };
+
+        window.addSkill = async () => {
+            try {
+                await db.collection('skills').add({
+                    name: 'New Skill',
+                    icon: 'fa-code',
+                    order: Date.now()
+                });
+                loadSkills();
+                showToast('Skill added successfully!', 'success');
+            } catch (error) {
+                showToast(error.message, 'error');
+            }
+        };
+
+        window.updateSkill = async (id) => {
+            const name = document.getElementById(`skill_${id}_name`).value;
+            const icon = document.getElementById(`skill_${id}_icon`).value;
+            
+            try {
+                await db.collection('skills').doc(id).update({
+                    name: name,
+                    icon: icon
+                });
+                showToast('Skill updated successfully!', 'success');
+            } catch (error) {
+                showToast(error.message, 'error');
+            }
+        };
+
+        window.deleteSkill = async (id) => {
+            if (confirm('Are you sure you want to delete this skill?')) {
+                try {
+                    await db.collection('skills').doc(id).delete();
+                    loadSkills();
+                    showToast('Skill deleted successfully!', 'success');
+                } catch (error) {
+                    showToast(error.message, 'error');
+                }
+            }
+        };
+
+        // ===== UPDATE UI FROM FIREBASE =====
+        const updateUIFromFirebase = async () => {
+            try {
+                const settingsDoc = await db.collection('settings').doc('portfolio').get();
+                if (settingsDoc.exists) {
+                    const data = settingsDoc.data();
+                    
+                    if (data.profile) {
+                        document.getElementById('heroName').textContent = data.profile.name || 'Bishal Shrestha';
+                        document.getElementById('heroTitle').textContent = data.profile.title || '';
+                        document.getElementById('aboutContent').innerHTML = `<p>${(data.profile.about || '').replace(/\n/g, '</p><p>')}</p>`;
+                        document.getElementById('profileImage').src = data.profile.image || 'https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80';
+                    }
+                    
+                    if (data.contact) {
+                        document.getElementById('phone1').href = `tel:${data.contact.phone1 || '9761409400'}`;
+                        document.getElementById('phone1').textContent = data.contact.phone1 || '9761409400';
+                        document.getElementById('phone2').href = `tel:${data.contact.phone2 || '9761614027'}`;
+                        document.getElementById('phone2').textContent = data.contact.phone2 || '9761614027';
+                        document.getElementById('phone3').href = `tel:${data.contact.phone3 || '9761409401'}`;
+                        document.getElementById('phone3').textContent = data.contact.phone3 || '9761409401';
+                        document.getElementById('whatsapp1').href = `https://wa.me/${data.contact.whatsapp1 || '9761614027'}`;
+                        document.getElementById('whatsapp1').textContent = data.contact.whatsapp1 || '9761614027';
+                        document.getElementById('whatsapp2').href = `https://wa.me/${data.contact.whatsapp2 || '9761409400'}`;
+                        document.getElementById('whatsapp2').textContent = data.contact.whatsapp2 || '9761409400';
+                        document.getElementById('email').href = `mailto:${data.contact.email || 'bishalxtha17@gmail.com'}`;
+                        document.getElementById('email').textContent = data.contact.email || 'bishalxtha17@gmail.com';
+                        document.getElementById('location').textContent = data.contact.location || 'Kathmandu, Nepal';
+                        document.getElementById('youtube').href = data.contact.youtube || 'https://youtube.com/@VXXTHA';
+                        document.getElementById('github').href = data.contact.github || 'https://github.com/bishal17577';
+                        document.getElementById('facebook').href = data.contact.facebook || 'https://facebook.com/profile.php?id=100066889683996';
+                    }
+                    
+                    if (data.social) {
+                        updateSocialLinks(data.social);
+                    }
+                }
+                
+                const projectsSnapshot = await db.collection('projects').orderBy('order').get();
+                const projectsGrid = document.getElementById('projectsGrid');
+                projectsGrid.innerHTML = '';
+                
+                projectsSnapshot.forEach(doc => {
+                    const project = doc.data();
+                    projectsGrid.innerHTML += `
+                        <div class="project-card" data-aos="fade-up">
+                            <div class="project-image">
+                                <img src="${project.image || 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80'}" alt="${project.name}">
+                            </div>
+                            <div class="project-content">
+                                <h3>${project.name || 'Project'}</h3>
+                                <p>${project.description || ''}</p>
+                                <a href="${project.url || '#'}" target="_blank" class="project-link">
+                                    View Project <i class="fas fa-arrow-right"></i>
+                                </a>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                const skillsSnapshot = await db.collection('skills').orderBy('order').get();
+                const skillsGrid = document.getElementById('skillsGrid');
+                skillsGrid.innerHTML = '';
+                
+                const defaultSkills = [
+                    { name: 'Ethical Hacking', icon: 'fa-shield-alt' },
+                    { name: 'Graphic Design', icon: 'fa-paint-brush' },
+                    { name: 'Digital Marketing', icon: 'fa-chart-line' },
+                    { name: 'Affiliate Marketing', icon: 'fa-dollar-sign' },
+                    { name: 'Video Editing', icon: 'fa-video' },
+                    { name: 'Web Designing', icon: 'fa-code' },
+                    { name: 'Cyber Security', icon: 'fa-lock' }
+                ];
+                
+                if (skillsSnapshot.empty) {
+                    defaultSkills.forEach(skill => {
+                        skillsGrid.innerHTML += `
+                            <div class="skill-card" data-aos="fade-up">
+                                <div class="skill-icon">
+                                    <i class="fas ${skill.icon}"></i>
+                                </div>
+                                <h3>${skill.name}</h3>
+                                <p>Expert in ${skill.name} with years of experience delivering quality results.</p>
+                                <div class="skill-tags">
+                                    <span class="skill-tag">Professional</span>
+                                    <span class="skill-tag">Certified</span>
+                                    <span class="skill-tag">Expert</span>
+                                </div>
+                            </div>
+                        `;
+                    });
+                } else {
+                    skillsSnapshot.forEach(doc => {
+                        const skill = doc.data();
+                        skillsGrid.innerHTML += `
+                            <div class="skill-card" data-aos="fade-up">
+                                <div class="skill-icon">
+                                    <i class="fas ${skill.icon || 'fa-code'}"></i>
+                                </div>
+                                <h3>${skill.name || 'Skill'}</h3>
+                                <p>Expert in ${skill.name || 'this skill'} with years of experience delivering quality results.</p>
+                                <div class="skill-tags">
+                                    <span class="skill-tag">Professional</span>
+                                    <span class="skill-tag">Certified</span>
+                                    <span class="skill-tag">Expert</span>
+                                </div>
+                            </div>
+                        `;
+                    });
+                }
+                
+                AOS.refresh();
+                
+            } catch (error) {
+                console.error('Error updating UI:', error);
+            }
+        };
+
+        // ===== UPDATE SOCIAL LINKS =====
+        const updateSocialLinks = (socialData) => {
+            const footerSocial = document.getElementById('footerSocial');
+            
+            if (socialData.linkedin) {
+                footerSocial.innerHTML += `<a href="${socialData.linkedin}" target="_blank"><i class="fab fa-linkedin"></i></a>`;
+            }
+            if (socialData.instagram) {
+                footerSocial.innerHTML += `<a href="${socialData.instagram}" target="_blank"><i class="fab fa-instagram"></i></a>`;
+            }
+            if (socialData.twitter) {
+                footerSocial.innerHTML += `<a href="${socialData.twitter}" target="_blank"><i class="fab fa-twitter"></i></a>`;
             }
         };
 
         // ===== CONTACT FORM =====
-        const contactForm = document.getElementById('contactForm');
-        contactForm.addEventListener('submit', async (e) => {
+        document.getElementById('contactForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
             if (!currentUser) {
@@ -2494,21 +3341,21 @@
                 return;
             }
 
-            const formData = new FormData(contactForm);
+            const formData = new FormData(e.target);
             const message = {
                 name: formData.get('name'),
                 email: formData.get('email'),
-                phone: formData.get('phone'),
                 subject: formData.get('subject'),
                 message: formData.get('message'),
                 userId: currentUser.uid,
+                userEmail: currentUser.email,
                 timestamp: firebase.firestore.FieldValue.serverTimestamp()
             };
 
             try {
                 await db.collection('messages').add(message);
                 showToast('Message sent successfully!', 'success');
-                contactForm.reset();
+                e.target.reset();
             } catch (error) {
                 showToast('Error sending message: ' + error.message, 'error');
             }
@@ -2532,8 +3379,7 @@
             document.body.appendChild(toast);
             
             setTimeout(() => {
-                toast.style.animation = 'slideUp 0.3s ease reverse';
-                setTimeout(() => toast.remove(), 300);
+                toast.remove();
             }, 3000);
         }
 
@@ -2550,13 +3396,17 @@
             });
         });
 
+        // ===== PROFILE VIEW =====
+        window.showProfile = () => {
+            if (currentUser) {
+                showToast(`Logged in as: ${currentUser.email}`, 'info');
+            }
+            profileDropdown.classList.remove('active');
+        };
+
         // ===== INITIAL LOAD =====
         window.addEventListener('load', () => {
-            // Add animation classes to elements
-            document.querySelectorAll('.skill-card, .project-card, .external-card').forEach((el, index) => {
-                el.style.animation = `fadeInUp 0.6s ease ${index * 0.1}s forwards`;
-                el.style.opacity = '0';
-            });
+            updateUIFromFirebase();
         });
     </script>
 </body>
