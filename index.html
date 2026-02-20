@@ -3,391 +3,543 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ghinga · Mahesh half · tag 2k views</title>
+    <title>bishalshrestha17.com.np · touch drag fix</title>
+    <!-- font awesome icons (optional but used for flair) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
+        /* ---------- MODERN RESET + GLOBAL ---------- */
         * {
-            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            user-select: none;
+            box-sizing: border-box;
+            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             -webkit-tap-highlight-color: transparent;
+            user-select: none; /* prevent selection while dragging */
         }
 
         body {
-            background: linear-gradient(145deg, #0a0e16 0%, #1c2438 100%);
+            background: radial-gradient(circle at 20% 30%, #1b2635, #0b0f1a);
             min-height: 100vh;
             display: flex;
-            justify-content: center;
             align-items: center;
-            font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
-            padding: 10px;
+            justify-content: center;
+            padding: 1rem;
+            position: relative;
         }
 
-        /* responsive container: comfortable phone to desktop */
-        .game-card {
+        /* advanced animated background */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgdmlld0JveD0iMCAwIDYwIDYwIj48cGF0aCBkPSJNMzAgMTBhMjAgMjAgMCAwIDEgMjAgMjAgMjAgMjAgMCAwIDEtNDAgMCAyMCAyMCAwIDAgMSAyMC0yMHoiIGZpbGw9InJnYmEoMjU1LDIxNSwwLDAuMDIpIi8+PC9zdmc+');
+            background-size: 80px 80px;
+            opacity: 0.25;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* main card – glassmorphism + advanced neomorphism */
+        .website-card {
             width: 100%;
-            max-width: 500px;  
-            background: #1b2337;
-            border-radius: 60px 60px 44px 44px;
-            box-shadow: 0 30px 40px rgba(0, 0, 0, 0.9), inset 0 0 0 2px #657bb0;
-            padding: 24px 18px 32px;
-            border: 3px solid #4b608b;
-            transition: all 0.2s;
+            max-width: 1300px;         /* large desktop width */
+            background: rgba(20, 28, 45, 0.75);
+            backdrop-filter: blur(18px) saturate(180%);
+            -webkit-backdrop-filter: blur(18px) saturate(180%);
+            border: 2px solid rgba(255, 215, 120, 0.25);
+            border-radius: 4rem 4rem 3rem 3rem;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(240, 185, 70, 0.3) inset, 0 0 30px rgba(255, 215, 0, 0.3);
+            padding: 2rem 2rem 2.5rem;
+            z-index: 10;
+            transition: all 0.3s ease;
         }
 
-        @media (min-width: 600px) {
-            .game-card {
-                max-width: 560px;
-                padding: 28px 24px 40px;
-                border-radius: 70px 70px 50px 50px;
+        /* desktop huge style */
+        @media (min-width: 1024px) {
+            .website-card {
+                padding: 2.8rem 3.2rem 3.2rem;
+                border-radius: 5rem 5rem 4rem 4rem;
+                backdrop-filter: blur(22px) saturate(200%);
+                border-width: 3px;
             }
         }
 
-        /* TikTok header */
-        .viral-header {
-            background: #28324b;
-            border-radius: 100px;
-            padding: 8px 18px 8px 16px;
+        /* ---------- ADVANCED DOMAIN HEADER ---------- */
+        .domain-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            border: 1px solid #7f97c9;
-            box-shadow: 0 8px 0 #151e30;
-            margin-bottom: 20px;
             flex-wrap: wrap;
-            gap: 6px;
+            gap: 1.2rem 1.8rem;
+            margin-bottom: 2.5rem;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 0.8rem 2rem 0.8rem 2rem;
+            border-radius: 120px;
+            border: 1px solid rgba(255, 200, 100, 0.4);
+            box-shadow: 0 18px 35px -10px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,215,0,0.2) inset;
+            backdrop-filter: blur(10px);
         }
 
-        .tag-badge {
-            background: #1b253d;
-            color: #ffdeaa;
-            font-weight: 700;
-            font-size: 0.9rem;
-            padding: 7px 16px;
-            border-radius: 60px;
-            border: 1px solid #dbb252;
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .domain-name {
+            font-size: clamp(1.2rem, 5vw, 2rem);
+            font-weight: 800;
+            background: linear-gradient(130deg, #fff2c0, #ffcf7a, #ffb347);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            letter-spacing: -0.02em;
+            text-shadow: 0 2px 10px #ff9f2e60;
             white-space: nowrap;
         }
 
-        .views-panel {
-            background: #212d48;
+        .verified-badge {
+            background: #1f2c46;
             border-radius: 60px;
-            padding: 4px 18px 4px 14px;
+            padding: 0.4rem 1.2rem;
+            font-size: 0.9rem;
+            color: #b9d2ff;
+            border: 1px solid #ffc857;
             display: flex;
             align-items: center;
             gap: 6px;
-            border: 1px solid #ffbc5c;
         }
 
-        .fire {
-            font-size: 1.8rem;
+        .verified-badge i {
+            color: #3b82f6;
         }
 
-        .view-counter {
-            font-size: 2.2rem;
-            font-weight: 800;
-            background: linear-gradient(145deg, #ffe684, #ffa63e);
+        .tiktok-views {
+            display: flex;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 100px;
+            padding: 0.5rem 1.5rem 0.5rem 1.2rem;
+            border: 1px solid #f5b342;
+            gap: 10px;
+            backdrop-filter: blur(8px);
+        }
+
+        .fire-icon {
+            font-size: 2rem;
+            filter: drop-shadow(0 0 6px orange);
+        }
+
+        .view-digit {
+            font-size: 2.4rem;
+            font-weight: 900;
+            background: linear-gradient(145deg, #ffd966, #ffa62b);
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
             line-height: 1;
         }
 
-        .view-label {
-            color: #c0d4ff;
-            font-size: 0.8rem;
+        .view-text {
+            color: #b6d0ff;
             font-weight: 600;
-        }
-
-        /* main stage */
-        .play-stage {
-            background: #2f3d60;
-            border-radius: 48px;
-            padding: 20px 12px 28px;
-            border: 3px solid #6780b9;
-            box-shadow: inset 0 -4px 0 #23304b, 0 14px 0 #1b253b;
-        }
-
-        /* ----- BIG MAHESH PHOTO (half screen approx) ----- */
-        .mahesh-zone {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin-bottom: 16px;  /* less margin, big photo takes space */
-        }
-
-        .mahesh-frame {
-            background: #2e3b5e;
-            border-radius: 70px 70px 40px 40px;
-            padding: 22px 18px 16px;  /* adjusted padding */
-            border: 6px solid #c6a35c;
-            box-shadow: 0 18px 0 #2f3a58, inset 0 -6px 0 #5f77a6;
-            transition: filter 0.2s, transform 0.15s;
-            width: 100%;
-            display: flex;
-            justify-content: center;
-        }
-
-        /* BIG photo: height ~ half of screen on phone, but we use vh relative */
-        .mahesh-img {
-            width: auto;           
-            max-width: 100%;
-            height: 38vh;          /* takes about half the view height on phone, scales on desktop */
-            min-height: 240px;     /* ensures it's big enough */
-            max-height: 350px;     /* but not too giant on desktop */
-            object-fit: cover;
-            border-radius: 50px 50px 30px 30px;
-            background: #5f4d31;
-            border: 5px solid #f7da9a;
-            box-shadow: 0 12px 0 #785f33;
-            display: block;
-        }
-
-        .mouth-caption {
-            background: #253151;
-            color: #ffe19c;
-            font-size: 1.3rem;
-            font-weight: bold;
-            padding: 8px 28px;
-            border-radius: 60px;
-            margin-top: -8px;
-            border: 2px solid #eac073;
-            box-shadow: 0 8px 0 #1e2843;
-            letter-spacing: 0.5px;
-        }
-
-        /* ----- SMALL GHINGA PHOTO (smaller than before) ----- */
-        .ghinga-section {
-            background: #2c3a5c;
-            border-radius: 60px;
-            padding: 16px 12px 14px;
-            border: 3px dashed #c3d2ff;
-            box-shadow: inset 0 -6px 0 #1f2b48, 0 10px 0 #212e4a;
-            margin: 14px 0 16px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .drag-text {
-            background: #202d4b;
-            color: #dde6ff;
             font-size: 1rem;
-            font-weight: 600;
-            padding: 6px 22px;
-            border-radius: 50px;
-            border: 1px solid #9eb3e6;
-            margin-bottom: 14px;
-        }
-
-        /* smaller ghinga */
-        .ghinga-img {
-            width: 95px;           /* smaller than before */
-            height: 95px;
-            object-fit: cover;
-            border-radius: 50px;
-            background: #896f42;
-            border: 6px solid #ffd98c;
-            box-shadow: 0 14px 0 #8b6d3b, inset 0 -4px 0 #5e4a29;
-            cursor: grab;
-            transition: 0.1s;
-            display: block;
-            margin: 0 auto 10px;
-            -webkit-user-drag: element;
-        }
-
-        .ghinga-img.dragging {
-            opacity: 0.5;
-            transform: scale(0.92);
-            box-shadow: 0 6px 0 #8b6d3b;
-        }
-
-        .hint {
-            background: #1b2643;
-            color: #fed98f;
-            padding: 10px 18px;
-            border-radius: 50px;
-            font-size: 1rem;
-            font-weight: 500;
-            border: 1px solid #f8c56c;
-            text-align: center;
-            width: 100%;
-        }
-
-        /* win message panel */
-        .win-container {
-            background: #fed26e;
-            border-radius: 50px;
-            padding: 14px 12px;
-            border: 5px solid #ffffff;
-            box-shadow: 0 14px 0 #ac801f, 0 16px 20px #00000080;
-            margin: 18px 0 14px;
-        }
-
-        .win-main {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .win-main span:first-child {
-            font-size: 2rem;
-            font-weight: 800;
-            color: #261e06;
-        }
-
-        .views-instant {
-            background: #2f2a0e;
-            color: #ffea9c;
-            padding: 5px 18px;
-            border-radius: 50px;
-            font-size: 1.2rem;
-            font-weight: 700;
-        }
-
-        .tiktok-message {
-            background: #423d1e;
-            border-radius: 40px;
-            padding: 14px 12px;
-            margin-top: 10px;
-            border: 2px solid #ffe084;
-            text-align: center;
-        }
-
-        .tiktok-message p {
-            color: #ffdfa0;
-            font-size: 1.1rem;
-            font-weight: 600;
-        }
-
-        .tiktok-message p span {
-            color: #ffd966;
-            font-size: 1.6rem;
-            font-weight: 800;
-            display: block;
-            margin-top: 4px;
-        }
-
-        /* reset button */
-        .reset-btn {
-            background: #3e5a96;
-            border: none;
-            color: white;
-            font-size: 1.8rem;
-            font-weight: bold;
-            padding: 14px 20px;
-            border-radius: 70px;
-            border-bottom: 8px solid #1e2b4a;
-            box-shadow: 0 16px 0 #14203b;
-            width: 100%;
-            cursor: pointer;
-            transition: 0.08s linear;
-            margin-top: 14px;
             letter-spacing: 1px;
         }
 
-        .reset-btn:active {
-            transform: translateY(8px);
-            border-bottom-width: 2px;
-            box-shadow: 0 6px 0 #14203b;
+        /* ---------- MAIN LAYOUT: 2 columns on desktop, 1 on phone ---------- */
+        .game-layout {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+            margin: 2.2rem 0 2rem;
+        }
+
+        @media (min-width: 900px) {
+            .game-layout {
+                grid-template-columns: 1.3fr 0.9fr;
+                align-items: start;
+            }
+        }
+
+        /* ----- LEFT SIDE: BIG PHOTO (ADVANCED CARD) ----- */
+        .big-photo-card {
+            background: rgba(15, 22, 36, 0.7);
+            backdrop-filter: blur(12px);
+            border-radius: 3.5rem;
+            padding: 1.8rem 1.5rem 2rem;
+            border: 2px solid rgba(255, 200, 80, 0.4);
+            box-shadow: 0 30px 40px -15px black, 0 0 0 2px rgba(255, 215, 0, 0.2) inset;
+            transition: 0.25s ease;
+        }
+
+        .big-photo-card.drop-active {
+            border-color: #ffdb8e;
+            box-shadow: 0 0 0 4px #ffdb8e, 0 30px 40px -15px black;
+        }
+
+        .photo-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.2rem;
+            padding: 0 0.5rem;
+        }
+
+        .photo-label span {
+            background: #2a354e;
+            color: #ffdfa0;
+            padding: 0.4rem 1.6rem;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            border: 1px solid #f3b351;
+            backdrop-filter: blur(5px);
+        }
+
+        .mouth-hint {
+            font-size: 1.5rem;
+            filter: drop-shadow(0 0 8px gold);
+        }
+
+        .image-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #1d2845;
+            border-radius: 3rem;
+            padding: 2rem 1rem;
+            border: 3px solid #cfaa62;
+            box-shadow: 0 25px 0 #0f192b, inset 0 -6px 0 #5b6d94;
+            transition: border 0.1s, filter 0.2s;
+        }
+
+        .big-mahesh {
+            width: 100%;
+            max-width: 400px;
+            height: auto;
+            max-height: 55vh;
+            object-fit: contain;
+            border-radius: 2.5rem;
+            background: #3b2e1a;
+            border: 6px solid #fad68f;
+            box-shadow: 0 20px 0 #866d39, 0 20px 30px black;
+            pointer-events: none;  /* so touches pass through to parent zone */
+        }
+
+        .highlight-drop {
+            filter: drop-shadow(0 0 25px #ffdb7c);
+        }
+
+        /* ----- RIGHT SIDE: SMALL PHOTO + WIN INFO (ADVANCED) ----- */
+        .small-photo-card {
+            background: rgba(18, 26, 40, 0.8);
+            backdrop-filter: blur(16px);
+            border-radius: 3.5rem;
+            padding: 1.8rem 1.5rem 2rem;
+            border: 2px solid rgba(255, 200, 130, 0.4);
+            box-shadow: 0 30px 40px -15px black, 0 0 0 2px rgba(255, 215, 0, 0.2) inset;
+            height: fit-content;
+        }
+
+        .drag-header {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            background: #202e4e;
+            border-radius: 60px;
+            padding: 0.6rem 1.8rem;
+            width: fit-content;
+            margin-bottom: 1.5rem;
+            border: 1px solid #fec368;
+        }
+
+        .drag-header i {
+            font-size: 1.8rem;
+            color: #ffbb4a;
+        }
+
+        .ghinga-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: #1f2d4b;
+            border-radius: 3rem;
+            padding: 2rem 0 1.5rem;
+            border: 3px dashed #b3c7ff;
+            box-shadow: inset 0 -6px 0 #19233f, 0 14px 0 #1b2743;
+            margin-bottom: 1.8rem;
+            touch-action: none; /* prevent scrolling while dragging inside */
+        }
+
+        /* small ghinga photo — with touch dragging styles */
+        .small-ghinga {
+            width: 130px;
+            height: 130px;
+            object-fit: cover;
+            border-radius: 50%;
+            border: 6px solid #ffd27f;
+            box-shadow: 0 20px 0 #a77b3a, 0 15px 25px black;
+            transition: 0.1s;
+            pointer-events: auto;      /* important to receive touch events */
+            -webkit-user-select: none;
+            user-select: none;
+            touch-action: none;        /* prevent page scroll on drag */
+            position: relative;
+            z-index: 50;
+        }
+
+        .small-ghinga.dragging {
+            opacity: 0.6;
+            transform: scale(0.9);
+            box-shadow: 0 8px 0 #a77b3a;
+            transition: 0.05s;
+            z-index: 1000;
+        }
+
+        .drag-caption {
+            margin-top: 1rem;
+            background: #14203a;
+            color: #ffdb9f;
+            padding: 0.5rem 2rem;
+            border-radius: 60px;
+            font-weight: 600;
+            border: 1px solid #ebc177;
+        }
+
+        .message-panel {
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 3rem;
+            padding: 1.3rem;
+            border: 1px solid #ffc95b;
+            backdrop-filter: blur(10px);
+            margin: 1rem 0;
+        }
+
+        .hint-text {
+            color: #ffe7b3;
+            font-size: 1.2rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .win-banner-advanced {
+            background: linear-gradient(145deg, #fecb5e, #fdad3c);
+            border-radius: 2.5rem;
+            padding: 1.2rem;
+            border: 3px solid white;
+            box-shadow: 0 15px 0 #b8781a, 0 20px 30px black;
+            margin: 1.8rem 0 1.2rem;
+        }
+
+        .win-banner-advanced > div {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 0.8rem 1.5rem;
+        }
+
+        .win-banner-advanced span:first-child {
+            font-size: 2.2rem;
+            font-weight: 900;
+            color: #281d04;
+        }
+
+        .views-badge-2000 {
+            background: #392f0e;
+            color: #ffd88a;
+            padding: 0.5rem 1.8rem;
+            border-radius: 60px;
+            font-weight: 700;
+            font-size: 1.5rem;
+        }
+
+        .tiktok-tag {
+            background: #4d3d1a;
+            border-radius: 2rem;
+            padding: 1rem;
+            border: 2px solid #ffcf6e;
+            margin-top: 0.8rem;
+        }
+
+        .tiktok-tag p {
+            color: #fff0c0;
+            font-size: 1.2rem;
+        }
+
+        .tiktok-tag p strong {
+            color: white;
+            font-size: 1.8rem;
+        }
+
+        /* reset button advanced */
+        .reset-advanced {
+            background: #2b3d6b;
+            border: none;
+            color: white;
+            font-size: 2rem;
+            font-weight: bold;
+            padding: 1.3rem 2rem;
+            border-radius: 5rem;
+            border-bottom: 8px solid #121e3a;
+            box-shadow: 0 20px 0 #0d162b, 0 10px 30px black;
+            width: 100%;
+            cursor: pointer;
+            transition: 0.07s;
+            letter-spacing: 2px;
+            margin-top: 1.5rem;
+            touch-action: manipulation;
+        }
+
+        .reset-advanced:active {
+            transform: translateY(10px);
+            border-bottom-width: 3px;
+            box-shadow: 0 8px 0 #0d162b;
         }
 
         .hidden {
             display: none !important;
         }
 
-        .footer-note {
+        .footer-note-advanced {
             text-align: center;
-            color: #738bc2;
-            font-size: 0.9rem;
-            margin-top: 18px;
+            margin-top: 2.5rem;
+            color: #8da2d3;
+            font-weight: 500;
+            font-size: 1.1rem;
+            letter-spacing: 0.5px;
+            border-top: 1px dashed #ffc85760;
+            padding-top: 1.8rem;
+        }
+
+        /* small responsive touch */
+        @media (max-width: 600px) {
+            .domain-header {
+                border-radius: 50px;
+                padding: 0.8rem 1.2rem;
+            }
+            .big-mahesh {
+                max-height: 45vh;
+            }
+            .small-ghinga {
+                width: 110px;
+                height: 110px;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="game-card">
-        <!-- header with views -->
-        <div class="viral-header">
-            <div class="tag-badge">🎬 @Bishalshrestha17</div>
-            <div class="views-panel" id="viewsPanel">
-                <span class="fire">🔥</span>
-                <span class="view-counter" id="viewCountDisplay">0</span>
-                <span class="view-label">VIEWS</span>
+    <div class="website-card">
+        <!-- domain header advanced -->
+        <div class="domain-header">
+            <div class="logo-area">
+                <i class="fas fa-crown" style="color: #fbbf24; font-size: 2rem;"></i>
+                <span class="domain-name">bishalshrestha17.com.np</span>
+            </div>
+            <div class="verified-badge">
+                <i class="fas fa-check-circle"></i> <span>official · touch drag</span>
+            </div>
+            <div class="tiktok-views" id="viewsPanel">
+                <i class="fas fa-fire fire-icon"></i>
+                <span class="view-digit" id="viewCountDisplay">0</span>
+                <span class="view-text">VIEWS</span>
             </div>
         </div>
 
-        <div class="play-stage">
-            <!-- BIG mahesh photo (half screen approx) -->
-            <div class="mahesh-zone" id="maheshZone">
-                <div class="mahesh-frame" id="maheshFrame">
-                    <!-- *** USE YOUR mahesh.png *** -->
+        <!-- main layout 2 cols -->
+        <div class="game-layout">
+            <!-- LEFT: BIG MAHESH PHOTO (half screen) -->
+            <div class="big-photo-card" id="maheshZone">
+                <div class="photo-label">
+                    <span><i class="fas fa-user"></i> mahesh.png</span>
+                    <span class="mouth-hint">👄 drop near mouth</span>
+                </div>
+                <div class="image-wrapper" id="maheshFrame">
                     <img src="mahesh.png" 
-                         alt="Mahesh big - half screen" 
-                         class="mahesh-img" 
+                         alt="mahesh big" 
+                         class="big-mahesh" 
                          id="maheshImg"
                          draggable="false"
-                         onerror="this.src='https://placehold.co/500x600/5b4a31/ffd48a?text=MAHESH+BIG'">
-                </div>
-                <div class="mouth-caption">👄 DROP NEAR MOUTH</div>
-            </div>
-
-            <!-- SMALL ghinga photo area (smaller) -->
-            <div class="ghinga-section" id="ghingaSection">
-                <div class="drag-text">👇 drag this ghinga 👇</div>
-                <!-- *** USE YOUR ghinga.png *** -->
-                <img src="ghinga.png" 
-                     alt="small ghinga" 
-                     class="ghinga-img" 
-                     id="ghingaImg"
-                     draggable="true"
-                     onerror="this.src='https://placehold.co/300x300/b58b4a/3f301b?text=GHINGA'">
-                <div class="hint" id="hintMessage">
-                    ⭐ drag to Mahesh → win +2k views
+                         onerror="this.src='https://placehold.co/600x700/6b4f2e/ffd988?text=MAHESH+BIG'">
                 </div>
             </div>
 
-            <!-- win message + tag (hidden initially) -->
-            <div id="winFullMessage" class="hidden">
-                <div class="win-container">
-                    <div class="win-main">
-                        <span>🏆 YOU WIN!</span>
-                        <span class="views-instant">🔥 +2000 VIEWS</span>
-                    </div>
-                    <div class="tiktok-message">
-                        <p>
-                            📱 if you make video about this game<br>and tag <strong>@Bishalshrestha17</strong><br>
-                            <span>⚡ instantly 2k views ⚡</span>
-                        </p>
+            <!-- RIGHT: SMALL GHINGA + WIN -->
+            <div class="small-photo-card">
+                <div class="drag-header">
+                    <i class="fas fa-hand-pointer"></i>
+                    <span>drag this ghinga →</span>
+                </div>
+
+                <div class="ghinga-container" id="ghingaContainer">
+                    <img src="ghinga.png" 
+                         alt="small ghinga" 
+                         class="small-ghinga" 
+                         id="ghingaImg"
+                         draggable="false"   /* disable native drag */
+                         onerror="this.src='https://placehold.co/300x300/b58b4a/3f301b?text=GHINGA'">
+                    <div class="drag-caption" id="hintMessage">
+                        <i class="fas fa-arrow-down"></i> drag to mahesh
                     </div>
                 </div>
-            </div>
 
-            <!-- play again -->
-            <button class="reset-btn" id="resetGameBtn">🔄 PLAY AGAIN</button>
+                <!-- message panel (hint / win hidden) -->
+                <div class="message-panel">
+                    <div class="hint-text" id="dynamicHint">
+                        <i class="fas fa-star" style="color: #ffd966;"></i> win = +2000 views
+                    </div>
+                </div>
+
+                <!-- WIN BANNER (hidden initially) -->
+                <div id="winFullMessage" class="hidden">
+                    <div class="win-banner-advanced">
+                        <div>
+                            <span>🏆 YOU WIN!</span>
+                            <span class="views-badge-2000">🔥 +2000 VIEWS</span>
+                        </div>
+                        <div class="tiktok-tag">
+                            <p>📱 make a video & tag <strong>@Bishalshrestha17</strong><br>
+                            <span style="font-size:2rem; color:#ffe459;">⚡ 2k views instantly ⚡</span></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- reset button -->
+                <button class="reset-advanced" id="resetGameBtn">
+                    <i class="fas fa-rotate-right"></i> PLAY AGAIN
+                </button>
+            </div>
         </div>
 
-        <div class="footer-note">
-            ✨ drop small ghinga into big mahesh mouth → tiktok fame ✨
+        <div class="footer-note-advanced">
+            ⚡ touch drag works on phone · glassmorphism · half screen mahesh · ghinga small ⚡
         </div>
     </div>
 
     <script>
         (function() {
+            // ---------- ELEMENTS ----------
             const ghinga = document.getElementById('ghingaImg');
             const maheshZone = document.getElementById('maheshZone');
             const maheshFrame = document.getElementById('maheshFrame');
-            const hint = document.getElementById('hintMessage');
+            const dynamicHint = document.getElementById('dynamicHint');
             const winFullDiv = document.getElementById('winFullMessage');
             const resetBtn = document.getElementById('resetGameBtn');
             const viewSpan = document.getElementById('viewCountDisplay');
             const viewsPanel = document.getElementById('viewsPanel');
 
+            // ---------- STATE ----------
             let viewCount = 0;
             let gameWon = false;
+            let dragging = false;
+            let startX, startY, currentX, currentY;
+            let ghingaRect = null;
 
-            function updateViewCounter() {
+            // clone for visual feedback (simple transform, no actual clone)
+            function updateView() {
                 viewSpan.innerText = viewCount;
             }
 
@@ -397,86 +549,192 @@
                 setTimeout(() => viewsPanel.style.transform = 'scale(1)', 120);
             }
 
-            // WIN function: +2000 views, hide ghinga, show message
+            // win function
             function winGame() {
                 if (gameWon) return;
-
                 gameWon = true;
                 viewCount += 2000;
-                updateViewCounter();
+                updateView();
                 pulseViews();
 
+                // hide ghinga
                 ghinga.style.display = 'none';
-                ghinga.draggable = false;
-
                 winFullDiv.classList.remove('hidden');
-                hint.innerText = '🎉 GHINGA DELIVERED! +2000 views!';
-
-                maheshFrame.style.filter = 'drop-shadow(0 0 18px #ffdb7c)';
+                dynamicHint.innerHTML = '<i class="fas fa-check-circle" style="color:#9bff6b;"></i> 🎉 GHINGA DELIVERED! +2000 views!';
+                maheshFrame.classList.add('highlight-drop');
                 maheshFrame.style.transform = 'scale(1.02)';
                 setTimeout(() => maheshFrame.style.transform = 'scale(1)', 150);
+                // remove active drop highlight
+                maheshZone.classList.remove('drop-active');
             }
 
+            // reset everything
             function resetGame() {
                 gameWon = false;
                 ghinga.style.display = 'block';
-                ghinga.draggable = true;
                 winFullDiv.classList.add('hidden');
-                hint.innerText = '⭐ drag to Mahesh → win +2k views';
-                maheshFrame.style.filter = 'none';
-                maheshFrame.style.transform = 'scale(1)';
+                dynamicHint.innerHTML = '<i class="fas fa-star" style="color: #ffd966;"></i> win = +2000 views';
+                maheshFrame.classList.remove('highlight-drop');
+                maheshZone.classList.remove('drop-active');
                 viewCount = 0;
-                updateViewCounter();
+                updateView();
+                // reset position (no transform, just in case)
+                ghinga.style.transform = '';
                 ghinga.classList.remove('dragging');
+                dragging = false;
             }
 
-            // drag events
-            ghinga.addEventListener('dragstart', function(e) {
+            // ---------- TOUCH DRAG IMPLEMENTATION ----------
+            function onTouchStart(e) {
                 if (gameWon) {
                     e.preventDefault();
-                    return false;
+                    return;
                 }
-                e.dataTransfer.setData('text/plain', 'ghinga');
-                e.dataTransfer.effectAllowed = 'move';
-                this.classList.add('dragging');
-            });
+                e.preventDefault();  // prevent scrolling
+                const touch = e.touches[0];
+                startX = touch.clientX;
+                startY = touch.clientY;
 
-            ghinga.addEventListener('dragend', function(e) {
-                this.classList.remove('dragging');
-            });
+                // get initial ghinga position and size
+                ghingaRect = ghinga.getBoundingClientRect();
 
-            maheshZone.addEventListener('dragover', function(e) {
-                e.preventDefault();
-                e.dataTransfer.dropEffect = 'move';
-                maheshFrame.style.border = '6px solid #ffdb8e';
-            });
+                // add dragging class
+                ghinga.classList.add('dragging');
+                dragging = true;
 
-            maheshZone.addEventListener('dragleave', function(e) {
-                maheshFrame.style.border = '6px solid #c6a35c';
-            });
+                // optional: set a dataTransfer-like flag
+            }
 
-            maheshZone.addEventListener('drop', function(e) {
-                e.preventDefault();
-                maheshFrame.style.border = '6px solid #c6a35c';
+            function onTouchMove(e) {
+                if (!dragging || gameWon) return;
+                e.preventDefault(); // crucial to prevent page scroll
 
-                const data = e.dataTransfer.getData('text/plain');
-                if (data === 'ghinga' && !gameWon) {
-                    winGame();
-                } else if (gameWon) {
-                    hint.innerText = '😋 already eaten! press play again';
+                const touch = e.touches[0];
+                currentX = touch.clientX;
+                currentY = touch.clientY;
+
+                // calculate delta from start
+                const deltaX = currentX - startX;
+                const deltaY = currentY - startY;
+
+                // apply transform to ghinga (relative to its original position)
+                ghinga.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
+                ghinga.style.transition = 'none'; // instant move
+
+                // check collision with maheshZone while moving
+                const ghingaCenterX = ghingaRect.left + ghingaRect.width/2 + deltaX;
+                const ghingaCenterY = ghingaRect.top + ghingaRect.height/2 + deltaY;
+
+                const maheshRect = maheshZone.getBoundingClientRect();
+
+                if (ghingaCenterX >= maheshRect.left && ghingaCenterX <= maheshRect.right &&
+                    ghingaCenterY >= maheshRect.top && ghingaCenterY <= maheshRect.bottom) {
+                    // highlight drop zone
+                    maheshZone.classList.add('drop-active');
+                } else {
+                    maheshZone.classList.remove('drop-active');
                 }
+            }
+
+            function onTouchEnd(e) {
+                if (!dragging || gameWon) {
+                    // ensure class removal
+                    ghinga.classList.remove('dragging');
+                    ghinga.style.transform = '';
+                    return;
+                }
+                e.preventDefault();
+
+                // get final finger position
+                const touch = e.changedTouches[0];
+                if (!touch) return;
+
+                const endX = touch.clientX;
+                const endY = touch.clientY;
+
+                // get maheshZone rect
+                const maheshRect = maheshZone.getBoundingClientRect();
+
+                // check if drop position is inside maheshZone
+                if (endX >= maheshRect.left && endX <= maheshRect.right &&
+                    endY >= maheshRect.top && endY <= maheshRect.bottom) {
+                    // DROP success
+                    if (!gameWon) {
+                        winGame();
+                    }
+                }
+
+                // reset ghinga position and dragging style
+                ghinga.style.transform = '';
+                ghinga.classList.remove('dragging');
+                dragging = false;
+                maheshZone.classList.remove('drop-active');
+            }
+
+            // attach touch events
+            ghinga.addEventListener('touchstart', onTouchStart, { passive: false });
+            document.addEventListener('touchmove', onTouchMove, { passive: false });
+            document.addEventListener('touchend', onTouchEnd, { passive: false });
+            document.addEventListener('touchcancel', onTouchEnd, { passive: false });
+
+            // also support mouse for desktop testing (optional)
+            ghinga.addEventListener('mousedown', (e) => {
+                if (gameWon) return;
+                e.preventDefault();
+                startX = e.clientX;
+                startY = e.clientY;
+                ghingaRect = ghinga.getBoundingClientRect();
+                ghinga.classList.add('dragging');
+                dragging = true;
+
+                function onMouseMove(e) {
+                    if (!dragging || gameWon) return;
+                    e.preventDefault();
+                    const deltaX = e.clientX - startX;
+                    const deltaY = e.clientY - startY;
+                    ghinga.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
+                    ghinga.style.transition = 'none';
+
+                    const ghingaCenterX = ghingaRect.left + ghingaRect.width/2 + deltaX;
+                    const ghingaCenterY = ghingaRect.top + ghingaRect.height/2 + deltaY;
+                    const maheshRect = maheshZone.getBoundingClientRect();
+
+                    if (ghingaCenterX >= maheshRect.left && ghingaCenterX <= maheshRect.right &&
+                        ghingaCenterY >= maheshRect.top && ghingaCenterY <= maheshRect.bottom) {
+                        maheshZone.classList.add('drop-active');
+                    } else {
+                        maheshZone.classList.remove('drop-active');
+                    }
+                }
+
+                function onMouseUp(e) {
+                    if (dragging && !gameWon) {
+                        const maheshRect = maheshZone.getBoundingClientRect();
+                        if (e.clientX >= maheshRect.left && e.clientX <= maheshRect.right &&
+                            e.clientY >= maheshRect.top && e.clientY <= maheshRect.bottom) {
+                            winGame();
+                        }
+                    }
+                    ghinga.style.transform = '';
+                    ghinga.classList.remove('dragging');
+                    dragging = false;
+                    maheshZone.classList.remove('drop-active');
+                    document.removeEventListener('mousemove', onMouseMove);
+                    document.removeEventListener('mouseup', onMouseUp);
+                }
+
+                document.addEventListener('mousemove', onMouseMove);
+                document.addEventListener('mouseup', onMouseUp);
             });
 
+            // reset button
             resetBtn.addEventListener('click', resetGame);
 
-            document.getElementById('maheshImg').addEventListener('dragstart', (e) => e.preventDefault());
+            // prevent default on mahesh image to avoid any drag attempts
+            document.getElementById('maheshImg').addEventListener('mousedown', (e) => e.preventDefault());
 
-            window.addEventListener('dragend', function() {
-                maheshFrame.style.border = '6px solid #c6a35c';
-            });
-
-            updateViewCounter();
-            console.log('Big mahesh half screen, ghinga smaller. Use your mahesh.png / ghinga.png');
+            // initial view
+            updateView();
         })();
     </script>
 </body>
