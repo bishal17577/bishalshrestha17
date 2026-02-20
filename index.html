@@ -2,740 +2,2064 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>bishalshrestha17.com.np · touch drag fix</title>
-    <!-- font awesome icons (optional but used for flair) -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>Bishal Shrestha - Professional Portfolio | Ethical Hacker & Digital Creator</title>
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="Bishal Shrestha - Professional Ethical Hacker, Graphic Designer, Digital Marketer, Video Editor & Cyber Security Expert. 5+ years experience.">
+    <meta name="keywords" content="ethical hacking, graphic design, digital marketing, affiliate marketing, video editing, web designing, cyber security">
+    <meta name="author" content="Bishal Shrestha">
+    
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
+    
     <style>
-        /* ---------- MODERN RESET + GLOBAL ---------- */
+        /* ===== RESET & VARIABLES ===== */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            -webkit-tap-highlight-color: transparent;
-            user-select: none; /* prevent selection while dragging */
+        }
+
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --primary-light: #60a5fa;
+            --secondary: #7c3aed;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --dark: #0f172a;
+            --light: #f8fafc;
+            --gray: #64748b;
+            --gray-light: #e2e8f0;
+            --white: #ffffff;
+            
+            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+            --shadow-xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+            
+            --radius: 0.5rem;
+            --radius-lg: 1rem;
+            --radius-full: 9999px;
         }
 
         body {
-            background: radial-gradient(circle at 20% 30%, #1b2635, #0b0f1a);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 1rem;
-            position: relative;
+            font-family: 'Inter', sans-serif;
+            background: var(--light);
+            color: var(--dark);
+            line-height: 1.6;
         }
 
-        /* advanced animated background */
-        body::before {
-            content: '';
+        /* ===== CONTAINER ===== */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+
+        /* ===== NAVIGATION ===== */
+        .navbar {
             position: fixed;
-            inset: 0;
-            background: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgdmlld0JveD0iMCAwIDYwIDYwIj48cGF0aCBkPSJNMzAgMTBhMjAgMjAgMCAwIDEgMjAgMjAgMjAgMjAgMCAwIDEtNDAgMCAyMCAyMCAwIDAgMSAyMC0yMHoiIGZpbGw9InJnYmEoMjU1LDIxNSwwLDAuMDIpIi8+PC9zdmc+');
-            background-size: 80px 80px;
-            opacity: 0.25;
-            pointer-events: none;
-            z-index: 0;
-        }
-
-        /* main card – glassmorphism + advanced neomorphism */
-        .website-card {
+            top: 0;
+            left: 0;
             width: 100%;
-            max-width: 1300px;         /* large desktop width */
-            background: rgba(20, 28, 45, 0.75);
-            backdrop-filter: blur(18px) saturate(180%);
-            -webkit-backdrop-filter: blur(18px) saturate(180%);
-            border: 2px solid rgba(255, 215, 120, 0.25);
-            border-radius: 4rem 4rem 3rem 3rem;
-            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(240, 185, 70, 0.3) inset, 0 0 30px rgba(255, 215, 0, 0.3);
-            padding: 2rem 2rem 2.5rem;
-            z-index: 10;
-            transition: all 0.3s ease;
-        }
-
-        /* desktop huge style */
-        @media (min-width: 1024px) {
-            .website-card {
-                padding: 2.8rem 3.2rem 3.2rem;
-                border-radius: 5rem 5rem 4rem 4rem;
-                backdrop-filter: blur(22px) saturate(200%);
-                border-width: 3px;
-            }
-        }
-
-        /* ---------- ADVANCED DOMAIN HEADER ---------- */
-        .domain-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 1.2rem 1.8rem;
-            margin-bottom: 2.5rem;
-            background: rgba(0, 0, 0, 0.3);
-            padding: 0.8rem 2rem 0.8rem 2rem;
-            border-radius: 120px;
-            border: 1px solid rgba(255, 200, 100, 0.4);
-            box-shadow: 0 18px 35px -10px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,215,0,0.2) inset;
+            background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
-        }
-
-        .logo-area {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .domain-name {
-            font-size: clamp(1.2rem, 5vw, 2rem);
-            font-weight: 800;
-            background: linear-gradient(130deg, #fff2c0, #ffcf7a, #ffb347);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            letter-spacing: -0.02em;
-            text-shadow: 0 2px 10px #ff9f2e60;
-            white-space: nowrap;
-        }
-
-        .verified-badge {
-            background: #1f2c46;
-            border-radius: 60px;
-            padding: 0.4rem 1.2rem;
-            font-size: 0.9rem;
-            color: #b9d2ff;
-            border: 1px solid #ffc857;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .verified-badge i {
-            color: #3b82f6;
-        }
-
-        .tiktok-views {
-            display: flex;
-            align-items: center;
-            background: rgba(0, 0, 0, 0.5);
-            border-radius: 100px;
-            padding: 0.5rem 1.5rem 0.5rem 1.2rem;
-            border: 1px solid #f5b342;
-            gap: 10px;
-            backdrop-filter: blur(8px);
-        }
-
-        .fire-icon {
-            font-size: 2rem;
-            filter: drop-shadow(0 0 6px orange);
-        }
-
-        .view-digit {
-            font-size: 2.4rem;
-            font-weight: 900;
-            background: linear-gradient(145deg, #ffd966, #ffa62b);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            line-height: 1;
-        }
-
-        .view-text {
-            color: #b6d0ff;
-            font-weight: 600;
-            font-size: 1rem;
-            letter-spacing: 1px;
-        }
-
-        /* ---------- MAIN LAYOUT: 2 columns on desktop, 1 on phone ---------- */
-        .game-layout {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 2rem;
-            margin: 2.2rem 0 2rem;
-        }
-
-        @media (min-width: 900px) {
-            .game-layout {
-                grid-template-columns: 1.3fr 0.9fr;
-                align-items: start;
-            }
-        }
-
-        /* ----- LEFT SIDE: BIG PHOTO (ADVANCED CARD) ----- */
-        .big-photo-card {
-            background: rgba(15, 22, 36, 0.7);
-            backdrop-filter: blur(12px);
-            border-radius: 3.5rem;
-            padding: 1.8rem 1.5rem 2rem;
-            border: 2px solid rgba(255, 200, 80, 0.4);
-            box-shadow: 0 30px 40px -15px black, 0 0 0 2px rgba(255, 215, 0, 0.2) inset;
-            transition: 0.25s ease;
-        }
-
-        .big-photo-card.drop-active {
-            border-color: #ffdb8e;
-            box-shadow: 0 0 0 4px #ffdb8e, 0 30px 40px -15px black;
-        }
-
-        .photo-label {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.2rem;
-            padding: 0 0.5rem;
-        }
-
-        .photo-label span {
-            background: #2a354e;
-            color: #ffdfa0;
-            padding: 0.4rem 1.6rem;
-            border-radius: 40px;
-            font-weight: 600;
-            font-size: 1.1rem;
-            border: 1px solid #f3b351;
-            backdrop-filter: blur(5px);
-        }
-
-        .mouth-hint {
-            font-size: 1.5rem;
-            filter: drop-shadow(0 0 8px gold);
-        }
-
-        .image-wrapper {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background: #1d2845;
-            border-radius: 3rem;
-            padding: 2rem 1rem;
-            border: 3px solid #cfaa62;
-            box-shadow: 0 25px 0 #0f192b, inset 0 -6px 0 #5b6d94;
-            transition: border 0.1s, filter 0.2s;
-        }
-
-        .big-mahesh {
-            width: 100%;
-            max-width: 400px;
-            height: auto;
-            max-height: 55vh;
-            object-fit: contain;
-            border-radius: 2.5rem;
-            background: #3b2e1a;
-            border: 6px solid #fad68f;
-            box-shadow: 0 20px 0 #866d39, 0 20px 30px black;
-            pointer-events: none;  /* so touches pass through to parent zone */
-        }
-
-        .highlight-drop {
-            filter: drop-shadow(0 0 25px #ffdb7c);
-        }
-
-        /* ----- RIGHT SIDE: SMALL PHOTO + WIN INFO (ADVANCED) ----- */
-        .small-photo-card {
-            background: rgba(18, 26, 40, 0.8);
-            backdrop-filter: blur(16px);
-            border-radius: 3.5rem;
-            padding: 1.8rem 1.5rem 2rem;
-            border: 2px solid rgba(255, 200, 130, 0.4);
-            box-shadow: 0 30px 40px -15px black, 0 0 0 2px rgba(255, 215, 0, 0.2) inset;
-            height: fit-content;
-        }
-
-        .drag-header {
-            display: flex;
-            gap: 1rem;
-            align-items: center;
-            background: #202e4e;
-            border-radius: 60px;
-            padding: 0.6rem 1.8rem;
-            width: fit-content;
-            margin-bottom: 1.5rem;
-            border: 1px solid #fec368;
-        }
-
-        .drag-header i {
-            font-size: 1.8rem;
-            color: #ffbb4a;
-        }
-
-        .ghinga-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            background: #1f2d4b;
-            border-radius: 3rem;
-            padding: 2rem 0 1.5rem;
-            border: 3px dashed #b3c7ff;
-            box-shadow: inset 0 -6px 0 #19233f, 0 14px 0 #1b2743;
-            margin-bottom: 1.8rem;
-            touch-action: none; /* prevent scrolling while dragging inside */
-        }
-
-        /* small ghinga photo — with touch dragging styles */
-        .small-ghinga {
-            width: 130px;
-            height: 130px;
-            object-fit: cover;
-            border-radius: 50%;
-            border: 6px solid #ffd27f;
-            box-shadow: 0 20px 0 #a77b3a, 0 15px 25px black;
-            transition: 0.1s;
-            pointer-events: auto;      /* important to receive touch events */
-            -webkit-user-select: none;
-            user-select: none;
-            touch-action: none;        /* prevent page scroll on drag */
-            position: relative;
-            z-index: 50;
-        }
-
-        .small-ghinga.dragging {
-            opacity: 0.6;
-            transform: scale(0.9);
-            box-shadow: 0 8px 0 #a77b3a;
-            transition: 0.05s;
+            box-shadow: var(--shadow);
             z-index: 1000;
         }
 
-        .drag-caption {
-            margin-top: 1rem;
-            background: #14203a;
-            color: #ffdb9f;
-            padding: 0.5rem 2rem;
-            border-radius: 60px;
-            font-weight: 600;
-            border: 1px solid #ebc177;
+        .navbar.scrolled {
+            background: rgba(255, 255, 255, 0.98);
+            box-shadow: var(--shadow-lg);
         }
 
-        .message-panel {
-            background: rgba(0, 0, 0, 0.5);
-            border-radius: 3rem;
-            padding: 1.3rem;
-            border: 1px solid #ffc95b;
-            backdrop-filter: blur(10px);
-            margin: 1rem 0;
-        }
-
-        .hint-text {
-            color: #ffe7b3;
-            font-size: 1.2rem;
-            font-weight: 500;
+        .nav-container {
             display: flex;
+            justify-content: space-between;
             align-items: center;
-            gap: 10px;
+            height: 70px;
         }
 
-        .win-banner-advanced {
-            background: linear-gradient(145deg, #fecb5e, #fdad3c);
-            border-radius: 2.5rem;
-            padding: 1.2rem;
-            border: 3px solid white;
-            box-shadow: 0 15px 0 #b8781a, 0 20px 30px black;
-            margin: 1.8rem 0 1.2rem;
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-decoration: none;
         }
 
-        .win-banner-advanced > div {
+        /* Desktop Navigation */
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            gap: 1.5rem;
+            align-items: center;
+        }
+
+        .nav-link {
+            text-decoration: none;
+            color: var(--dark);
+            font-weight: 500;
+            transition: color 0.3s;
+            padding: 0.5rem 0.8rem;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            color: var(--primary);
+        }
+
+        .profile-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
+            color: white;
+            cursor: pointer;
+            font-weight: 600;
+            border: 2px solid white;
+            box-shadow: var(--shadow);
+        }
+
+        /* Mobile Menu Button */
+        .menu-toggle {
+            display: none;
+            flex-direction: column;
+            gap: 6px;
+            cursor: pointer;
+            padding: 10px;
+        }
+
+        .menu-toggle span {
+            width: 25px;
+            height: 3px;
+            background: var(--primary);
+            border-radius: var(--radius-full);
+            transition: all 0.3s;
+        }
+
+        /* Mobile Navigation - Bottom Bar */
+        @media (max-width: 768px) {
+            .menu-toggle {
+                display: flex;
+            }
+
+            .nav-menu {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                width: 100%;
+                background: white;
+                display: flex;
+                justify-content: space-around;
+                padding: 0.5rem;
+                box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+                z-index: 999;
+                gap: 0;
+                height: 60px;
+            }
+
+            .nav-menu li {
+                flex: 1;
+            }
+
+            .nav-link {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                font-size: 0.7rem;
+                padding: 0.3rem;
+                gap: 0.2rem;
+            }
+
+            .nav-link i {
+                font-size: 1.2rem;
+            }
+
+            .profile-icon {
+                width: 35px;
+                height: 35px;
+                font-size: 1rem;
+            }
+
+            body {
+                padding-bottom: 60px;
+            }
+        }
+
+        /* Profile Dropdown */
+        .profile-dropdown {
+            position: absolute;
+            top: 80px;
+            right: 20px;
+            background: white;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-xl);
+            width: 280px;
+            display: none;
+            z-index: 1001;
+        }
+
+        .profile-dropdown.active {
+            display: block;
+        }
+
+        .dropdown-header {
+            padding: 1.5rem;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+        }
+
+        .dropdown-header h4 {
+            margin-bottom: 0.25rem;
+        }
+
+        .dropdown-header p {
+            font-size: 0.85rem;
+            opacity: 0.9;
+        }
+
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 1.5rem;
+            color: var(--dark);
+            text-decoration: none;
+            transition: background 0.3s;
+            border-bottom: 1px solid var(--gray-light);
+        }
+
+        .dropdown-item:last-child {
+            border-bottom: none;
+        }
+
+        .dropdown-item:hover {
+            background: var(--light);
+        }
+
+        .dropdown-item i {
+            width: 20px;
+            color: var(--primary);
+        }
+
+        /* ===== HERO SECTION ===== */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            padding-top: 70px;
+        }
+
+        .hero-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+            align-items: center;
+        }
+
+        .hero-content h1 {
+            font-size: clamp(2rem, 5vw, 3.5rem);
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 1rem;
+            margin: 2rem 0;
             flex-wrap: wrap;
-            gap: 0.8rem 1.5rem;
         }
 
-        .win-banner-advanced span:first-child {
-            font-size: 2.2rem;
-            font-weight: 900;
-            color: #281d04;
+        .hero-image img {
+            width: 100%;
+            border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+            box-shadow: var(--shadow-xl);
+            animation: morph 10s ease-in-out infinite;
         }
 
-        .views-badge-2000 {
-            background: #392f0e;
-            color: #ffd88a;
-            padding: 0.5rem 1.8rem;
-            border-radius: 60px;
-            font-weight: 700;
+        @keyframes morph {
+            0%, 100% { border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%; }
+            50% { border-radius: 50% 50% 50% 50% / 50% 50% 50% 50%; }
+        }
+
+        /* ===== BUTTONS ===== */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.8rem 2rem;
+            border-radius: var(--radius-full);
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: all 0.3s;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-outline {
+            border: 2px solid var(--primary);
+            color: var(--primary);
+            background: transparent;
+        }
+
+        .btn-outline:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        .btn-block {
+            width: 100%;
+        }
+
+        /* ===== SKILLS GRID ===== */
+        .section {
+            padding: 5rem 0;
+        }
+
+        .section-title {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .section-title h2 {
+            font-size: clamp(1.8rem, 4vw, 2.5rem);
+            margin-bottom: 1rem;
+        }
+
+        .skills-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+        }
+
+        .skill-card {
+            background: white;
+            padding: 2rem;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow);
+            transition: all 0.3s;
+        }
+
+        .skill-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .skill-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+            color: white;
             font-size: 1.5rem;
         }
 
-        .tiktok-tag {
-            background: #4d3d1a;
-            border-radius: 2rem;
-            padding: 1rem;
-            border: 2px solid #ffcf6e;
-            margin-top: 0.8rem;
+        /* ===== EXTERNAL LINKS ===== */
+        .external-links {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            padding: 4rem 0;
         }
 
-        .tiktok-tag p {
-            color: #fff0c0;
+        .external-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 2rem;
+        }
+
+        .external-card {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            text-align: center;
+            color: white;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+
+        .external-card:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateY(-5px);
+        }
+
+        .external-card i {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        /* ===== PROJECTS GRID ===== */
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .project-card {
+            background: white;
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            transition: all 0.3s;
+        }
+
+        .project-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .project-image {
+            height: 200px;
+            overflow: hidden;
+        }
+
+        .project-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s;
+        }
+
+        .project-card:hover .project-image img {
+            transform: scale(1.1);
+        }
+
+        .project-content {
+            padding: 1.5rem;
+        }
+
+        .project-content h3 {
+            margin-bottom: 0.5rem;
+        }
+
+        .project-content p {
+            color: var(--gray);
+            margin-bottom: 1rem;
+        }
+
+        .project-link {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* ===== CONTACT SECTION ===== */
+        .contact-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+        }
+
+        .contact-info {
+            background: white;
+            padding: 2rem;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow);
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            border-bottom: 1px solid var(--gray-light);
+        }
+
+        .contact-item i {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .contact-item a {
+            color: var(--dark);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .contact-item a:hover {
+            color: var(--primary);
+        }
+
+        .contact-form {
+            background: white;
+            padding: 2rem;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            border: 1px solid var(--gray-light);
+            border-radius: var(--radius);
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+        }
+
+        /* ===== ADMIN PANEL ===== */
+        .admin-panel {
+            display: none;
+            margin-top: 3rem;
+            padding: 2rem;
+            background: white;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow);
+        }
+
+        .admin-panel.active {
+            display: block;
+        }
+
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .admin-tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .admin-tab {
+            padding: 0.5rem 1.5rem;
+            border: none;
+            background: var(--light);
+            cursor: pointer;
+            border-radius: var(--radius-full);
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .admin-tab.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .admin-content {
+            display: none;
+        }
+
+        .admin-content.active {
+            display: block;
+        }
+
+        .info-grid {
+            display: grid;
+            gap: 1.5rem;
+        }
+
+        .info-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background: var(--light);
+            border-radius: var(--radius);
+        }
+
+        .info-item label {
+            font-weight: 600;
+            min-width: 120px;
+        }
+
+        .info-item input,
+        .info-item textarea {
+            flex: 1;
+            padding: 0.5rem;
+            border: 1px solid var(--gray-light);
+            border-radius: var(--radius);
+        }
+
+        .project-admin-item,
+        .skill-admin-item {
+            background: var(--light);
+            padding: 1rem;
+            border-radius: var(--radius);
+            margin-bottom: 1rem;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .project-admin-item input,
+        .skill-admin-item input {
+            padding: 0.5rem;
+            border: 1px solid var(--gray-light);
+            border-radius: var(--radius);
+            flex: 1;
+        }
+
+        .save-btn {
+            background: var(--success);
+            color: white;
+            border: none;
+            padding: 0.5rem 1.5rem;
+            border-radius: var(--radius);
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .delete-btn {
+            background: var(--danger);
+            color: white;
+            border: none;
+            padding: 0.5rem 1.5rem;
+            border-radius: var(--radius);
+            cursor: pointer;
+        }
+
+        /* ===== MODALS ===== */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(5px);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: var(--radius-lg);
+            width: 90%;
+            max-width: 400px;
+            position: relative;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--gray);
+        }
+
+        .modal-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .google-btn {
+            width: 100%;
+            padding: 0.8rem;
+            background: white;
+            border: 2px solid var(--gray-light);
+            border-radius: var(--radius);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+            margin-bottom: 1rem;
+        }
+
+        .google-btn:hover {
+            background: var(--light);
+            border-color: var(--primary);
+        }
+
+        .google-btn img {
+            width: 20px;
+            height: 20px;
+        }
+
+        .divider {
+            text-align: center;
+            margin: 1.5rem 0;
+            position: relative;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: 45%;
+            height: 1px;
+            background: var(--gray-light);
+        }
+
+        .divider::before {
+            left: 0;
+        }
+
+        .divider::after {
+            right: 0;
+        }
+
+        .auth-toggle {
+            text-align: center;
+            margin-top: 1.5rem;
+        }
+
+        .auth-toggle a {
+            color: var(--primary);
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        /* ===== TOAST ===== */
+        .toast {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            padding: 1rem 1.5rem;
+            background: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-xl);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            z-index: 9999;
+            animation: slideIn 0.3s ease;
+            border-left: 4px solid var(--primary);
+        }
+
+        .toast.success {
+            border-left-color: var(--success);
+        }
+
+        .toast.error {
+            border-left-color: var(--danger);
+        }
+
+        .toast.warning {
+            border-left-color: var(--warning);
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* ===== FOOTER ===== */
+        .footer {
+            background: var(--dark);
+            color: white;
+            padding: 3rem 0 1rem;
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .footer-links a {
+            color: var(--gray-light);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .footer-links a:hover {
+            color: white;
+        }
+
+        .footer-social {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .footer-social a {
+            color: white;
             font-size: 1.2rem;
         }
 
-        .tiktok-tag p strong {
-            color: white;
-            font-size: 1.8rem;
-        }
-
-        /* reset button advanced */
-        .reset-advanced {
-            background: #2b3d6b;
-            border: none;
-            color: white;
-            font-size: 2rem;
-            font-weight: bold;
-            padding: 1.3rem 2rem;
-            border-radius: 5rem;
-            border-bottom: 8px solid #121e3a;
-            box-shadow: 0 20px 0 #0d162b, 0 10px 30px black;
-            width: 100%;
-            cursor: pointer;
-            transition: 0.07s;
-            letter-spacing: 2px;
-            margin-top: 1.5rem;
-            touch-action: manipulation;
-        }
-
-        .reset-advanced:active {
-            transform: translateY(10px);
-            border-bottom-width: 3px;
-            box-shadow: 0 8px 0 #0d162b;
-        }
-
-        .hidden {
-            display: none !important;
-        }
-
-        .footer-note-advanced {
+        .footer-bottom {
             text-align: center;
-            margin-top: 2.5rem;
-            color: #8da2d3;
-            font-weight: 500;
-            font-size: 1.1rem;
-            letter-spacing: 0.5px;
-            border-top: 1px dashed #ffc85760;
-            padding-top: 1.8rem;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255,255,255,0.1);
         }
 
-        /* small responsive touch */
-        @media (max-width: 600px) {
-            .domain-header {
-                border-radius: 50px;
-                padding: 0.8rem 1.2rem;
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 768px) {
+            .hero-grid {
+                grid-template-columns: 1fr;
+                text-align: center;
             }
-            .big-mahesh {
-                max-height: 45vh;
+
+            .hero-buttons {
+                justify-content: center;
             }
-            .small-ghinga {
-                width: 110px;
-                height: 110px;
+
+            .contact-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .external-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .footer-grid {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+
+            .footer-social {
+                justify-content: center;
+            }
+
+            .admin-tabs {
+                justify-content: center;
+            }
+
+            .project-admin-item,
+            .skill-admin-item {
+                flex-direction: column;
+            }
+
+            .project-admin-item input,
+            .skill-admin-item input {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .external-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .hero-buttons {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
             }
         }
     </style>
 </head>
 <body>
-    <div class="website-card">
-        <!-- domain header advanced -->
-        <div class="domain-header">
-            <div class="logo-area">
-                <i class="fas fa-crown" style="color: #fbbf24; font-size: 2rem;"></i>
-                <span class="domain-name">bishalshrestha17.com.np</span>
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar">
+        <div class="container nav-container">
+            <a href="#" class="logo">B.S.</a>
+            
+            <div class="menu-toggle" id="menuToggle">
+                <span></span>
+                <span></span>
+                <span></span>
             </div>
-            <div class="verified-badge">
-                <i class="fas fa-check-circle"></i> <span>official · touch drag</span>
-            </div>
-            <div class="tiktok-views" id="viewsPanel">
-                <i class="fas fa-fire fire-icon"></i>
-                <span class="view-digit" id="viewCountDisplay">0</span>
-                <span class="view-text">VIEWS</span>
-            </div>
+
+            <ul class="nav-menu" id="navMenu">
+                <li><a href="#home" class="nav-link active"><i class="fas fa-home"></i> <span>Home</span></a></li>
+                <li><a href="#about" class="nav-link"><i class="fas fa-user"></i> <span>About</span></a></li>
+                <li><a href="#skills" class="nav-link"><i class="fas fa-code"></i> <span>Skills</span></a></li>
+                <li><a href="#projects" class="nav-link"><i class="fas fa-briefcase"></i> <span>Projects</span></a></li>
+                <li><a href="#contact" class="nav-link"><i class="fas fa-envelope"></i> <span>Contact</span></a></li>
+                <li>
+                    <div class="profile-icon" id="profileIcon">
+                        <span id="profileInitial">B</span>
+                    </div>
+                </li>
+            </ul>
         </div>
 
-        <!-- main layout 2 cols -->
-        <div class="game-layout">
-            <!-- LEFT: BIG MAHESH PHOTO (half screen) -->
-            <div class="big-photo-card" id="maheshZone">
-                <div class="photo-label">
-                    <span><i class="fas fa-user"></i> mahesh.png</span>
-                    <span class="mouth-hint">👄 drop near mouth</span>
+        <!-- Profile Dropdown -->
+        <div class="profile-dropdown" id="profileDropdown">
+            <div class="dropdown-header" id="dropdownHeader">
+                <h4>Guest User</h4>
+                <p>Please login to access admin features</p>
+            </div>
+            <div id="dropdownMenu">
+                <a href="#" class="dropdown-item" onclick="openModal('loginModal')">
+                    <i class="fas fa-sign-in-alt"></i> Login
+                </a>
+                <a href="#" class="dropdown-item" onclick="openModal('signupModal')">
+                    <i class="fas fa-user-plus"></i> Sign Up
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+        <div class="container">
+            <div class="hero-grid">
+                <div class="hero-content">
+                    <h1 id="heroName">Bishal Shrestha</h1>
+                    <p id="heroTitle">Ethical Hacker | Graphic Designer | Digital Marketer | Video Editor | Web Developer | Cyber Security Expert</p>
+                    <div class="hero-buttons">
+                        <a href="#projects" class="btn btn-primary">
+                            <i class="fas fa-briefcase"></i> View My Work
+                        </a>
+                        <a href="#contact" class="btn btn-outline">
+                            <i class="fas fa-handshake"></i> Hire Me
+                        </a>
+                    </div>
                 </div>
-                <div class="image-wrapper" id="maheshFrame">
-                    <img src="mahesh.png" 
-                         alt="mahesh big" 
-                         class="big-mahesh" 
-                         id="maheshImg"
-                         draggable="false"
-                         onerror="this.src='https://placehold.co/600x700/6b4f2e/ffd988?text=MAHESH+BIG'">
+                <div class="hero-image">
+                    <img id="profileImage" src="https://i.ibb.co/kgn420MX/image.png" alt="Bishal Shrestha">
                 </div>
             </div>
+        </div>
+    </section>
 
-            <!-- RIGHT: SMALL GHINGA + WIN -->
-            <div class="small-photo-card">
-                <div class="drag-header">
-                    <i class="fas fa-hand-pointer"></i>
-                    <span>drag this ghinga →</span>
-                </div>
+    <!-- External Links Section -->
+    <section class="external-links">
+        <div class="container">
+            <div class="section-title" style="color: white;">
+                <h2 style="color: white;">My Projects</h2>
+                <p style="color: rgba(255,255,255,0.8);">Check out my other amazing websites</p>
+            </div>
 
-                <div class="ghinga-container" id="ghingaContainer">
-                    <img src="ghinga.png" 
-                         alt="small ghinga" 
-                         class="small-ghinga" 
-                         id="ghingaImg"
-                         draggable="false"   /* disable native drag */
-                         onerror="this.src='https://placehold.co/300x300/b58b4a/3f301b?text=GHINGA'">
-                    <div class="drag-caption" id="hintMessage">
-                        <i class="fas fa-arrow-down"></i> drag to mahesh
-                    </div>
-                </div>
+            <div class="external-grid" id="externalLinks">
+                <a href="https://sewalink.vercel.com" target="_blank" class="external-card">
+                    <i class="fas fa-link"></i>
+                    <h3>SewaLink</h3>
+                    <p>Service Platform</p>
+                </a>
+                <a href="#" target="_blank" class="external-card">
+                    <i class="fas fa-robot"></i>
+                    <h3>Rubi AI</h3>
+                    <p>AI Assistant</p>
+                </a>
+                <a href="#" target="_blank" class="external-card">
+                    <i class="fas fa-store"></i>
+                    <h3>Rubi Shop</h3>
+                    <p>E-commerce</p>
+                </a>
+                <a href="#" target="_blank" class="external-card">
+                    <i class="fas fa-briefcase"></i>
+                    <h3>Working</h3>
+                    <p>Job Portal</p>
+                </a>
+            </div>
+        </div>
+    </section>
 
-                <!-- message panel (hint / win hidden) -->
-                <div class="message-panel">
-                    <div class="hint-text" id="dynamicHint">
-                        <i class="fas fa-star" style="color: #ffd966;"></i> win = +2000 views
-                    </div>
-                </div>
+    <!-- Skills Section -->
+    <section id="skills" class="section">
+        <div class="container">
+            <div class="section-title">
+                <h2>My Expertise</h2>
+                <p>Comprehensive skills in cybersecurity, design, and digital marketing</p>
+            </div>
 
-                <!-- WIN BANNER (hidden initially) -->
-                <div id="winFullMessage" class="hidden">
-                    <div class="win-banner-advanced">
+            <div class="skills-grid" id="skillsGrid">
+                <!-- Skills will be loaded dynamically -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Projects Section -->
+    <section id="projects" class="section">
+        <div class="container">
+            <div class="section-title">
+                <h2>Featured Projects</h2>
+                <p>Some of my recent work across different domains</p>
+            </div>
+
+            <div class="projects-grid" id="projectsGrid">
+                <!-- Projects will be loaded dynamically -->
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="section">
+        <div class="container">
+            <div class="section-title">
+                <h2>About Me</h2>
+                <p>Get to know more about my journey</p>
+            </div>
+
+            <div class="about-content" id="aboutContent" style="max-width: 800px; margin: 0 auto; text-align: center;">
+                <p>I'm a passionate cybersecurity professional and creative digital creator with over 5 years of experience in the tech industry. My journey began with a curiosity about how systems work and how to make them secure, which led me to pursue ethical hacking and cybersecurity.</p>
+                <p>Over the years, I've expanded my expertise to include graphic design, digital marketing, video editing, and web development. This unique combination of technical security knowledge and creative skills allows me to offer comprehensive solutions to clients.</p>
+                <p>I believe that in today's digital world, security and creativity must go hand in hand. My approach combines technical excellence with aesthetic sensibilities to deliver results that are not only functional but also visually appealing.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="section">
+        <div class="container">
+            <div class="section-title">
+                <h2>Get In Touch</h2>
+                <p>Have a project in mind? Let's discuss</p>
+            </div>
+
+            <div class="contact-grid">
+                <!-- Contact Info -->
+                <div class="contact-info" id="contactInfo">
+                    <h3 style="margin-bottom: 2rem;">Contact Information</h3>
+                    
+                    <div class="contact-item">
+                        <i class="fas fa-phone"></i>
                         <div>
-                            <span>🏆 YOU WIN!</span>
-                            <span class="views-badge-2000">🔥 +2000 VIEWS</span>
+                            <a href="tel:9761409400" id="phone1">9761409400</a><br>
+                            <a href="tel:9761614027" id="phone2">9761614027</a><br>
+                            <a href="tel:9761409401" id="phone3">9761409401</a>
                         </div>
-                        <div class="tiktok-tag">
-                            <p>📱 make a video & tag <strong>@Bishalshrestha17</strong><br>
-                            <span style="font-size:2rem; color:#ffe459;">⚡ 2k views instantly ⚡</span></p>
+                    </div>
+
+                    <div class="contact-item">
+                        <i class="fab fa-whatsapp"></i>
+                        <div>
+                            <a href="https://wa.me/9761614027" id="whatsapp1" target="_blank">9761614027</a><br>
+                            <a href="https://wa.me/9761409400" id="whatsapp2" target="_blank">9761409400</a>
                         </div>
+                    </div>
+
+                    <div class="contact-item">
+                        <i class="fas fa-envelope"></i>
+                        <a href="mailto:bishalxtha17@gmail.com" id="email">bishalxtha17@gmail.com</a>
+                    </div>
+
+                    <div class="contact-item">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span id="location">Kathmandu, Nepal</span>
+                    </div>
+
+                    <div class="contact-item">
+                        <i class="fab fa-youtube"></i>
+                        <a href="https://youtube.com/@VXXTHA" id="youtube" target="_blank">@VXXTHA</a>
+                    </div>
+
+                    <div class="contact-item">
+                        <i class="fab fa-github"></i>
+                        <a href="https://github.com/bishal17577" id="github" target="_blank">bishal17577</a>
+                    </div>
+
+                    <div class="contact-item">
+                        <i class="fab fa-facebook"></i>
+                        <a href="https://facebook.com/profile.php?id=100066889683996" id="facebook" target="_blank">Bishal Shrestha</a>
                     </div>
                 </div>
 
-                <!-- reset button -->
-                <button class="reset-advanced" id="resetGameBtn">
-                    <i class="fas fa-rotate-right"></i> PLAY AGAIN
-                </button>
+                <!-- Contact Form -->
+                <div class="contact-form">
+                    <h3 style="margin-bottom: 2rem;">Send Message</h3>
+                    <form id="contactForm">
+                        <div class="form-group">
+                            <input type="text" class="form-control" name="name" placeholder="Your Name" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="email" class="form-control" name="email" placeholder="Your Email" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="text" class="form-control" name="subject" placeholder="Subject" required>
+                        </div>
+                        <div class="form-group">
+                            <textarea class="form-control" name="message" placeholder="Your Message" rows="5" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block">
+                            <i class="fas fa-paper-plane"></i> Send Message
+                        </button>
+                    </form>
+                </div>
             </div>
         </div>
+    </section>
 
-        <div class="footer-note-advanced">
-            ⚡ touch drag works on phone · glassmorphism · half screen mahesh · ghinga small ⚡
+    <!-- Admin Panel -->
+    <section id="adminPanel" class="admin-panel">
+        <div class="container">
+            <div class="admin-header">
+                <h2>Admin Panel</h2>
+                <button class="btn btn-danger" onclick="logout()">Logout</button>
+            </div>
+
+            <div class="admin-tabs">
+                <button class="admin-tab active" onclick="switchTab('profile')">Profile</button>
+                <button class="admin-tab" onclick="switchTab('contact')">Contact</button>
+                <button class="admin-tab" onclick="switchTab('projects')">Projects</button>
+                <button class="admin-tab" onclick="switchTab('skills')">Skills</button>
+            </div>
+
+            <!-- Profile Tab -->
+            <div id="profileTab" class="admin-content active">
+                <div class="info-grid">
+                    <div class="info-item">
+                        <label>Name:</label>
+                        <input type="text" id="adminName" value="Bishal Shrestha">
+                    </div>
+                    <div class="info-item">
+                        <label>Title:</label>
+                        <input type="text" id="adminTitle" value="Ethical Hacker | Graphic Designer | Digital Marketer | Video Editor | Web Developer | Cyber Security Expert">
+                    </div>
+                    <div class="info-item">
+                        <label>About:</label>
+                        <textarea id="adminAbout" rows="4">I'm a passionate cybersecurity professional and creative digital creator with over 5 years of experience in the tech industry. My journey began with a curiosity about how systems work and how to make them secure, which led me to pursue ethical hacking and cybersecurity.
+
+Over the years, I've expanded my expertise to include graphic design, digital marketing, video editing, and web development. This unique combination of technical security knowledge and creative skills allows me to offer comprehensive solutions to clients.
+
+I believe that in today's digital world, security and creativity must go hand in hand. My approach combines technical excellence with aesthetic sensibilities to deliver results that are not only functional but also visually appealing.</textarea>
+                    </div>
+                    <div class="info-item">
+                        <label>Profile Image URL:</label>
+                        <input type="text" id="adminImage" value="https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80">
+                    </div>
+                    <button class="save-btn" onclick="saveProfile()">Save Changes</button>
+                </div>
+            </div>
+
+            <!-- Contact Tab -->
+            <div id="contactTab" class="admin-content">
+                <div class="info-grid">
+                    <div class="info-item">
+                        <label>Phone 1:</label>
+                        <input type="text" id="adminPhone1" value="9761409400">
+                    </div>
+                    <div class="info-item">
+                        <label>Phone 2:</label>
+                        <input type="text" id="adminPhone2" value="9761614027">
+                    </div>
+                    <div class="info-item">
+                        <label>Phone 3:</label>
+                        <input type="text" id="adminPhone3" value="9761409401">
+                    </div>
+                    <div class="info-item">
+                        <label>WhatsApp 1:</label>
+                        <input type="text" id="adminWhatsapp1" value="9761614027">
+                    </div>
+                    <div class="info-item">
+                        <label>WhatsApp 2:</label>
+                        <input type="text" id="adminWhatsapp2" value="9761409400">
+                    </div>
+                    <div class="info-item">
+                        <label>Email:</label>
+                        <input type="email" id="adminEmail" value="bishalxtha17@gmail.com">
+                    </div>
+                    <div class="info-item">
+                        <label>Location:</label>
+                        <input type="text" id="adminLocation" value="Kathmandu, Nepal">
+                    </div>
+                    <div class="info-item">
+                        <label>YouTube:</label>
+                        <input type="text" id="adminYoutube" value="https://youtube.com/@VXXTHA">
+                    </div>
+                    <div class="info-item">
+                        <label>GitHub:</label>
+                        <input type="text" id="adminGithub" value="https://github.com/bishal17577">
+                    </div>
+                    <div class="info-item">
+                        <label>Facebook:</label>
+                        <input type="text" id="adminFacebook" value="https://facebook.com/profile.php?id=100066889683996">
+                    </div>
+                    <button class="save-btn" onclick="saveContact()">Save Changes</button>
+                </div>
+            </div>
+
+            <!-- Projects Tab -->
+            <div id="projectsTab" class="admin-content">
+                <div id="projectsList"></div>
+                <button class="save-btn" onclick="addProject()">Add New Project</button>
+            </div>
+
+            <!-- Skills Tab -->
+            <div id="skillsTab" class="admin-content">
+                <div id="skillsList"></div>
+                <button class="save-btn" onclick="addSkill()">Add New Skill</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div>
+                    <h3>Bishal Shrestha</h3>
+                    <p>Ethical Hacker & Digital Creator</p>
+                </div>
+                <div class="footer-links">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="#home">Home</a></li>
+                        <li><a href="#about">About</a></li>
+                        <li><a href="#skills">Skills</a></li>
+                        <li><a href="#projects">Projects</a></li>
+                        <li><a href="#contact">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="footer-links">
+                    <h4>Services</h4>
+                    <ul>
+                        <li>Ethical Hacking</li>
+                        <li>Graphic Design</li>
+                        <li>Digital Marketing</li>
+                        <li>Video Editing</li>
+                        <li>Web Design</li>
+                    </ul>
+                </div>
+                <div>
+                    <h4>Follow Me</h4>
+                    <div class="footer-social" id="footerSocial">
+                        <a href="https://youtube.com/@VXXTHA" target="_blank"><i class="fab fa-youtube"></i></a>
+                        <a href="https://github.com/bishal17577" target="_blank"><i class="fab fa-github"></i></a>
+                        <a href="https://facebook.com/profile.php?id=100066889683996" target="_blank"><i class="fab fa-facebook"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 Bishal Shrestha. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Login Modal -->
+    <div class="modal" id="loginModal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('loginModal')">&times;</button>
+            <div class="modal-header">
+                <h2>Welcome Back</h2>
+                <p>Login to your account</p>
+            </div>
+            
+            <!-- REAL Google Sign In Button -->
+            <button class="google-btn" onclick="googleSignIn()">
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
+                Continue with Google
+            </button>
+            
+            <div class="divider">or</div>
+            
+            <!-- Email/Password Sign In -->
+            <form id="loginForm">
+                <div class="form-group">
+                    <input type="email" class="form-control" id="loginEmail" placeholder="Email" required>
+                </div>
+                <div class="form-group">
+                    <input type="password" class="form-control" id="loginPassword" placeholder="Password" required>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Login</button>
+            </form>
+            
+            <div class="auth-toggle">
+                Don't have an account? <a onclick="switchToSignup()">Sign Up</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Signup Modal -->
+    <div class="modal" id="signupModal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('signupModal')">&times;</button>
+            <div class="modal-header">
+                <h2>Create Account</h2>
+                <p>Sign up to get started</p>
+            </div>
+            
+            <!-- REAL Google Sign Up Button -->
+            <button class="google-btn" onclick="googleSignIn()">
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
+                Continue with Google
+            </button>
+            
+            <div class="divider">or</div>
+            
+            <!-- Email/Password Sign Up -->
+            <form id="signupForm">
+                <div class="form-group">
+                    <input type="text" class="form-control" id="signupName" placeholder="Full Name" required>
+                </div>
+                <div class="form-group">
+                    <input type="email" class="form-control" id="signupEmail" placeholder="Email" required>
+                </div>
+                <div class="form-group">
+                    <input type="password" class="form-control" id="signupPassword" placeholder="Password" required minlength="6">
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Sign Up</button>
+            </form>
+            
+            <div class="auth-toggle">
+                Already have an account? <a onclick="switchToLogin()">Login</a>
+            </div>
         </div>
     </div>
 
     <script>
-        (function() {
-            // ---------- ELEMENTS ----------
-            const ghinga = document.getElementById('ghingaImg');
-            const maheshZone = document.getElementById('maheshZone');
-            const maheshFrame = document.getElementById('maheshFrame');
-            const dynamicHint = document.getElementById('dynamicHint');
-            const winFullDiv = document.getElementById('winFullMessage');
-            const resetBtn = document.getElementById('resetGameBtn');
-            const viewSpan = document.getElementById('viewCountDisplay');
-            const viewsPanel = document.getElementById('viewsPanel');
+        // ===== FIREBASE CONFIGURATION (YOUR ACTUAL CONFIG) =====
+        const firebaseConfig = {
+            apiKey: "AIzaSyDJLnUB8XnXWPEtSRAMuQr9ASmD16HLIJc",
+            authDomain: "bishalshrestha17-de676.firebaseapp.com",
+            projectId: "bishalshrestha17-de676",
+            storageBucket: "bishalshrestha17-de676.firebasestorage.app",
+            messagingSenderId: "631628771230",
+            appId: "1:631628771230:web:389c6430535f6a46b6708f"
+        };
 
-            // ---------- STATE ----------
-            let viewCount = 0;
-            let gameWon = false;
-            let dragging = false;
-            let startX, startY, currentX, currentY;
-            let ghingaRect = null;
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
 
-            // clone for visual feedback (simple transform, no actual clone)
-            function updateView() {
-                viewSpan.innerText = viewCount;
+        // ===== GLOBAL VARIABLES =====
+        let currentUser = null;
+        const adminEmail = "bishalxtha17@gmail.com";
+
+        // ===== DOM ELEMENTS =====
+        const navbar = document.getElementById('navbar');
+        const menuToggle = document.getElementById('menuToggle');
+        const navMenu = document.getElementById('navMenu');
+        const profileIcon = document.getElementById('profileIcon');
+        const profileDropdown = document.getElementById('profileDropdown');
+        const profileInitial = document.getElementById('profileInitial');
+        const dropdownHeader = document.getElementById('dropdownHeader');
+        const dropdownMenu = document.getElementById('dropdownMenu');
+        const adminPanel = document.getElementById('adminPanel');
+
+        // ===== NAVIGATION =====
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
             }
+        });
 
-            function pulseViews() {
-                viewsPanel.style.transform = 'scale(1.1)';
-                viewsPanel.style.transition = 'transform 0.12s';
-                setTimeout(() => viewsPanel.style.transform = 'scale(1)', 120);
+        menuToggle.addEventListener('click', () => {
+            menuToggle.classList.toggle('active');
+            navMenu.classList.toggle('active');
+            
+            const spans = menuToggle.querySelectorAll('span');
+            if (menuToggle.classList.contains('active')) {
+                spans[0].style.transform = 'rotate(45deg) translate(8px, 8px)';
+                spans[1].style.opacity = '0';
+                spans[2].style.transform = 'rotate(-45deg) translate(7px, -7px)';
+            } else {
+                spans[0].style.transform = 'none';
+                spans[1].style.opacity = '1';
+                spans[2].style.transform = 'none';
             }
+        });
 
-            // win function
-            function winGame() {
-                if (gameWon) return;
-                gameWon = true;
-                viewCount += 2000;
-                updateView();
-                pulseViews();
-
-                // hide ghinga
-                ghinga.style.display = 'none';
-                winFullDiv.classList.remove('hidden');
-                dynamicHint.innerHTML = '<i class="fas fa-check-circle" style="color:#9bff6b;"></i> 🎉 GHINGA DELIVERED! +2000 views!';
-                maheshFrame.classList.add('highlight-drop');
-                maheshFrame.style.transform = 'scale(1.02)';
-                setTimeout(() => maheshFrame.style.transform = 'scale(1)', 150);
-                // remove active drop highlight
-                maheshZone.classList.remove('drop-active');
+        // Close menu when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!navMenu.contains(e.target) && !menuToggle.contains(e.target)) {
+                navMenu.classList.remove('active');
+                menuToggle.classList.remove('active');
             }
+        });
 
-            // reset everything
-            function resetGame() {
-                gameWon = false;
-                ghinga.style.display = 'block';
-                winFullDiv.classList.add('hidden');
-                dynamicHint.innerHTML = '<i class="fas fa-star" style="color: #ffd966;"></i> win = +2000 views';
-                maheshFrame.classList.remove('highlight-drop');
-                maheshZone.classList.remove('drop-active');
-                viewCount = 0;
-                updateView();
-                // reset position (no transform, just in case)
-                ghinga.style.transform = '';
-                ghinga.classList.remove('dragging');
-                dragging = false;
+        // ===== PROFILE DROPDOWN =====
+        profileIcon.addEventListener('click', (e) => {
+            e.stopPropagation();
+            profileDropdown.classList.toggle('active');
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!profileIcon.contains(e.target) && !profileDropdown.contains(e.target)) {
+                profileDropdown.classList.remove('active');
             }
+        });
 
-            // ---------- TOUCH DRAG IMPLEMENTATION ----------
-            function onTouchStart(e) {
-                if (gameWon) {
-                    e.preventDefault();
-                    return;
+        // ===== ACTIVE LINK =====
+        const sections = document.querySelectorAll('section');
+        const navLinks = document.querySelectorAll('.nav-link');
+
+        window.addEventListener('scroll', () => {
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.clientHeight;
+                if (pageYOffset >= sectionTop - 150) {
+                    current = section.getAttribute('id');
                 }
-                e.preventDefault();  // prevent scrolling
-                const touch = e.touches[0];
-                startX = touch.clientX;
-                startY = touch.clientY;
-
-                // get initial ghinga position and size
-                ghingaRect = ghinga.getBoundingClientRect();
-
-                // add dragging class
-                ghinga.classList.add('dragging');
-                dragging = true;
-
-                // optional: set a dataTransfer-like flag
-            }
-
-            function onTouchMove(e) {
-                if (!dragging || gameWon) return;
-                e.preventDefault(); // crucial to prevent page scroll
-
-                const touch = e.touches[0];
-                currentX = touch.clientX;
-                currentY = touch.clientY;
-
-                // calculate delta from start
-                const deltaX = currentX - startX;
-                const deltaY = currentY - startY;
-
-                // apply transform to ghinga (relative to its original position)
-                ghinga.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
-                ghinga.style.transition = 'none'; // instant move
-
-                // check collision with maheshZone while moving
-                const ghingaCenterX = ghingaRect.left + ghingaRect.width/2 + deltaX;
-                const ghingaCenterY = ghingaRect.top + ghingaRect.height/2 + deltaY;
-
-                const maheshRect = maheshZone.getBoundingClientRect();
-
-                if (ghingaCenterX >= maheshRect.left && ghingaCenterX <= maheshRect.right &&
-                    ghingaCenterY >= maheshRect.top && ghingaCenterY <= maheshRect.bottom) {
-                    // highlight drop zone
-                    maheshZone.classList.add('drop-active');
-                } else {
-                    maheshZone.classList.remove('drop-active');
-                }
-            }
-
-            function onTouchEnd(e) {
-                if (!dragging || gameWon) {
-                    // ensure class removal
-                    ghinga.classList.remove('dragging');
-                    ghinga.style.transform = '';
-                    return;
-                }
-                e.preventDefault();
-
-                // get final finger position
-                const touch = e.changedTouches[0];
-                if (!touch) return;
-
-                const endX = touch.clientX;
-                const endY = touch.clientY;
-
-                // get maheshZone rect
-                const maheshRect = maheshZone.getBoundingClientRect();
-
-                // check if drop position is inside maheshZone
-                if (endX >= maheshRect.left && endX <= maheshRect.right &&
-                    endY >= maheshRect.top && endY <= maheshRect.bottom) {
-                    // DROP success
-                    if (!gameWon) {
-                        winGame();
-                    }
-                }
-
-                // reset ghinga position and dragging style
-                ghinga.style.transform = '';
-                ghinga.classList.remove('dragging');
-                dragging = false;
-                maheshZone.classList.remove('drop-active');
-            }
-
-            // attach touch events
-            ghinga.addEventListener('touchstart', onTouchStart, { passive: false });
-            document.addEventListener('touchmove', onTouchMove, { passive: false });
-            document.addEventListener('touchend', onTouchEnd, { passive: false });
-            document.addEventListener('touchcancel', onTouchEnd, { passive: false });
-
-            // also support mouse for desktop testing (optional)
-            ghinga.addEventListener('mousedown', (e) => {
-                if (gameWon) return;
-                e.preventDefault();
-                startX = e.clientX;
-                startY = e.clientY;
-                ghingaRect = ghinga.getBoundingClientRect();
-                ghinga.classList.add('dragging');
-                dragging = true;
-
-                function onMouseMove(e) {
-                    if (!dragging || gameWon) return;
-                    e.preventDefault();
-                    const deltaX = e.clientX - startX;
-                    const deltaY = e.clientY - startY;
-                    ghinga.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
-                    ghinga.style.transition = 'none';
-
-                    const ghingaCenterX = ghingaRect.left + ghingaRect.width/2 + deltaX;
-                    const ghingaCenterY = ghingaRect.top + ghingaRect.height/2 + deltaY;
-                    const maheshRect = maheshZone.getBoundingClientRect();
-
-                    if (ghingaCenterX >= maheshRect.left && ghingaCenterX <= maheshRect.right &&
-                        ghingaCenterY >= maheshRect.top && ghingaCenterY <= maheshRect.bottom) {
-                        maheshZone.classList.add('drop-active');
-                    } else {
-                        maheshZone.classList.remove('drop-active');
-                    }
-                }
-
-                function onMouseUp(e) {
-                    if (dragging && !gameWon) {
-                        const maheshRect = maheshZone.getBoundingClientRect();
-                        if (e.clientX >= maheshRect.left && e.clientX <= maheshRect.right &&
-                            e.clientY >= maheshRect.top && e.clientY <= maheshRect.bottom) {
-                            winGame();
-                        }
-                    }
-                    ghinga.style.transform = '';
-                    ghinga.classList.remove('dragging');
-                    dragging = false;
-                    maheshZone.classList.remove('drop-active');
-                    document.removeEventListener('mousemove', onMouseMove);
-                    document.removeEventListener('mouseup', onMouseUp);
-                }
-
-                document.addEventListener('mousemove', onMouseMove);
-                document.addEventListener('mouseup', onMouseUp);
             });
 
-            // reset button
-            resetBtn.addEventListener('click', resetGame);
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === `#${current}`) {
+                    link.classList.add('active');
+                }
+            });
+        });
 
-            // prevent default on mahesh image to avoid any drag attempts
-            document.getElementById('maheshImg').addEventListener('mousedown', (e) => e.preventDefault());
+        // ===== MODAL FUNCTIONS =====
+        window.openModal = (modalId) => {
+            document.getElementById(modalId).classList.add('active');
+            document.body.style.overflow = 'hidden';
+        };
 
-            // initial view
-            updateView();
-        })();
+        window.closeModal = (modalId) => {
+            document.getElementById(modalId).classList.remove('active');
+            document.body.style.overflow = '';
+        };
+
+        window.switchToSignup = () => {
+            closeModal('loginModal');
+            openModal('signupModal');
+        };
+
+        window.switchToLogin = () => {
+            closeModal('signupModal');
+            openModal('loginModal');
+        };
+
+        // Close modal when clicking outside
+        window.addEventListener('click', (e) => {
+            if (e.target.classList.contains('modal')) {
+                e.target.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        });
+
+        // ===== REAL GOOGLE SIGN IN =====
+        window.googleSignIn = async () => {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            
+            try {
+                const result = await auth.signInWithPopup(provider);
+                const user = result.user;
+                
+                // Save user to Firestore
+                await db.collection('users').doc(user.uid).set({
+                    name: user.displayName,
+                    email: user.email,
+                    photoURL: user.photoURL,
+                    lastLogin: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true });
+                
+                showToast(`Welcome ${user.displayName}!`, 'success');
+                closeModal('loginModal');
+                closeModal('signupModal');
+            } catch (error) {
+                console.error('Google Sign In Error:', error);
+                showToast(error.message, 'error');
+            }
+        };
+
+        // ===== EMAIL/PASSWORD SIGN UP =====
+        document.getElementById('signupForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('signupName').value;
+            const email = document.getElementById('signupEmail').value;
+            const password = document.getElementById('signupPassword').value;
+
+            try {
+                const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+                await userCredential.user.updateProfile({ displayName: name });
+                
+                // Save user to Firestore
+                await db.collection('users').doc(userCredential.user.uid).set({
+                    name: name,
+                    email: email,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
+                showToast('Account created successfully!', 'success');
+                closeModal('signupModal');
+            } catch (error) {
+                showToast(error.message, 'error');
+            }
+        });
+
+        // ===== EMAIL/PASSWORD LOGIN =====
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            try {
+                await auth.signInWithEmailAndPassword(email, password);
+                showToast('Logged in successfully!', 'success');
+                closeModal('loginModal');
+            } catch (error) {
+                showToast(error.message, 'error');
+            }
+        });
+
+        // ===== LOGOUT =====
+        window.logout = async () => {
+            try {
+                await auth.signOut();
+                showToast('Logged out successfully', 'success');
+                profileDropdown.classList.remove('active');
+            } catch (error) {
+                showToast(error.message, 'error');
+            }
+        };
+
+        // ===== AUTH STATE OBSERVER =====
+        auth.onAuthStateChanged((user) => {
+            currentUser = user;
+            
+            if (user) {
+                // Update profile icon
+                profileInitial.textContent = user.displayName ? user.displayName.charAt(0).toUpperCase() : 'U';
+                
+                // Update dropdown for logged in user
+                dropdownHeader.innerHTML = `
+                    <h4>${user.displayName || 'User'}</h4>
+                    <p>${user.email}</p>
+                `;
+                
+                dropdownMenu.innerHTML = `
+                    <a href="#" class="dropdown-item" onclick="showUserProfile()">
+                        <i class="fas fa-user"></i> Profile
+                    </a>
+                    <a href="#" class="dropdown-item" onclick="logout()">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </a>
+                `;
+
+                // Check if admin
+                if (user.email === adminEmail) {
+                    adminPanel.classList.add('active');
+                    loadAdminData();
+                } else {
+                    adminPanel.classList.remove('active');
+                }
+            } else {
+                // Reset for guest
+                profileInitial.textContent = 'B';
+                
+                dropdownHeader.innerHTML = `
+                    <h4>Guest User</h4>
+                    <p>Please login to access admin features</p>
+                `;
+                
+                dropdownMenu.innerHTML = `
+                    <a href="#" class="dropdown-item" onclick="openModal('loginModal')">
+                        <i class="fas fa-sign-in-alt"></i> Login
+                    </a>
+                    <a href="#" class="dropdown-item" onclick="openModal('signupModal')">
+                        <i class="fas fa-user-plus"></i> Sign Up
+                    </a>
+                `;
+
+                adminPanel.classList.remove('active');
+            }
+        });
+
+        // ===== ADMIN FUNCTIONS =====
+        window.switchTab = (tabName) => {
+            document.querySelectorAll('.admin-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            document.querySelectorAll('.admin-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById(tabName + 'Tab').classList.add('active');
+        };
+
+        window.loadAdminData = async () => {
+            try {
+                const doc = await db.collection('settings').doc('portfolio').get();
+                if (doc.exists) {
+                    const data = doc.data();
+                    
+                    if (data.profile) {
+                        document.getElementById('adminName').value = data.profile.name || 'Bishal Shrestha';
+                        document.getElementById('adminTitle').value = data.profile.title || '';
+                        document.getElementById('adminAbout').value = data.profile.about || '';
+                        document.getElementById('adminImage').value = data.profile.image || '';
+                    }
+                    
+                    if (data.contact) {
+                        document.getElementById('adminPhone1').value = data.contact.phone1 || '9761409400';
+                        document.getElementById('adminPhone2').value = data.contact.phone2 || '9761614027';
+                        document.getElementById('adminPhone3').value = data.contact.phone3 || '9761409401';
+                        document.getElementById('adminWhatsapp1').value = data.contact.whatsapp1 || '9761614027';
+                        document.getElementById('adminWhatsapp2').value = data.contact.whatsapp2 || '9761409400';
+                        document.getElementById('adminEmail').value = data.contact.email || 'bishalxtha17@gmail.com';
+                        document.getElementById('adminLocation').value = data.contact.location || 'Kathmandu, Nepal';
+                        document.getElementById('adminYoutube').value = data.contact.youtube || 'https://youtube.com/@VXXTHA';
+                        document.getElementById('adminGithub').value = data.contact.github || 'https://github.com/bishal17577';
+                        document.getElementById('adminFacebook').value = data.contact.facebook || 'https://facebook.com/profile.php?id=100066889683996';
+                    }
+                }
+                
+                loadProjects();
+                loadSkills();
+                updateUIFromFirebase();
+                
+            } catch (error) {
+                console.error('Error loading admin data:', error);
+            }
+        };
+
+        window.saveProfile = async () => {
+            const profileData = {
+                name: document.getElementById('adminName').value,
+                title: document.getElementById('adminTitle').value,
+                about: document.getElementById('adminAbout').value,
+                image: document.getElementById('adminImage').value
+            };
+
+            try {
+                await db.collection('settings').doc('portfolio').set({
+                    profile: profileData
+                }, { merge: true });
+                
+                // Update UI
+                document.getElementById('heroName').textContent = profileData.name;
+                document.getElementById('heroTitle').textContent = profileData.title;
+                document.getElementById('aboutContent').innerHTML = `<p>${profileData.about.replace(/\n/g, '</p><p>')}</p>`;
+                document.getElementById('profileImage').src = profileData.image;
+                
+                showToast('Profile updated successfully!', 'success');
+            } catch (error) {
+                showToast(error.message, 'error');
+            }
+        };
+
+        window.saveContact = async () => {
+            const contactData = {
+                phone1: document.getElementById('adminPhone1').value,
+                phone2: document.getElementById('adminPhone2').value,
+                phone3: document.getElementById('adminPhone3').value,
+                whatsapp1: document.getElementById('adminWhatsapp1').value,
+                whatsapp2: document.getElementById('adminWhatsapp2').value,
+                email: document.getElementById('adminEmail').value,
+                location: document.getElementById('adminLocation').value,
+                youtube: document.getElementById('adminYoutube').value,
+                github: document.getElementById('adminGithub').value,
+                facebook: document.getElementById('adminFacebook').value
+            };
+
+            try {
+                await db.collection('settings').doc('portfolio').set({
+                    contact: contactData
+                }, { merge: true });
+                
+                // Update UI
+                document.getElementById('phone1').href = `tel:${contactData.phone1}`;
+                document.getElementById('phone1').textContent = contactData.phone1;
+                document.getElementById('phone2').href = `tel:${contactData.phone2}`;
+                document.getElementById('phone2').textContent = contactData.phone2;
+                document.getElementById('phone3').href = `tel:${contactData.phone3}`;
+                document.getElementById('phone3').textContent = contactData.phone3;
+                document.getElementById('whatsapp1').href = `https://wa.me/${contactData.whatsapp1}`;
+                document.getElementById('whatsapp1').textContent = contactData.whatsapp1;
+                document.getElementById('whatsapp2').href = `https://wa.me/${contactData.whatsapp2}`;
+                document.getElementById('whatsapp2').textContent = contactData.whatsapp2;
+                document.getElementById('email').href = `mailto:${contactData.email}`;
+                document.getElementById('email').textContent = contactData.email;
+                document.getElementById('location').textContent = contactData.location;
+                document.getElementById('youtube').href = contactData.youtube;
+                document.getElementById('github').href = contactData.github;
+                document.getElementById('facebook').href = contactData.facebook;
+                
+                showToast('Contact info updated successfully!', 'success');
+            } catch (error) {
+                showToast(error.message, 'error');
+            }
+        };
+
+        // ===== PROJECTS MANAGEMENT =====
+        const loadProjects = async () => {
+            try {
+                const snapshot = await db.collection('projects').orderBy('order').get();
+                const projectsList = document.getElementById('projectsList');
+                projectsList.innerHTML = '';
+                
+                snapshot.forEach(doc => {
+                    const project = doc.data();
+                    projectsList.innerHTML += `
+                        <div class="project-admin-item">
+                            <input type="text" id="project_${doc.id}_name" value="${project.name || ''}" placeholder="Project Name">
+                            <input type="text" id="project_${doc.id}_url" value="${project.url || ''}" placeholder="Project URL">
+                            <input type="text" id="project_${doc.id}_image" value="${project.image || ''}" placeholder="Image URL">
+                            <input type="text" id="project_${doc.id}_desc" value="${project.description || ''}" placeholder="Description">
+                            <button class="save-btn" onclick="updateProject('${doc.id}')">Save</button>
+                            <button class="delete-btn" onclick="deleteProject('${doc.id}')">Delete</button>
+                        </div>
+                    `;
+                });
+            } catch (error) {
+                console.error('Error loading projects:', error);
+            }
+        };
+
+        window.addProject = async () => {
+            try {
+                await db.collection('projects').add({
+                    name: 'New Project',
+                    url: '#',
+                    image: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80',
+                    description: 'Project description',
+                    order: Date.now()
+                });
+                loadProjects();
+                showToast('Project added successfully!', 'success');
+            } catch (error) {
+                showToast(error.message, 'error');
+            }
+        };
+
+        window.updateProject = async (id) => {
+            const name = document.getElementById(`project_${id}_name`).value;
+            const url = document.getElementById(`project_${id}_url`).value;
+            const image = document.getElementById(`project_${id}_image`).value;
+            const desc = document.getElementById(`project_${id}_desc`).value;
+            
+            try {
+                await db.collection('projects').doc(id).update({
+                    name: name,
+                    url: url,
+                    image: image,
+                    description: desc
+                });
+                showToast('Project updated successfully!', 'success');
+            } catch (error) {
+                showToast(error.message, 'error');
+            }
+        };
+
+        window.deleteProject = async (id) => {
+            if (confirm('Are you sure you want to delete this project?')) {
+                try {
+                    await db.collection('projects').doc(id).delete();
+                    loadProjects();
+                    showToast('Project deleted successfully!', 'success');
+                } catch (error) {
+                    showToast(error.message, 'error');
+                }
+            }
+        };
+
+        // ===== SKILLS MANAGEMENT =====
+        const loadSkills = async () => {
+            try {
+                const snapshot = await db.collection('skills').orderBy('order').get();
+                const skillsList = document.getElementById('skillsList');
+                skillsList.innerHTML = '';
+                
+                snapshot.forEach(doc => {
+                    const skill = doc.data();
+                    skillsList.innerHTML += `
+                        <div class="skill-admin-item">
+                            <input type="text" id="skill_${doc.id}_name" value="${skill.name || ''}" placeholder="Skill Name">
+                            <input type="text" id="skill_${doc.id}_icon" value="${skill.icon || ''}" placeholder="Icon Class">
+                            <button class="save-btn" onclick="updateSkill('${doc.id}')">Save</button>
+                            <button class="delete-btn" onclick="deleteSkill('${doc.id}')">Delete</button>
+                        </div>
+                    `;
+                });
+            } catch (error) {
+                console.error('Error loading skills:', error);
+            }
+        };
+
+        window.addSkill = async () => {
+            try {
+                await db.collection('skills').add({
+                    name: 'New Skill',
+                    icon: 'fa-code',
+                    order: Date.now()
+                });
+                loadSkills();
+                showToast('Skill added successfully!', 'success');
+            } catch (error) {
+                showToast(error.message, 'error');
+            }
+        };
+
+        window.updateSkill = async (id) => {
+            const name = document.getElementById(`skill_${id}_name`).value;
+            const icon = document.getElementById(`skill_${id}_icon`).value;
+            
+            try {
+                await db.collection('skills').doc(id).update({
+                    name: name,
+                    icon: icon
+                });
+                showToast('Skill updated successfully!', 'success');
+            } catch (error) {
+                showToast(error.message, 'error');
+            }
+        };
+
+        window.deleteSkill = async (id) => {
+            if (confirm('Are you sure you want to delete this skill?')) {
+                try {
+                    await db.collection('skills').doc(id).delete();
+                    loadSkills();
+                    showToast('Skill deleted successfully!', 'success');
+                } catch (error) {
+                    showToast(error.message, 'error');
+                }
+            }
+        };
+
+        // ===== UPDATE UI FROM FIREBASE =====
+        const updateUIFromFirebase = async () => {
+            try {
+                const settingsDoc = await db.collection('settings').doc('portfolio').get();
+                if (settingsDoc.exists) {
+                    const data = settingsDoc.data();
+                    
+                    if (data.profile) {
+                        document.getElementById('heroName').textContent = data.profile.name || 'Bishal Shrestha';
+                        document.getElementById('heroTitle').textContent = data.profile.title || '';
+                        document.getElementById('aboutContent').innerHTML = `<p>${(data.profile.about || '').replace(/\n/g, '</p><p>')}</p>`;
+                        document.getElementById('profileImage').src = data.profile.image || 'https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80';
+                    }
+                    
+                    if (data.contact) {
+                        document.getElementById('phone1').href = `tel:${data.contact.phone1 || '9761409400'}`;
+                        document.getElementById('phone1').textContent = data.contact.phone1 || '9761409400';
+                        document.getElementById('phone2').href = `tel:${data.contact.phone2 || '9761614027'}`;
+                        document.getElementById('phone2').textContent = data.contact.phone2 || '9761614027';
+                        document.getElementById('phone3').href = `tel:${data.contact.phone3 || '9761409401'}`;
+                        document.getElementById('phone3').textContent = data.contact.phone3 || '9761409401';
+                        document.getElementById('whatsapp1').href = `https://wa.me/${data.contact.whatsapp1 || '9761614027'}`;
+                        document.getElementById('whatsapp1').textContent = data.contact.whatsapp1 || '9761614027';
+                        document.getElementById('whatsapp2').href = `https://wa.me/${data.contact.whatsapp2 || '9761409400'}`;
+                        document.getElementById('whatsapp2').textContent = data.contact.whatsapp2 || '9761409400';
+                        document.getElementById('email').href = `mailto:${data.contact.email || 'bishalxtha17@gmail.com'}`;
+                        document.getElementById('email').textContent = data.contact.email || 'bishalxtha17@gmail.com';
+                        document.getElementById('location').textContent = data.contact.location || 'Kathmandu, Nepal';
+                        document.getElementById('youtube').href = data.contact.youtube || 'https://youtube.com/@VXXTHA';
+                        document.getElementById('github').href = data.contact.github || 'https://github.com/bishal17577';
+                        document.getElementById('facebook').href = data.contact.facebook || 'https://facebook.com/profile.php?id=100066889683996';
+                    }
+                }
+                
+                // Load projects
+                const projectsSnapshot = await db.collection('projects').orderBy('order').get();
+                const projectsGrid = document.getElementById('projectsGrid');
+                projectsGrid.innerHTML = '';
+                
+                projectsSnapshot.forEach(doc => {
+                    const project = doc.data();
+                    projectsGrid.innerHTML += `
+                        <div class="project-card">
+                            <div class="project-image">
+                                <img src="${project.image || 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80'}" alt="${project.name}">
+                            </div>
+                            <div class="project-content">
+                                <h3>${project.name || 'Project'}</h3>
+                                <p>${project.description || ''}</p>
+                                <a href="${project.url || '#'}" target="_blank" class="project-link">
+                                    View Project <i class="fas fa-arrow-right"></i>
+                                </a>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                // Load skills
+                const skillsSnapshot = await db.collection('skills').orderBy('order').get();
+                const skillsGrid = document.getElementById('skillsGrid');
+                skillsGrid.innerHTML = '';
+                
+                const defaultSkills = [
+                    { name: 'Ethical Hacking', icon: 'fa-shield-alt' },
+                    { name: 'Graphic Design', icon: 'fa-paint-brush' },
+                    { name: 'Digital Marketing', icon: 'fa-chart-line' },
+                    { name: 'Affiliate Marketing', icon: 'fa-dollar-sign' },
+                    { name: 'Video Editing', icon: 'fa-video' },
+                    { name: 'Web Designing', icon: 'fa-code' },
+                    { name: 'Cyber Security', icon: 'fa-lock' }
+                ];
+                
+                if (skillsSnapshot.empty) {
+                    defaultSkills.forEach(skill => {
+                        skillsGrid.innerHTML += `
+                            <div class="skill-card">
+                                <div class="skill-icon">
+                                    <i class="fas ${skill.icon}"></i>
+                                </div>
+                                <h3>${skill.name}</h3>
+                                <p>Expert in ${skill.name} with years of experience delivering quality results.</p>
+                            </div>
+                        `;
+                    });
+                } else {
+                    skillsSnapshot.forEach(doc => {
+                        const skill = doc.data();
+                        skillsGrid.innerHTML += `
+                            <div class="skill-card">
+                                <div class="skill-icon">
+                                    <i class="fas ${skill.icon || 'fa-code'}"></i>
+                                </div>
+                                <h3>${skill.name || 'Skill'}</h3>
+                                <p>Expert in ${skill.name || 'this skill'} with years of experience delivering quality results.</p>
+                            </div>
+                        `;
+                    });
+                }
+                
+            } catch (error) {
+                console.error('Error updating UI:', error);
+            }
+        };
+
+        // ===== CONTACT FORM =====
+        document.getElementById('contactForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            if (!currentUser) {
+                showToast('Please login to send messages', 'warning');
+                openModal('loginModal');
+                return;
+            }
+
+            const formData = new FormData(e.target);
+            const message = {
+                name: formData.get('name'),
+                email: formData.get('email'),
+                subject: formData.get('subject'),
+                message: formData.get('message'),
+                userId: currentUser.uid,
+                userEmail: currentUser.email,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            };
+
+            try {
+                await db.collection('messages').add(message);
+                showToast('Message sent successfully!', 'success');
+                e.target.reset();
+            } catch (error) {
+                showToast('Error sending message: ' + error.message, 'error');
+            }
+        });
+
+        // ===== TOAST NOTIFICATION =====
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            
+            let icon = 'info-circle';
+            if (type === 'success') icon = 'check-circle';
+            if (type === 'error') icon = 'exclamation-circle';
+            if (type === 'warning') icon = 'exclamation-triangle';
+            
+            toast.innerHTML = `
+                <i class="fas fa-${icon}"></i>
+                <span>${message}</span>
+            `;
+            
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.animation = 'slideIn 0.3s ease reverse';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // ===== SMOOTH SCROLL =====
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth' });
+                    navMenu.classList.remove('active');
+                    menuToggle.classList.remove('active');
+                }
+            });
+        });
+
+        // ===== USER PROFILE =====
+        window.showUserProfile = () => {
+            if (currentUser) {
+                showToast(`Logged in as: ${currentUser.email}`, 'info');
+            }
+            profileDropdown.classList.remove('active');
+        };
+
+        // ===== INITIAL LOAD =====
+        window.addEventListener('load', () => {
+            updateUIFromFirebase();
+        });
     </script>
 </body>
 </html>
