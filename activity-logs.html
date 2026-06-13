@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>Activity Logs - Naya Bato | Complete Audit Trail</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+    body { background: #f1f5f9; overflow-x: hidden; }
+    
+    .sidebar {
+      position: fixed;
+      left: 0;
+      top: 0;
+      width: 280px;
+      height: 100vh;
+      background: linear-gradient(180deg, #0f172a 0%, #020617 100%);
+      transition: all 0.3s ease;
+      z-index: 1000;
+      overflow-y: auto;
+      overflow-x: hidden;
+      box-shadow: 4px 0 20px rgba(0,0,0,0.2);
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .sidebar.collapsed { width: 85px; }
+    .sidebar.collapsed .sidebar-text { display: none; }
+    .sidebar.collapsed .logo-text { display: none; }
+    .sidebar.collapsed .logo-subtext { display: none; }
+    .sidebar.collapsed .sidebar-link { justify-content: center; padding: 14px 0; margin: 6px 12px; }
+    .sidebar.collapsed .sidebar-link i { margin-right: 0; font-size: 1.3rem; }
+    .sidebar.collapsed .logo-icon { margin: 0 auto; }
+    .sidebar.collapsed .auth-btn-text { display: none; }
+    .sidebar.collapsed .auth-btn { justify-content: center; padding: 12px 0; }
+    
+    .sidebar::-webkit-scrollbar { width: 4px; }
+    .sidebar::-webkit-scrollbar-track { background: #1e293b; }
+    .sidebar::-webkit-scrollbar-thumb { background: #3b82f6; border-radius: 10px; }
+    
+    .sidebar-link {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 12px 20px;
+      margin: 6px 16px;
+      border-radius: 12px;
+      color: #94a3b8;
+      transition: all 0.2s;
+      text-decoration: none;
+      white-space: nowrap;
+      font-weight: 500;
+    }
+    .sidebar-link:hover { background: rgba(59, 130, 246, 0.15); color: white; transform: translateX(4px); }
+    .sidebar-link.active { background: #3b82f6; color: white; box-shadow: 0 4px 12px rgba(59,130,246,0.4); }
+    .sidebar-link i { width: 22px; font-size: 1.1rem; }
+    
+    .main-content { margin-left: 280px; transition: all 0.3s ease; min-height: 100vh; }
+    .main-content.collapsed { margin-left: 85px; }
+    
+    .top-bar { background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.05); padding: 16px 24px; position: sticky; top: 0; z-index: 99; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; }
+    
+    .stat-card { background: white; border-radius: 20px; padding: 20px; transition: all 0.3s; border: 1px solid #e2e8f0; }
+    .stat-card:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(0,0,0,0.08); }
+    
+    .log-entry { background: white; border-radius: 16px; padding: 16px; transition: all 0.2s; border: 1px solid #e2e8f0; margin-bottom: 12px; }
+    .log-entry:hover { transform: translateX(5px); border-color: #3b82f6; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+    
+    .badge-login { background: #dbeafe; color: #1e40af; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; display: inline-block; }
+    .badge-transaction { background: #dcfce7; color: #166534; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; display: inline-block; }
+    .badge-product { background: #fef3c7; color: #92400e; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; display: inline-block; }
+    .badge-order { background: #fce7f3; color: #9d174d; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; display: inline-block; }
+    .badge-security { background: #fee2e2; color: #991b1b; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; display: inline-block; }
+    .badge-admin { background: #8b5cf6; color: white; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; display: inline-block; }
+    .badge-system { background: #64748b; color: white; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; display: inline-block; }
+    
+    .loading-spinner { width: 45px; height: 45px; border: 3px solid #e2e8f0; border-top-color: #3b82f6; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .empty-state { text-align: center; padding: 60px 20px; background: white; border-radius: 20px; }
+    .empty-state i { font-size: 64px; color: #cbd5e1; margin-bottom: 20px; }
+    
+    .toast { position: fixed; bottom: 24px; right: 24px; background: #1e293b; color: white; padding: 14px 24px; border-radius: 16px; z-index: 1200; animation: slideIn 0.3s ease; }
+    @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    
+    .user-avatar { width: 42px; height: 42px; background: linear-gradient(135deg, #3b82f6, #8b5cf6); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 16px; box-shadow: 0 4px 10px rgba(59,130,246,0.3); }
+    
+    @media (max-width: 768px) {
+      .sidebar { transform: translateX(-100%); }
+      .sidebar.mobile-open { transform: translateX(0); }
+      .main-content, .main-content.collapsed { margin-left: 0; }
+      .mobile-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 999; display: none; }
+      .mobile-overlay.active { display: block; }
+      .top-bar { padding: 12px 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="mobileOverlay" class="mobile-overlay" onclick="closeMobileSidebar()"></div>
+
+<div id="sidebar" class="sidebar">
+  <div class="p-5 pb-4 border-b border-gray-800">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg logo-icon">
+          <i class="fas fa-chart-line text-white text-lg"></i>
+        </div>
+        <div class="logo-text">
+          <span class="text-white text-xl font-bold">Naya Bato</span>
+          <p class="text-gray-500 text-xs mt-0.5 logo-subtext">Business Platform</p>
+        </div>
+      </div>
+      <button id="toggleSidebarBtn" class="text-gray-400 hover:text-white transition hidden md:block">
+        <i class="fas fa-chevron-left"></i>
+      </button>
+    </div>
+  </div>
+  
+  <nav class="flex-1 py-4">
+    <a href="dashboard.html" class="sidebar-link"><i class="fas fa-tachometer-alt"></i><span class="sidebar-text">Dashboard</span></a>
+    <a href="transactions.html" class="sidebar-link"><i class="fas fa-exchange-alt"></i><span class="sidebar-text">Transactions</span></a>
+    <a href="products.html" class="sidebar-link"><i class="fas fa-box"></i><span class="sidebar-text">Products</span></a>
+    <a href="orders.html" class="sidebar-link"><i class="fas fa-shopping-cart"></i><span class="sidebar-text">Orders</span></a>
+    <a href="customers.html" class="sidebar-link"><i class="fas fa-users"></i><span class="sidebar-text">Customers</span></a>
+    <a href="categories.html" class="sidebar-link"><i class="fas fa-tags"></i><span class="sidebar-text">Categories</span></a>
+    <a href="coupons.html" class="sidebar-link"><i class="fas fa-ticket-alt"></i><span class="sidebar-text">Coupons</span></a>
+    <a href="reviews.html" class="sidebar-link"><i class="fas fa-star"></i><span class="sidebar-text">Reviews</span></a>
+    <a href="inventory.html" class="sidebar-link"><i class="fas fa-warehouse"></i><span class="sidebar-text">Inventory</span></a>
+    <a href="reports.html" class="sidebar-link"><i class="fas fa-chart-bar"></i><span class="sidebar-text">Reports</span></a>
+    <a href="marketing.html" class="sidebar-link"><i class="fas fa-bullhorn"></i><span class="sidebar-text">Marketing</span></a>
+    <a href="settings.html" class="sidebar-link"><i class="fas fa-cog"></i><span class="sidebar-text">Settings</span></a>
+    <a href="activity-logs.html" class="sidebar-link active"><i class="fas fa-history"></i><span class="sidebar-text">Activity Logs</span></a>
+  </nav>
+  
+  <div class="p-5 border-t border-gray-800 mt-auto">
+    <div id="authButtonsSection">
+      <a href="login.html" class="auth-btn flex items-center justify-center gap-2 bg-blue-600 text-white py-3 rounded-xl text-sm font-medium transition hover:bg-blue-700 w-full">
+        <i class="fas fa-sign-in-alt"></i><span class="auth-btn-text">Login</span>
+      </a>
+      <a href="register.html" class="auth-btn flex items-center justify-center gap-2 border border-blue-500 text-blue-400 py-3 rounded-xl text-sm font-medium transition hover:bg-blue-600/10 w-full mt-3">
+        <i class="fas fa-user-plus"></i><span class="auth-btn-text">Register</span>
+      </a>
+    </div>
+    <button id="logoutBtn" onclick="logout()" class="hidden w-full flex items-center justify-center gap-2 bg-red-600/20 text-red-400 py-3 rounded-xl text-sm font-medium transition hover:bg-red-600/30">
+      <i class="fas fa-sign-out-alt"></i><span class="auth-btn-text">Logout</span>
+    </button>
+  </div>
+</div>
+
+<button id="mobileToggleBtn" class="fixed top-4 left-4 z-50 bg-blue-600 text-white p-3 rounded-xl shadow-lg md:hidden">
+  <i class="fas fa-bars text-lg"></i>
+</button>
+
+<div id="mainContent" class="main-content">
+  <div class="top-bar">
+    <h1 class="text-xl font-bold text-gray-800">Activity Logs</h1>
+    <div class="flex items-center gap-4">
+      <span id="userEmail" class="text-gray-500 text-sm hidden md:inline"></span>
+      <div id="userAvatar" class="user-avatar">NB</div>
+    </div>
+  </div>
+
+  <div id="contentArea" class="p-6">
+    <div class="flex justify-center items-center h-64">
+      <div class="loading-spinner"></div>
+      <p class="ml-3 text-gray-500">Loading activity logs...</p>
+    </div>
+  </div>
+
+  <footer class="bg-white border-t border-gray-100 py-5 px-6 mt-8">
+    <div class="flex flex-col md:flex-row justify-between items-center text-sm text-gray-400">
+      <p>© 2025 Naya Bato. All rights reserved. Made with ❤️ in Nepal</p>
+      <div class="flex gap-6 mt-3 md:mt-0">
+        <a href="privacy.html" class="hover:text-gray-600 transition">Privacy Policy</a>
+        <a href="terms.html" class="hover:text-gray-600 transition">Terms of Service</a>
+        <a href="support.html" class="hover:text-gray-600 transition">Support</a>
+      </div>
+    </div>
+  </footer>
+</div>
+
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyDJLnUB8XnXWPEtSRAMuQr9ASmD16HLIJc",
+    authDomain: "bishalshrestha17-de676.firebaseapp.com",
+    projectId: "bishalshrestha17-de676",
+    storageBucket: "bishalshrestha17-de676.firebasestorage.app",
+    messagingSenderId: "631628771230",
+    appId: "1:631628771230:web:389c6430535f6a46b6708f"
+  };
+  
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.firestore();
+  
+  let currentUser = null;
+  let allLogs = [];
+  let isAdmin = false;
+  let activityChart = null;
+
+  auth.onAuthStateChanged(async (user) => {
+    currentUser = user;
+    if (user) {
+      document.getElementById('authButtonsSection').style.display = 'none';
+      document.getElementById('logoutBtn').style.display = 'flex';
+      document.getElementById('userEmail').innerText = user.email;
+      document.getElementById('userAvatar').innerText = user.email.charAt(0).toUpperCase();
+      await checkIfAdmin();
+      await loadLogs();
+    } else {
+      document.getElementById('authButtonsSection').style.display = 'block';
+      document.getElementById('logoutBtn').style.display = 'none';
+      document.getElementById('userEmail').innerText = '';
+      showLoginMessage();
+    }
+  });
+
+  async function checkIfAdmin() {
+    try {
+      const userDoc = await db.collection('users').doc(currentUser.uid).get();
+      isAdmin = userDoc.data()?.role === 'admin';
+    } catch(e) { isAdmin = false; }
+  }
+
+  function logout() { auth.signOut(); showToast('Logged out'); setTimeout(() => location.reload(), 1000); }
+  
+  function showToast(msg, isError = false) { 
+    const t = document.createElement('div'); 
+    t.className = 'toast'; 
+    t.innerHTML = `<i class="fas ${isError ? 'fa-exclamation-circle' : 'fa-check-circle'} mr-2 ${isError ? 'text-red-400' : 'text-green-400'}"></i>${msg}`; 
+    document.body.appendChild(t); 
+    setTimeout(() => t.remove(), 3000); 
+  }
+  
+  function showLoginMessage() {
+    document.getElementById('contentArea').innerHTML = `<div class="empty-state"><i class="fas fa-lock"></i><h3 class="text-xl font-semibold mb-2">Please Login to Continue</h3><p class="text-gray-500 mb-6">Login to view activity logs.</p><div class="flex gap-4 justify-center"><a href="login.html" class="bg-blue-600 text-white px-8 py-3 rounded-xl">Login Now</a><a href="register.html" class="border-2 border-blue-600 text-blue-600 px-8 py-3 rounded-xl">Create Account</a></div></div>`;
+  }
+
+  async function loadLogs() {
+    document.getElementById('contentArea').innerHTML = '<div class="flex justify-center items-center h-64"><div class="loading-spinner"></div><p class="ml-3">Loading activity logs...</p></div>';
+    
+    try {
+      let query;
+      if (isAdmin) {
+        query = await db.collection('activityLogs').orderBy('timestamp', 'desc').limit(200).get();
+      } else {
+        query = await db.collection('activityLogs').where('userId', '==', currentUser.uid).orderBy('timestamp', 'desc').limit(100).get();
+      }
+      allLogs = [];
+      query.forEach(doc => allLogs.push({ id: doc.id, ...doc.data() }));
+      renderLogs();
+    } catch(e) {
+      // Fallback without orderBy if index doesn't exist
+      try {
+        let query;
+        if (isAdmin) {
+          query = await db.collection('activityLogs').get();
+        } else {
+          query = await db.collection('activityLogs').where('userId', '==', currentUser.uid).get();
+        }
+        allLogs = [];
+        query.forEach(doc => allLogs.push({ id: doc.id, ...doc.data() }));
+        allLogs.sort((a, b) => {
+          const dateA = a.timestamp?.toDate ? a.timestamp.toDate() : new Date(0);
+          const dateB = b.timestamp?.toDate ? b.timestamp.toDate() : new Date(0);
+          return dateB - dateA;
+        });
+        renderLogs();
+      } catch(err) {
+        document.getElementById('contentArea').innerHTML = `<div class="empty-state"><i class="fas fa-exclamation-triangle text-red-500"></i><h3 class="text-xl font-semibold mb-2">Error</h3><p class="text-gray-500">${err.message}</p><button onclick="location.reload()" class="mt-4 bg-blue-600 text-white px-6 py-2 rounded-xl">Retry</button></div>`;
+      }
+    }
+  }
+
+  function getLogBadge(type) {
+    const badges = {
+      'login': 'badge-login', 'logout': 'badge-login',
+      'transaction': 'badge-transaction', 'payment': 'badge-transaction',
+      'product': 'badge-product', 'category': 'badge-product',
+      'order': 'badge-order', 'cart': 'badge-order',
+      'security': 'badge-security', 'failed_login': 'badge-security',
+      'admin': 'badge-admin', 'user_update': 'badge-admin',
+      'system': 'badge-system', 'backup': 'badge-system'
+    };
+    return badges[type] || 'badge-login';
+  }
+
+  function getLogIcon(type) {
+    const icons = {
+      'login': 'fa-sign-in-alt', 'logout': 'fa-sign-out-alt',
+      'transaction': 'fa-exchange-alt', 'payment': 'fa-credit-card',
+      'product': 'fa-box', 'category': 'fa-tags',
+      'order': 'fa-shopping-cart', 'cart': 'fa-cart-plus',
+      'security': 'fa-shield-alt', 'failed_login': 'fa-exclamation-triangle',
+      'admin': 'fa-user-shield', 'user_update': 'fa-user-edit',
+      'system': 'fa-server', 'backup': 'fa-database'
+    };
+    return icons[type] || 'fa-history';
+  }
+
+  async function renderLogs() {
+    const totalLogs = allLogs.length;
+    const todayLogs = allLogs.filter(l => {
+      const date = l.timestamp?.toDate();
+      return date && date.toDateString() === new Date().toDateString();
+    }).length;
+    const weekLogs = allLogs.filter(l => {
+      const date = l.timestamp?.toDate();
+      return date && date > new Date(Date.now() - 7 * 86400000);
+    }).length;
+    const loginLogs = allLogs.filter(l => l.action === 'login' || l.action === 'logout').length;
+    const transactionLogs = allLogs.filter(l => l.action === 'transaction').length;
+    const adminLogs = allLogs.filter(l => l.isAdminAction).length;
+    
+    // Chart data
+    const last7Days = [];
+    for (let i = 6; i >= 0; i--) {
+      const date = new Date();
+      date.setDate(date.getDate() - i);
+      const count = allLogs.filter(l => {
+        const logDate = l.timestamp?.toDate();
+        return logDate && logDate.toDateString() === date.toDateString();
+      }).length;
+      last7Days.push(count);
+    }
+    const dayLabels = ['Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5', 'Day 6', 'Today'];
+    
+    const html = `
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
+        <div class="stat-card"><div><p class="text-gray-500 text-sm">Total Activities</p><p class="text-3xl font-bold">${totalLogs.toLocaleString()}</p></div></div>
+        <div class="stat-card"><div><p class="text-gray-500 text-sm">Today's Activity</p><p class="text-3xl font-bold text-green-600">${todayLogs}</p></div></div>
+        <div class="stat-card"><div><p class="text-gray-500 text-sm">This Week</p><p class="text-3xl font-bold text-blue-600">${weekLogs}</p></div></div>
+        <div class="stat-card"><div><p class="text-gray-500 text-sm">Login Events</p><p class="text-3xl font-bold text-purple-600">${loginLogs}</p></div></div>
+      </div>
+      
+      <div class="grid lg:grid-cols-2 gap-5 mb-6">
+        <div class="bg-white rounded-xl p-5 shadow-sm"><h3 class="font-semibold mb-4">Activity Trend (Last 7 Days)</h3><canvas id="activityChart" height="150"></canvas></div>
+        <div class="bg-white rounded-xl p-5 shadow-sm"><h3 class="font-semibold mb-4">Activity Summary</h3><div class="space-y-3"><div class="flex justify-between p-2"><span>💰 Transactions</span><span class="font-bold">${transactionLogs}</span></div><div class="flex justify-between p-2"><span>🛒 Orders</span><span class="font-bold">${allLogs.filter(l => l.action === 'order').length}</span></div><div class="flex justify-between p-2"><span>📦 Products</span><span class="font-bold">${allLogs.filter(l => l.action === 'product').length}</span></div><div class="flex justify-between p-2"><span>👑 Admin Actions</span><span class="font-bold text-purple-600">${adminLogs}</span></div><div class="flex justify-between p-2"><span>🔒 Security Events</span><span class="font-bold text-red-600">${allLogs.filter(l => l.action === 'security').length}</span></div></div></div>
+      </div>
+      
+      <div class="bg-white rounded-xl p-5 mb-6 border border-gray-100">
+        <div class="flex flex-wrap justify-between items-center gap-4">
+          <div class="flex gap-3 flex-1 flex-wrap">
+            <input type="text" id="searchLog" placeholder="🔍 Search by user, action, details..." class="flex-1 min-w-[180px] border border-gray-300 rounded-xl px-4 py-3">
+            <select id="actionFilter" class="border border-gray-300 rounded-xl px-4 py-3">
+              <option value="all">All Actions</option><option value="login">Login/Logout</option><option value="transaction">Transactions</option><option value="product">Products</option><option value="order">Orders</option><option value="security">Security</option><option value="admin">Admin</option>
+            </select>
+            <input type="date" id="dateFrom" class="border border-gray-300 rounded-xl px-4 py-3">
+            <input type="date" id="dateTo" class="border border-gray-300 rounded-xl px-4 py-3">
+            <button onclick="filterLogs()" class="bg-gray-600 text-white px-6 py-3 rounded-xl hover:bg-gray-700">Filter</button>
+            <button onclick="exportLogsCSV()" class="border border-gray-300 px-6 py-3 rounded-xl hover:bg-gray-50"><i class="fas fa-download mr-2"></i>Export</button>
+            <button onclick="clearLogs()" class="border border-red-300 text-red-600 px-6 py-3 rounded-xl hover:bg-red-50"><i class="fas fa-trash-alt mr-2"></i>Clear Logs</button>
+          </div>
+        </div>
+      </div>
+      
+      <div id="logsList" class="space-y-3"></div>
+      <div id="pagination" class="mt-6 flex justify-center space-x-2"></div>
+    `;
+    
+    document.getElementById('contentArea').innerHTML = html;
+    
+    // Initialize chart
+    const ctx = document.getElementById('activityChart')?.getContext('2d');
+    if (ctx) {
+      if (activityChart) activityChart.destroy();
+      activityChart = new Chart(ctx, {
+        type: 'line',
+        data: { labels: dayLabels, datasets: [{ label: 'Activities', data: last7Days, borderColor: '#3b82f6', backgroundColor: 'rgba(59,130,246,0.1)', fill: true, tension: 0.3 }] },
+        options: { responsive: true, maintainAspectRatio: true }
+      });
+    }
+    
+    renderLogsList(allLogs, 1);
+    
+    document.getElementById('searchLog')?.addEventListener('input', () => filterLogs());
+    document.getElementById('actionFilter')?.addEventListener('change', () => filterLogs());
+    document.getElementById('dateFrom')?.addEventListener('change', () => filterLogs());
+    document.getElementById('dateTo')?.addEventListener('change', () => filterLogs());
+  }
+
+  function filterLogs() {
+    let filtered = [...allLogs];
+    const search = document.getElementById('searchLog')?.value.toLowerCase();
+    if (search) {
+      filtered = filtered.filter(l => 
+        (l.userEmail || '').toLowerCase().includes(search) ||
+        (l.action || '').toLowerCase().includes(search) ||
+        (l.details || '').toLowerCase().includes(search)
+      );
+    }
+    const action = document.getElementById('actionFilter')?.value;
+    if (action && action !== 'all') {
+      if (action === 'login') filtered = filtered.filter(l => l.action === 'login' || l.action === 'logout');
+      else filtered = filtered.filter(l => l.action === action);
+    }
+    const dateFrom = document.getElementById('dateFrom')?.value;
+    if (dateFrom) filtered = filtered.filter(l => {
+      const logDate = l.timestamp?.toDate();
+      return logDate && logDate.toISOString().split('T')[0] >= dateFrom;
+    });
+    const dateTo = document.getElementById('dateTo')?.value;
+    if (dateTo) filtered = filtered.filter(l => {
+      const logDate = l.timestamp?.toDate();
+      return logDate && logDate.toISOString().split('T')[0] <= dateTo;
+    });
+    renderLogsList(filtered, 1);
+  }
+
+  function renderLogsList(logs, page = 1) {
+    const container = document.getElementById('logsList');
+    if (!container) return;
+    
+    const itemsPerPage = 20;
+    const start = (page - 1) * itemsPerPage;
+    const end = start + itemsPerPage;
+    const pageLogs = logs.slice(start, end);
+    const totalPages = Math.ceil(logs.length / itemsPerPage);
+    
+    if (logs.length === 0) {
+      container.innerHTML = '<div class="empty-state py-12"><i class="fas fa-history"></i><p class="text-gray-400">No activity logs found.</p></div>';
+      if (document.getElementById('pagination')) document.getElementById('pagination').innerHTML = '';
+      return;
+    }
+    
+    let html = '';
+    for (let i = 0; i < pageLogs.length; i++) {
+      const log = pageLogs[i];
+      const badgeClass = getLogBadge(log.action);
+      const iconClass = getLogIcon(log.action);
+      const logDate = log.timestamp?.toDate();
+      const isSuspicious = log.isSuspicious || false;
+      
+      html += `
+        <div class="log-entry ${isSuspicious ? 'border-l-4 border-l-red-500' : ''}">
+          <div class="flex flex-wrap md:flex-nowrap justify-between items-start gap-3">
+            <div class="flex items-start gap-3">
+              <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center"><i class="fas ${iconClass} text-gray-600"></i></div>
+              <div>
+                <div class="flex flex-wrap items-center gap-2 mb-1">
+                  <span class="font-semibold text-gray-800">${log.userEmail || 'System'}</span>
+                  <span class="${badgeClass}">${log.action || 'unknown'}</span>
+                  ${log.isAdminAction ? '<span class="badge-admin">Admin Action</span>' : ''}
+                  ${isSuspicious ? '<span class="badge-security">⚠️ Suspicious</span>' : ''}
+                </div>
+                <p class="text-gray-600 text-sm">${log.details || 'No details'}</p>
+                ${log.ip ? `<p class="text-xs text-gray-400 mt-1"><i class="fas fa-network-wired mr-1"></i>IP: ${log.ip} | Device: ${log.device || 'Unknown'}</p>` : ''}
+              </div>
+            </div>
+            <div class="text-right text-sm text-gray-500">
+              <p><i class="far fa-clock mr-1"></i>${logDate ? logDate.toLocaleString() : 'Unknown'}</p>
+              ${log.duration ? `<p class="text-xs">Duration: ${log.duration}ms</p>` : ''}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+    container.innerHTML = html;
+    
+    if (document.getElementById('pagination')) {
+      let paginationHtml = '';
+      for (let i = 1; i <= Math.min(totalPages, 10); i++) {
+        paginationHtml += `<button onclick="renderLogsList(filteredLogs || allLogs, ${i})" class="px-3 py-1 border rounded ${page === i ? 'bg-blue-600 text-white' : 'hover:bg-gray-100'}">${i}</button>`;
+      }
+      document.getElementById('pagination').innerHTML = paginationHtml;
+      window.filteredLogs = logs;
+    }
+  }
+
+  function exportLogsCSV() {
+    let filtered = [...allLogs];
+    const search = document.getElementById('searchLog')?.value.toLowerCase();
+    if (search) filtered = filtered.filter(l => (l.userEmail || '').toLowerCase().includes(search) || (l.action || '').toLowerCase().includes(search));
+    
+    const headers = ['Timestamp', 'User Email', 'Action', 'Details', 'IP Address', 'Device', 'Admin Action', 'Suspicious'];
+    const rows = filtered.map(l => [
+      l.timestamp?.toDate().toLocaleString() || '', l.userEmail || '', l.action || '', 
+      l.details || '', l.ip || '', l.device || '', l.isAdminAction ? 'Yes' : 'No', l.isSuspicious ? 'Yes' : 'No'
+    ]);
+    let csv = headers.join(',') + '\n';
+    for (let i = 0; i < rows.length; i++) {
+      csv += rows[i].map(cell => `"${cell || ''}"`).join(',') + '\n';
+    }
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `activity_logs_${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('Logs exported!');
+  }
+
+  async function clearLogs() {
+    if (!isAdmin) { showToast('Only admin can clear logs', true); return; }
+    if (confirm('⚠️ WARNING: This will delete ALL activity logs. This action cannot be undone. Continue?')) {
+      const batch = db.batch();
+      for (const log of allLogs) {
+        batch.delete(db.collection('activityLogs').doc(log.id));
+      }
+      await batch.commit();
+      await loadLogs();
+      showToast('All logs cleared successfully');
+    }
+  }
+
+  // Sidebar Toggle
+  let isExpanded = true;
+  const sidebar = document.getElementById('sidebar');
+  const main = document.getElementById('mainContent');
+  const toggleBtn = document.getElementById('toggleSidebarBtn');
+  
+  function toggleSidebar() {
+    isExpanded = !isExpanded;
+    if (isExpanded) { sidebar.classList.remove('collapsed'); main.classList.remove('collapsed'); if(toggleBtn) toggleBtn.innerHTML = '<i class="fas fa-chevron-left"></i>'; }
+    else { sidebar.classList.add('collapsed'); main.classList.add('collapsed'); if(toggleBtn) toggleBtn.innerHTML = '<i class="fas fa-chevron-right"></i>'; }
+    localStorage.setItem('sidebarExpanded', isExpanded);
+  }
+  
+  if (toggleBtn) toggleBtn.addEventListener('click', toggleSidebar);
+  if (localStorage.getItem('sidebarExpanded') === 'false') toggleSidebar();
+  
+  const mobileBtn = document.getElementById('mobileToggleBtn');
+  const mobileOverlay = document.getElementById('mobileOverlay');
+  
+  function openMobileSidebar() { sidebar.classList.add('mobile-open'); mobileOverlay.classList.add('active'); document.body.style.overflow = 'hidden'; }
+  function closeMobileSidebar() { sidebar.classList.remove('mobile-open'); mobileOverlay.classList.remove('active'); document.body.style.overflow = ''; }
+  
+  if (mobileBtn) mobileBtn.addEventListener('click', openMobileSidebar);
+  window.addEventListener('resize', () => { if (window.innerWidth > 768) closeMobileSidebar(); });
+  
+  window.filterLogs = filterLogs;
+  window.exportLogsCSV = exportLogsCSV;
+  window.clearLogs = clearLogs;
+  window.renderLogsList = renderLogsList;
+</script>
+</body>
+</html>

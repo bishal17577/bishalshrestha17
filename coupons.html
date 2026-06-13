@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>Coupons - Naya Bato</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+    body { background: #f1f5f9; overflow-x: hidden; }
+    
+    .sidebar {
+      position: fixed;
+      left: 0;
+      top: 0;
+      width: 280px;
+      height: 100vh;
+      background: linear-gradient(180deg, #0f172a 0%, #020617 100%);
+      transition: all 0.3s ease;
+      z-index: 1000;
+      overflow-y: auto;
+      overflow-x: hidden;
+      box-shadow: 4px 0 20px rgba(0,0,0,0.2);
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .sidebar.collapsed { width: 85px; }
+    .sidebar.collapsed .sidebar-text { display: none; }
+    .sidebar.collapsed .logo-text { display: none; }
+    .sidebar.collapsed .logo-subtext { display: none; }
+    .sidebar.collapsed .sidebar-link { justify-content: center; padding: 14px 0; margin: 6px 12px; }
+    .sidebar.collapsed .sidebar-link i { margin-right: 0; font-size: 1.3rem; }
+    .sidebar.collapsed .logo-icon { margin: 0 auto; }
+    .sidebar.collapsed .auth-btn-text { display: none; }
+    .sidebar.collapsed .auth-btn { justify-content: center; padding: 12px 0; }
+    
+    .sidebar::-webkit-scrollbar { width: 4px; }
+    .sidebar::-webkit-scrollbar-track { background: #1e293b; }
+    .sidebar::-webkit-scrollbar-thumb { background: #3b82f6; border-radius: 10px; }
+    
+    .sidebar-link {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 12px 20px;
+      margin: 6px 16px;
+      border-radius: 12px;
+      color: #94a3b8;
+      transition: all 0.2s;
+      text-decoration: none;
+      white-space: nowrap;
+      font-weight: 500;
+    }
+    .sidebar-link:hover { background: rgba(59, 130, 246, 0.15); color: white; transform: translateX(4px); }
+    .sidebar-link.active { background: #3b82f6; color: white; box-shadow: 0 4px 12px rgba(59,130,246,0.4); }
+    .sidebar-link i { width: 22px; font-size: 1.1rem; }
+    
+    .main-content { margin-left: 280px; transition: all 0.3s ease; min-height: 100vh; }
+    .main-content.collapsed { margin-left: 85px; }
+    
+    .top-bar { background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.05); padding: 16px 24px; position: sticky; top: 0; z-index: 99; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; }
+    
+    .stat-card { background: white; border-radius: 20px; padding: 20px; transition: all 0.3s; border: 1px solid #e2e8f0; }
+    .stat-card:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(0,0,0,0.08); }
+    
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1100; justify-content: center; align-items: center; }
+    .modal-content { background: white; border-radius: 24px; padding: 28px; max-width: 550px; width: 90%; max-height: 85vh; overflow-y: auto; }
+    
+    .coupon-card { background: white; border-radius: 20px; padding: 20px; transition: all 0.2s; border: 1px solid #e2e8f0; margin-bottom: 16px; position: relative; overflow: hidden; cursor: pointer; }
+    .coupon-card:hover { transform: translateX(5px); border-color: #3b82f6; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+    .coupon-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 8px; background: linear-gradient(180deg, #3b82f6, #8b5cf6); }
+    
+    .badge-active { background: #dcfce7; color: #166534; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; display: inline-block; }
+    .badge-expired { background: #fee2e2; color: #991b1b; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; display: inline-block; }
+    .badge-upcoming { background: #fef3c7; color: #92400e; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; display: inline-block; }
+    .badge-admin { background: #dbeafe; color: #1e40af; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; display: inline-block; }
+    
+    .loading-spinner { width: 45px; height: 45px; border: 3px solid #e2e8f0; border-top-color: #3b82f6; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .empty-state { text-align: center; padding: 60px 20px; background: white; border-radius: 20px; }
+    .empty-state i { font-size: 64px; color: #cbd5e1; margin-bottom: 20px; }
+    
+    .toast { position: fixed; bottom: 24px; right: 24px; background: #1e293b; color: white; padding: 14px 24px; border-radius: 16px; z-index: 1200; animation: slideIn 0.3s ease; }
+    @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    
+    .user-avatar { width: 42px; height: 42px; background: linear-gradient(135deg, #3b82f6, #8b5cf6); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 16px; box-shadow: 0 4px 10px rgba(59,130,246,0.3); }
+    
+    .coupon-code { background: #f1f5f9; padding: 8px 16px; border-radius: 12px; font-family: monospace; font-weight: bold; letter-spacing: 1px; font-size: 18px; border: 1px dashed #3b82f6; display: inline-block; }
+    
+    .wallet-card { background: linear-gradient(135deg, #1e293b, #0f172a); color: white; border-radius: 20px; padding: 20px; margin-bottom: 20px; }
+    
+    .progress-bar { height: 6px; background: #e2e8f0; border-radius: 10px; overflow: hidden; }
+    .progress-fill { height: 100%; background: #3b82f6; border-radius: 10px; transition: width 0.5s; }
+    
+    @media (max-width: 768px) {
+      .sidebar { transform: translateX(-100%); }
+      .sidebar.mobile-open { transform: translateX(0); }
+      .main-content, .main-content.collapsed { margin-left: 0; }
+      .mobile-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 999; display: none; }
+      .mobile-overlay.active { display: block; }
+      .top-bar { padding: 12px 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="mobileOverlay" class="mobile-overlay" onclick="closeMobileSidebar()"></div>
+
+<div id="sidebar" class="sidebar">
+  <div class="p-5 pb-4 border-b border-gray-800">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg logo-icon">
+          <i class="fas fa-chart-line text-white text-lg"></i>
+        </div>
+        <div class="logo-text">
+          <span class="text-white text-xl font-bold">Naya Bato</span>
+          <p class="text-gray-500 text-xs mt-0.5 logo-subtext">Business Platform</p>
+        </div>
+      </div>
+      <button id="toggleSidebarBtn" class="text-gray-400 hover:text-white transition hidden md:block">
+        <i class="fas fa-chevron-left"></i>
+      </button>
+    </div>
+  </div>
+  
+  <nav class="flex-1 py-4">
+    <a href="dashboard.html" class="sidebar-link"><i class="fas fa-tachometer-alt"></i><span class="sidebar-text">Dashboard</span></a>
+    <a href="transactions.html" class="sidebar-link"><i class="fas fa-exchange-alt"></i><span class="sidebar-text">Transactions</span></a>
+    <a href="products.html" class="sidebar-link"><i class="fas fa-box"></i><span class="sidebar-text">Products</span></a>
+    <a href="orders.html" class="sidebar-link"><i class="fas fa-shopping-cart"></i><span class="sidebar-text">Orders</span></a>
+    <a href="customers.html" class="sidebar-link"><i class="fas fa-users"></i><span class="sidebar-text">Customers</span></a>
+    <a href="categories.html" class="sidebar-link"><i class="fas fa-tags"></i><span class="sidebar-text">Categories</span></a>
+    <a href="coupons.html" class="sidebar-link active"><i class="fas fa-ticket-alt"></i><span class="sidebar-text">Coupons</span></a>
+    <a href="reviews.html" class="sidebar-link"><i class="fas fa-star"></i><span class="sidebar-text">Reviews</span></a>
+    <a href="inventory.html" class="sidebar-link"><i class="fas fa-warehouse"></i><span class="sidebar-text">Inventory</span></a>
+    <a href="reports.html" class="sidebar-link"><i class="fas fa-chart-bar"></i><span class="sidebar-text">Reports</span></a>
+    <a href="marketing.html" class="sidebar-link"><i class="fas fa-bullhorn"></i><span class="sidebar-text">Marketing</span></a>
+    <a href="settings.html" class="sidebar-link"><i class="fas fa-cog"></i><span class="sidebar-text">Settings</span></a>
+    <a href="activity-logs.html" class="sidebar-link"><i class="fas fa-history"></i><span class="sidebar-text">Activity Logs</span></a>
+  </nav>
+  
+  <div class="p-5 border-t border-gray-800 mt-auto">
+    <div id="authButtonsSection">
+      <a href="login.html" class="auth-btn flex items-center justify-center gap-2 bg-blue-600 text-white py-3 rounded-xl text-sm font-medium transition hover:bg-blue-700 w-full">
+        <i class="fas fa-sign-in-alt"></i><span class="auth-btn-text">Login</span>
+      </a>
+      <a href="register.html" class="auth-btn flex items-center justify-center gap-2 border border-blue-500 text-blue-400 py-3 rounded-xl text-sm font-medium transition hover:bg-blue-600/10 w-full mt-3">
+        <i class="fas fa-user-plus"></i><span class="auth-btn-text">Register</span>
+      </a>
+    </div>
+    <button id="logoutBtn" onclick="logout()" class="hidden w-full flex items-center justify-center gap-2 bg-red-600/20 text-red-400 py-3 rounded-xl text-sm font-medium transition hover:bg-red-600/30">
+      <i class="fas fa-sign-out-alt"></i><span class="auth-btn-text">Logout</span>
+    </button>
+  </div>
+</div>
+
+<button id="mobileToggleBtn" class="fixed top-4 left-4 z-50 bg-blue-600 text-white p-3 rounded-xl shadow-lg md:hidden">
+  <i class="fas fa-bars text-lg"></i>
+</button>
+
+<div id="mainContent" class="main-content">
+  <div class="top-bar">
+    <h1 class="text-xl font-bold text-gray-800">Coupons</h1>
+    <div class="flex items-center gap-4">
+      <span id="userEmail" class="text-gray-500 text-sm hidden md:inline"></span>
+      <div id="userAvatar" class="user-avatar">NB</div>
+    </div>
+  </div>
+
+  <div id="contentArea" class="p-6">
+    <div class="flex justify-center items-center h-64">
+      <div class="loading-spinner"></div>
+      <p class="ml-3 text-gray-500">Loading coupons...</p>
+    </div>
+  </div>
+
+  <footer class="bg-white border-t border-gray-100 py-5 px-6 mt-8">
+    <div class="flex flex-col md:flex-row justify-between items-center text-sm text-gray-400">
+      <p>© 2025 Naya Bato. All rights reserved. Made with ❤️ in Nepal</p>
+      <div class="flex gap-6 mt-3 md:mt-0">
+        <a href="privacy.html" class="hover:text-gray-600 transition">Privacy Policy</a>
+        <a href="terms.html" class="hover:text-gray-600 transition">Terms of Service</a>
+        <a href="support.html" class="hover:text-gray-600 transition">Support</a>
+      </div>
+    </div>
+  </footer>
+</div>
+
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyDJLnUB8XnXWPEtSRAMuQr9ASmD16HLIJc",
+    authDomain: "bishalshrestha17-de676.firebaseapp.com",
+    projectId: "bishalshrestha17-de676",
+    storageBucket: "bishalshrestha17-de676.firebasestorage.app",
+    messagingSenderId: "631628771230",
+    appId: "1:631628771230:web:389c6430535f6a46b6708f"
+  };
+  
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.firestore();
+  let currentUser = null;
+  let allCoupons = [];
+  let userWallet = null;
+  let isAdmin = false;
+
+  auth.onAuthStateChanged(async (user) => {
+    currentUser = user;
+    if (user) {
+      document.getElementById('authButtonsSection').style.display = 'none';
+      document.getElementById('logoutBtn').style.display = 'flex';
+      document.getElementById('userEmail').innerText = user.email;
+      document.getElementById('userAvatar').innerText = user.email.charAt(0).toUpperCase();
+      await checkIfAdmin();
+      await loadUserWallet();
+      await loadCoupons();
+    } else {
+      document.getElementById('authButtonsSection').style.display = 'block';
+      document.getElementById('logoutBtn').style.display = 'none';
+      document.getElementById('userEmail').innerText = '';
+      showLoginMessage();
+    }
+  });
+
+  async function checkIfAdmin() {
+    try {
+      const userDoc = await db.collection('users').doc(currentUser.uid).get();
+      isAdmin = userDoc.data()?.role === 'admin';
+    } catch(e) {
+      isAdmin = false;
+    }
+  }
+
+  function logout() { auth.signOut(); showToast('Logged out'); setTimeout(() => location.reload(), 1000); }
+  
+  function showToast(msg, isError = false) { 
+    const t = document.createElement('div'); 
+    t.className = 'toast'; 
+    t.innerHTML = `<i class="fas ${isError ? 'fa-exclamation-circle' : 'fa-check-circle'} mr-2 ${isError ? 'text-red-400' : 'text-green-400'}"></i>${msg}`; 
+    document.body.appendChild(t); 
+    setTimeout(() => t.remove(), 3000); 
+  }
+  
+  function showLoginMessage() {
+    document.getElementById('contentArea').innerHTML = `<div class="empty-state"><i class="fas fa-lock"></i><h3 class="text-xl font-semibold mb-2">Please Login to Continue</h3><p class="text-gray-500 mb-6">Login to view and use coupons.</p><div class="flex gap-4 justify-center"><a href="login.html" class="bg-blue-600 text-white px-8 py-3 rounded-xl">Login Now</a><a href="register.html" class="border-2 border-blue-600 text-blue-600 px-8 py-3 rounded-xl">Create Account</a></div></div>`;
+  }
+
+  async function loadUserWallet() {
+    try {
+      const walletDoc = await db.collection('wallets').doc(currentUser.uid).get();
+      if (walletDoc.exists) {
+        userWallet = walletDoc.data();
+      } else {
+        userWallet = { balance: 0, userId: currentUser.uid, createdAt: firebase.firestore.FieldValue.serverTimestamp() };
+        await db.collection('wallets').doc(currentUser.uid).set(userWallet);
+      }
+    } catch(e) {
+      console.error('Wallet error:', e);
+      userWallet = { balance: 0 };
+    }
+  }
+
+  async function loadCoupons() {
+    document.getElementById('contentArea').innerHTML = '<div class="flex justify-center items-center h-64"><div class="loading-spinner"></div><p class="ml-3">Loading coupons...</p></div>';
+    
+    try {
+      const snap = await db.collection('coupons').get();
+      allCoupons = [];
+      snap.forEach(doc => {
+        allCoupons.push({ id: doc.id, ...doc.data() });
+      });
+      allCoupons.sort((a, b) => {
+        const dateA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(0);
+        const dateB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(0);
+        return dateB - dateA;
+      });
+      renderCoupons();
+    } catch(e) {
+      document.getElementById('contentArea').innerHTML = `<div class="empty-state"><i class="fas fa-exclamation-triangle text-red-500"></i><h3 class="text-xl font-semibold mb-2">Error</h3><p class="text-gray-500">${e.message}</p><button onclick="location.reload()" class="mt-4 bg-blue-600 text-white px-6 py-2 rounded-xl">Retry</button></div>`;
+    }
+  }
+
+  function getCouponStatus(coupon) {
+    const today = new Date().toISOString().split('T')[0];
+    if (coupon.endDate && coupon.endDate < today) return { text: 'Expired', class: 'badge-expired' };
+    if (coupon.startDate && coupon.startDate > today) return { text: 'Upcoming', class: 'badge-upcoming' };
+    if (coupon.usageLimit && (coupon.usedCount || 0) >= coupon.usageLimit) return { text: 'Used Up', class: 'badge-expired' };
+    return { text: 'Active', class: 'badge-active' };
+  }
+
+  async function renderCoupons() {
+    const activeCount = allCoupons.filter(c => getCouponStatus(c).text === 'Active').length;
+    const totalCoupons = allCoupons.length;
+    const yourCoupons = allCoupons.filter(c => c.createdBy === currentUser?.uid).length;
+    const totalMoneySpentOnCoupons = allCoupons.filter(c => c.createdBy === currentUser?.uid).reduce((sum, c) => sum + ((c.discountValue || 0) * (c.usageLimit || 1)), 0);
+    const totalMoneyEarned = allCoupons.filter(c => c.createdBy !== currentUser?.uid && c.usedBy?.includes?.(currentUser?.uid)).reduce((sum, c) => sum + (c.discountValue || 0), 0);
+    
+    const html = `
+      <div class="wallet-card">
+        <div class="flex flex-wrap justify-between items-center">
+          <div>
+            <p class="text-gray-400 text-sm">Your Wallet Balance</p>
+            <p class="text-3xl font-bold">NPR ${(userWallet?.balance || 0).toLocaleString()}</p>
+            <p class="text-xs text-gray-400 mt-1">Create coupon deducts: Discount × Usage Limit from your balance</p>
+            ${isAdmin ? '<p class="text-xs text-green-400 mt-1">👑 Admin: You can add money to any user</p>' : '<p class="text-xs text-yellow-400 mt-1">⚠️ Only admin can add money to wallet</p>'}
+          </div>
+          <div class="flex gap-3">
+            ${isAdmin ? `<button onclick="openAdminAddMoneyModal()" class="bg-green-600 text-white px-5 py-2 rounded-xl text-sm font-medium hover:bg-green-700"><i class="fas fa-plus-circle mr-2"></i>Admin: Add Money</button>` : ''}
+            <button onclick="openUseCouponModal()" class="bg-blue-600 text-white px-5 py-2 rounded-xl text-sm font-medium hover:bg-blue-700">
+              <i class="fas fa-ticket-alt mr-2"></i>Use Coupon
+            </button>
+            <button onclick="openAddCouponModal()" class="bg-purple-600 text-white px-5 py-2 rounded-xl text-sm font-medium hover:bg-purple-700">
+              <i class="fas fa-plus mr-2"></i>Create Coupon
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
+        <div class="stat-card"><div><p class="text-gray-500 text-sm">Active Coupons</p><p class="text-3xl font-bold text-green-600">${activeCount}</p></div></div>
+        <div class="stat-card"><div><p class="text-gray-500 text-sm">Total Coupons</p><p class="text-3xl font-bold">${totalCoupons}</p></div></div>
+        <div class="stat-card"><div><p class="text-gray-500 text-sm">Money Spent on Creating Coupons</p><p class="text-3xl font-bold text-red-600">NPR ${totalMoneySpentOnCoupons.toLocaleString()}</p></div></div>
+        <div class="stat-card"><div><p class="text-gray-500 text-sm">Money Earned from Using Coupons</p><p class="text-3xl font-bold text-green-600">NPR ${totalMoneyEarned.toLocaleString()}</p></div></div>
+      </div>
+      
+      <div class="bg-white rounded-xl p-5 mb-6 border border-gray-100">
+        <div class="flex flex-wrap gap-3">
+          <input type="text" id="searchCoupon" placeholder="🔍 Search by code..." class="flex-1 border border-gray-300 rounded-xl px-4 py-3">
+          <button onclick="filterCoupons()" class="bg-gray-600 text-white px-6 py-3 rounded-xl hover:bg-gray-700">Search</button>
+        </div>
+      </div>
+      
+      <div id="couponsList" class="space-y-3"></div>
+    `;
+    
+    document.getElementById('contentArea').innerHTML = html;
+    renderCouponsList(allCoupons);
+    
+    document.getElementById('searchCoupon')?.addEventListener('input', () => filterCoupons());
+  }
+
+  function filterCoupons() {
+    let filtered = [...allCoupons];
+    const search = document.getElementById('searchCoupon')?.value.toLowerCase();
+    if (search) filtered = filtered.filter(c => (c.code || '').toLowerCase().includes(search));
+    renderCouponsList(filtered);
+  }
+
+  function renderCouponsList(coupons) {
+    const container = document.getElementById('couponsList');
+    if (!container) return;
+    
+    if (coupons.length === 0) {
+      container.innerHTML = '<div class="empty-state py-12"><i class="fas fa-ticket-alt"></i><p class="text-gray-400">No coupons available.</p><button onclick="openAddCouponModal()" class="mt-4 bg-purple-600 text-white px-6 py-2 rounded-xl">Create First Coupon</button></div>';
+      return;
+    }
+    
+    let html = '';
+    coupons.forEach(coupon => {
+      const status = getCouponStatus(coupon);
+      const isOwner = coupon.createdBy === currentUser?.uid;
+      const usedPercent = coupon.usageLimit ? Math.round(((coupon.usedCount || 0) / coupon.usageLimit) * 100) : 0;
+      const canUse = status.text === 'Active' && !isOwner;
+      const totalCost = (coupon.discountValue || 0) * (coupon.usageLimit || 1);
+      
+      html += `
+        <div class="coupon-card">
+          <div class="flex flex-wrap md:flex-nowrap justify-between items-start gap-4">
+            <div class="flex-1">
+              <div class="flex flex-wrap items-center gap-3 mb-2">
+                <span class="coupon-code">${coupon.code}</span>
+                <span class="${status.class}">${status.text}</span>
+                ${isOwner ? '<span class="badge-active">Created by you</span>' : ''}
+              </div>
+              <p class="text-gray-600 font-medium">${coupon.name || coupon.code}</p>
+              <div class="flex flex-wrap gap-4 mt-3 text-sm">
+                <span><i class="far fa-calendar-alt mr-1"></i> ${coupon.startDate || 'No start'} → ${coupon.endDate || 'No end'}</span>
+                ${coupon.minPurchase > 0 ? `<span><i class="fas fa-shopping-cart mr-1"></i> Min Spend: NPR ${coupon.minPurchase.toLocaleString()}</span>` : ''}
+                <span><i class="fas fa-tag mr-1"></i> Discount: NPR ${(coupon.discountValue || 0).toLocaleString()}</span>
+                ${coupon.usageLimit ? `<span><i class="fas fa-users mr-1"></i> ${coupon.usedCount || 0}/${coupon.usageLimit} used</span>` : ''}
+                ${isOwner ? `<span><i class="fas fa-money-bill mr-1"></i> Total Cost: NPR ${totalCost.toLocaleString()}</span>` : ''}
+              </div>
+              ${coupon.usageLimit ? `<div class="progress-bar mt-3"><div class="progress-fill" style="width: ${usedPercent}%"></div></div>` : ''}
+            </div>
+            <div class="text-right">
+              <p class="text-2xl font-bold text-green-600">NPR ${(coupon.discountValue || 0).toLocaleString()} OFF</p>
+              <div class="flex gap-2 mt-4">
+                ${canUse ? `<button onclick="useCoupon('${coupon.id}')" class="bg-green-600 text-white rounded-xl px-4 py-2 text-sm font-medium hover:bg-green-700"><i class="fas fa-gift mr-1"></i>Redeem</button>` : ''}
+                ${isOwner ? `<button onclick="deleteCoupon('${coupon.id}')" class="text-red-600 border border-red-600 rounded-xl px-3 py-2 text-sm hover:bg-red-50"><i class="fas fa-trash-alt mr-1"></i>Delete</button>` : ''}
+                <button onclick="copyCouponCode('${coupon.code}')" class="text-gray-500 border border-gray-300 rounded-xl px-3 py-2 text-sm hover:bg-gray-50"><i class="fas fa-copy mr-1"></i>Copy</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    });
+    container.innerHTML = html;
+  }
+
+  async function useCoupon(couponId) {
+    const coupon = allCoupons.find(c => c.id === couponId);
+    if (!coupon) { showToast('Coupon not found', true); return; }
+    
+    const status = getCouponStatus(coupon);
+    if (status.text !== 'Active') { showToast(`Coupon is ${status.text}`, true); return; }
+    
+    if (coupon.createdBy === currentUser?.uid) { showToast('You cannot use your own coupon!', true); return; }
+    
+    // Check if user already used this coupon
+    const userUsage = await db.collection('couponUsage').where('userId', '==', currentUser.uid).where('couponId', '==', coupon.id).get();
+    if (!userUsage.empty) {
+      showToast('You have already used this coupon!', true);
+      return;
+    }
+    
+    const rewardAmount = coupon.discountValue || 0;
+    
+    // Update coupon usage count
+    await db.collection('coupons').doc(coupon.id).update({
+      usedCount: firebase.firestore.FieldValue.increment(1),
+      usedBy: firebase.firestore.FieldValue.arrayUnion(currentUser.uid)
+    });
+    
+    // Record usage
+    await db.collection('couponUsage').add({
+      userId: currentUser.uid,
+      userEmail: currentUser.email,
+      couponId: coupon.id,
+      couponCode: coupon.code,
+      rewardAmount: rewardAmount,
+      usedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    
+    // Add money to user's wallet
+    const newBalance = (userWallet?.balance || 0) + rewardAmount;
+    await db.collection('wallets').doc(currentUser.uid).update({
+      balance: newBalance,
+      lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    
+    // Log transaction
+    await db.collection('transactions').add({
+      userId: currentUser.uid,
+      type: 'income',
+      description: `Coupon redeemed: ${coupon.code}`,
+      amount: rewardAmount,
+      date: new Date().toISOString().split('T')[0],
+      status: 'Success',
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    
+    userWallet.balance = newBalance;
+    showToast(`🎉 You received NPR ${rewardAmount.toLocaleString()} from coupon ${coupon.code}!`);
+    await loadCoupons();
+    await renderCoupons();
+  }
+
+  function generateCouponCode() {
+    const prefixes = ['SAVE', 'DEAL', 'OFFER', 'DISCOUNT', 'SPECIAL', 'FLASH', 'WELCOME'];
+    const suffix = Math.floor(Math.random() * 9000 + 1000);
+    return `${prefixes[Math.floor(Math.random() * prefixes.length)]}${suffix}`;
+  }
+
+  async function openAddCouponModal() {
+    if ((userWallet?.balance || 0) <= 0) {
+      showToast('Insufficient balance! You need money in your wallet to create a coupon.', true);
+      return;
+    }
+    
+    document.getElementById('couponCode').value = generateCouponCode();
+    document.getElementById('couponName').value = '';
+    document.getElementById('discountValue').value = '';
+    document.getElementById('startDate').value = new Date().toISOString().split('T')[0];
+    document.getElementById('endDate').value = '';
+    document.getElementById('minPurchase').value = '';
+    document.getElementById('usageLimit').value = '';
+    
+    document.getElementById('discountValue').addEventListener('input', updateCostPreview);
+    document.getElementById('usageLimit').addEventListener('input', updateCostPreview);
+    updateCostPreview();
+    
+    document.getElementById('couponModal').style.display = 'flex';
+  }
+
+  function updateCostPreview() {
+    const discount = parseFloat(document.getElementById('discountValue').value) || 0;
+    const usageLimit = parseInt(document.getElementById('usageLimit').value) || 1;
+    const totalCost = discount * usageLimit;
+    const previewElement = document.getElementById('costPreview');
+    if (previewElement) {
+      previewElement.innerHTML = `Total cost: NPR ${totalCost.toLocaleString()} (${discount} × ${usageLimit} uses)`;
+    }
+  }
+
+  async function saveCoupon() {
+    const code = document.getElementById('couponCode').value.trim().toUpperCase();
+    const discountValue = parseFloat(document.getElementById('discountValue').value);
+    const usageLimit = parseInt(document.getElementById('usageLimit').value) || 1;
+    const totalCost = discountValue * usageLimit;
+    
+    if (!code) { showToast('Coupon code required', true); return; }
+    if (!discountValue || discountValue <= 0) { showToast('Valid discount amount required', true); return; }
+    if (usageLimit < 1) { showToast('Usage limit must be at least 1', true); return; }
+    
+    if ((userWallet?.balance || 0) < totalCost) {
+      showToast(`Insufficient balance! Need NPR ${totalCost.toLocaleString()} to create this coupon.`, true);
+      return;
+    }
+    
+    const newBalance = (userWallet?.balance || 0) - totalCost;
+    await db.collection('wallets').doc(currentUser.uid).update({
+      balance: newBalance,
+      lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    
+    await db.collection('transactions').add({
+      userId: currentUser.uid,
+      type: 'expense',
+      description: `Coupon creation: ${code} (${discountValue} × ${usageLimit} uses)`,
+      amount: totalCost,
+      date: new Date().toISOString().split('T')[0],
+      status: 'Success',
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    
+    userWallet.balance = newBalance;
+    
+    const data = {
+      userId: currentUser.uid,
+      createdBy: currentUser.uid,
+      createdByEmail: currentUser.email,
+      code: code,
+      name: document.getElementById('couponName').value,
+      discountValue: discountValue,
+      startDate: document.getElementById('startDate').value,
+      endDate: document.getElementById('endDate').value,
+      minPurchase: parseFloat(document.getElementById('minPurchase').value) || 0,
+      usageLimit: usageLimit,
+      usedCount: 0,
+      usedBy: [],
+      totalCost: totalCost,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    };
+    
+    await db.collection('coupons').add(data);
+    showToast(`Coupon ${code} created! NPR ${totalCost.toLocaleString()} deducted from your wallet.`);
+    closeCouponModal();
+    await loadUserWallet();
+    await loadCoupons();
+  }
+
+  async function deleteCoupon(id) {
+    const coupon = allCoupons.find(c => c.id === id);
+    if (!coupon) return;
+    
+    const remainingUses = (coupon.usageLimit || 0) - (coupon.usedCount || 0);
+    const refundAmount = (coupon.discountValue || 0) * remainingUses;
+    
+    if (confirm(`Delete this coupon? You will get NPR ${refundAmount.toLocaleString()} refund back to your wallet.`)) {
+      if (refundAmount > 0) {
+        const newBalance = (userWallet?.balance || 0) + refundAmount;
+        await db.collection('wallets').doc(currentUser.uid).update({
+          balance: newBalance,
+          lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        
+        await db.collection('transactions').add({
+          userId: currentUser.uid,
+          type: 'income',
+          description: `Coupon deletion refund: ${coupon.code}`,
+          amount: refundAmount,
+          date: new Date().toISOString().split('T')[0],
+          status: 'Success',
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        
+        userWallet.balance = newBalance;
+        showToast(`Coupon deleted! NPR ${refundAmount.toLocaleString()} refunded to your wallet.`);
+      }
+      
+      await db.collection('coupons').doc(id).delete();
+      await loadCoupons();
+    }
+  }
+
+  function copyCouponCode(code) {
+    navigator.clipboard.writeText(code);
+    showToast(`Coupon code "${code}" copied!`);
+  }
+
+  // ADMIN ONLY: Add money to any user
+  function openAdminAddMoneyModal() {
+    if (!isAdmin) {
+      showToast('Only admin can add money to wallets!', true);
+      return;
+    }
+    document.getElementById('adminUserEmail').value = '';
+    document.getElementById('adminAddAmount').value = '';
+    document.getElementById('adminAddMoneyModal').style.display = 'flex';
+  }
+
+  async function adminAddMoneyToUser() {
+    if (!isAdmin) {
+      showToast('Only admin can perform this action!', true);
+      return;
+    }
+    
+    const userEmail = document.getElementById('adminUserEmail').value.trim();
+    const amount = parseFloat(document.getElementById('adminAddAmount').value);
+    
+    if (!userEmail) { showToast('Please enter user email', true); return; }
+    if (!amount || amount <= 0) { showToast('Please enter a valid amount', true); return; }
+    
+    try {
+      // Find user by email
+      const usersSnapshot = await db.collection('users').where('email', '==', userEmail).get();
+      if (usersSnapshot.empty) {
+        showToast('User not found!', true);
+        return;
+      }
+      
+      const userDoc = usersSnapshot.docs[0];
+      const userId = userDoc.id;
+      
+      // Get or create wallet
+      const walletRef = db.collection('wallets').doc(userId);
+      const walletDoc = await walletRef.get();
+      const currentBalance = walletDoc.exists ? walletDoc.data().balance : 0;
+      const newBalance = currentBalance + amount;
+      
+      await walletRef.set({
+        balance: newBalance,
+        userId: userId,
+        lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+      }, { merge: true });
+      
+      // Log transaction
+      await db.collection('transactions').add({
+        userId: userId,
+        type: 'income',
+        description: `Admin added money to wallet`,
+        amount: amount,
+        date: new Date().toISOString().split('T')[0],
+        status: 'Success',
+        adminAction: true,
+        adminEmail: currentUser.email,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      
+      showToast(`NPR ${amount.toLocaleString()} added to ${userEmail}'s wallet!`);
+      closeAdminAddMoneyModal();
+      
+      // Refresh if current user is the one who got money
+      if (userId === currentUser.uid) {
+        await loadUserWallet();
+        await renderCoupons();
+      }
+    } catch(e) {
+      showToast('Error adding money: ' + e.message, true);
+    }
+  }
+
+  function openUseCouponModal() {
+    document.getElementById('couponCodeInput').value = '';
+    document.getElementById('useCouponModal').style.display = 'flex';
+  }
+
+  async function applyCouponCode() {
+    const code = document.getElementById('couponCodeInput').value.trim().toUpperCase();
+    const coupon = allCoupons.find(c => c.code === code);
+    if (!coupon) { showToast('Invalid coupon code', true); return; }
+    closeUseCouponModal();
+    await useCoupon(coupon.id);
+  }
+
+  function closeAdminAddMoneyModal() { document.getElementById('adminAddMoneyModal').style.display = 'none'; }
+  function closeUseCouponModal() { document.getElementById('useCouponModal').style.display = 'none'; }
+  function closeCouponModal() { document.getElementById('couponModal').style.display = 'none'; }
+
+  // Add Modals
+  const modalHtml = `
+    <div id="adminAddMoneyModal" class="modal">
+      <div class="modal-content">
+        <div class="flex justify-between items-center mb-5">
+          <h2 class="text-xl font-bold text-gray-800"><i class="fas fa-user-shield text-green-500 mr-2"></i>Admin: Add Money to User</h2>
+          <button onclick="closeAdminAddMoneyModal()" class="text-gray-400 hover:text-gray-600 text-xl">&times;</button>
+        </div>
+        <div class="space-y-4">
+          <div><label class="block text-sm font-medium text-gray-700 mb-1">User Email</label><input type="email" id="adminUserEmail" placeholder="user@example.com" class="w-full border rounded-xl px-4 py-3"></div>
+          <div><label class="block text-sm font-medium text-gray-700 mb-1">Amount (NPR)</label><input type="number" id="adminAddAmount" placeholder="Enter amount" class="w-full border rounded-xl px-4 py-3"></div>
+          <div class="bg-yellow-50 p-3 rounded-xl text-sm"><i class="fas fa-info-circle mr-2"></i>Only admin can add money to user wallets.</div>
+          <div class="flex gap-3 pt-4"><button onclick="closeAdminAddMoneyModal()" class="flex-1 border py-3 rounded-xl">Cancel</button><button onclick="adminAddMoneyToUser()" class="flex-1 bg-green-600 text-white py-3 rounded-xl">Add Money</button></div>
+        </div>
+      </div>
+    </div>
+    
+    <div id="useCouponModal" class="modal">
+      <div class="modal-content">
+        <div class="flex justify-between items-center mb-5">
+          <h2 class="text-xl font-bold text-gray-800"><i class="fas fa-ticket-alt text-blue-500 mr-2"></i>Enter Coupon Code</h2>
+          <button onclick="closeUseCouponModal()" class="text-gray-400 hover:text-gray-600 text-xl">&times;</button>
+        </div>
+        <div><input type="text" id="couponCodeInput" placeholder="Enter coupon code" class="w-full border rounded-xl px-4 py-3 uppercase"></div>
+        <div class="flex gap-3 mt-4"><button onclick="closeUseCouponModal()" class="flex-1 border py-3 rounded-xl">Cancel</button><button onclick="applyCouponCode()" class="flex-1 bg-blue-600 text-white py-3 rounded-xl">Apply</button></div>
+      </div>
+    </div>
+    
+    <div id="couponModal" class="modal">
+      <div class="modal-content">
+        <div class="flex justify-between items-center mb-5">
+          <h2 class="text-xl font-bold text-gray-800"><i class="fas fa-plus-circle text-purple-500 mr-2"></i>Create Coupon</h2>
+          <button onclick="closeCouponModal()" class="text-gray-400 hover:text-gray-600 text-xl">&times;</button>
+        </div>
+        <div class="space-y-4">
+          <div><label class="block text-sm font-medium text-gray-700 mb-1">Coupon Code</label><input type="text" id="couponCode" class="w-full border rounded-xl px-4 py-3 uppercase"></div>
+          <div><label class="block text-sm font-medium text-gray-700 mb-1">Coupon Name</label><input type="text" id="couponName" class="w-full border rounded-xl px-4 py-3"></div>
+          <div><label class="block text-sm font-medium text-gray-700 mb-1">Discount Amount (NPR) *</label><input type="number" id="discountValue" placeholder="e.g., 300" class="w-full border rounded-xl px-4 py-3"></div>
+          <div class="grid grid-cols-2 gap-4">
+            <div><label>Start Date</label><input type="date" id="startDate" class="w-full border rounded-xl px-4 py-3"></div>
+            <div><label>End Date</label><input type="date" id="endDate" class="w-full border rounded-xl px-4 py-3"></div>
+          </div>
+          <div><label>Minimum Purchase (NPR)</label><input type="number" id="minPurchase" placeholder="0" class="w-full border rounded-xl px-4 py-3"></div>
+          <div><label>Usage Limit (Total number of uses) *</label><input type="number" id="usageLimit" placeholder="e.g., 2" class="w-full border rounded-xl px-4 py-3"></div>
+          <div id="costPreview" class="bg-blue-50 p-3 rounded-xl text-sm text-blue-800 font-semibold">Total cost: NPR 0</div>
+          <div class="bg-yellow-50 p-3 rounded-xl text-sm"><i class="fas fa-info-circle mr-2"></i>Creating a coupon costs: Discount Amount × Usage Limit. This amount will be deducted from your wallet balance.</div>
+          <div class="flex gap-3 pt-4"><button onclick="closeCouponModal()" class="flex-1 border py-3 rounded-xl">Cancel</button><button onclick="saveCoupon()" class="flex-1 bg-purple-600 text-white py-3 rounded-xl">Create Coupon</button></div>
+        </div>
+      </div>
+    </div>
+  `;
+  document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+  // Sidebar Toggle
+  let isExpanded = true;
+  const sidebar = document.getElementById('sidebar');
+  const main = document.getElementById('mainContent');
+  const toggle = document.getElementById('toggleSidebarBtn');
+  function toggleSidebar() {
+    isExpanded = !isExpanded;
+    if (isExpanded) { sidebar.classList.remove('collapsed'); main.classList.remove('collapsed'); if(toggle) toggle.innerHTML = '<i class="fas fa-chevron-left"></i>'; }
+    else { sidebar.classList.add('collapsed'); main.classList.add('collapsed'); if(toggle) toggle.innerHTML = '<i class="fas fa-chevron-right"></i>'; }
+    localStorage.setItem('sidebarExpanded', isExpanded);
+  }
+  if (toggle) toggle.addEventListener('click', toggleSidebar);
+  if (localStorage.getItem('sidebarExpanded') === 'false') toggleSidebar();
+  
+  const mobileBtn = document.getElementById('mobileToggleBtn');
+  const mobileOverlay = document.getElementById('mobileOverlay');
+  function openMobileSidebar() { sidebar.classList.add('mobile-open'); mobileOverlay.classList.add('active'); document.body.style.overflow = 'hidden'; }
+  function closeMobileSidebar() { sidebar.classList.remove('mobile-open'); mobileOverlay.classList.remove('active'); document.body.style.overflow = ''; }
+  if (mobileBtn) mobileBtn.addEventListener('click', openMobileSidebar);
+  window.addEventListener('resize', () => { if (window.innerWidth > 768) closeMobileSidebar(); });
+  
+  window.openAdminAddMoneyModal = openAdminAddMoneyModal;
+  window.adminAddMoneyToUser = adminAddMoneyToUser;
+  window.closeAdminAddMoneyModal = closeAdminAddMoneyModal;
+  window.openUseCouponModal = openUseCouponModal;
+  window.closeUseCouponModal = closeUseCouponModal;
+  window.applyCouponCode = applyCouponCode;
+  window.useCoupon = useCoupon;
+  window.deleteCoupon = deleteCoupon;
+  window.saveCoupon = saveCoupon;
+  window.closeCouponModal = closeCouponModal;
+  window.filterCoupons = filterCoupons;
+  window.copyCouponCode = copyCouponCode;
+</script>
+</body>
+</html>

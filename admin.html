@@ -1,0 +1,1435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Naya Bato - Complete Admin Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f1f5f9;
+            color: #0f172a;
+            font-size: 12px;
+        }
+
+        /* Lock Screen */
+        .lock-screen {
+            position: fixed;
+            inset: 0;
+            background: #0f172a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 16px;
+            z-index: 5000;
+        }
+
+        .lock-screen h2 {
+            color: #fff;
+            font-size: 1.3rem;
+        }
+
+        .lock-screen input {
+            padding: 12px 16px;
+            border-radius: 12px;
+            border: none;
+            width: 280px;
+            font-size: 0.85rem;
+        }
+
+        .lock-screen button {
+            background: #7c3aed;
+            color: #fff;
+            border: none;
+            padding: 12px 28px;
+            border-radius: 12px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .lock-screen .error {
+            color: #ef4444;
+            font-size: 0.7rem;
+        }
+
+        /* Admin Layout */
+        .admin-app {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: linear-gradient(180deg, #0f172a, #1e293b);
+            color: #fff;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 100;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar-header h2 {
+            font-size: 1rem;
+            font-weight: 800;
+        }
+
+        .sidebar-header h2 span {
+            color: #a855f7;
+        }
+
+        .sidebar-header p {
+            font-size: 0.6rem;
+            opacity: 0.6;
+            margin-top: 4px;
+        }
+
+        .sidebar-nav {
+            list-style: none;
+            padding: 16px 0;
+        }
+
+        .sidebar-nav li a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 20px;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.75rem;
+            font-weight: 500;
+            transition: 0.2s;
+            border-left: 3px solid transparent;
+            cursor: pointer;
+        }
+
+        .sidebar-nav li a:hover,
+        .sidebar-nav li a.active {
+            background: rgba(124, 58, 237, 0.2);
+            color: #fff;
+            border-left-color: #7c3aed;
+        }
+
+        .sidebar-nav li a i {
+            width: 20px;
+            text-align: center;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 20px;
+        }
+
+        .top-bar {
+            background: #fff;
+            border-radius: 16px;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .top-bar h1 {
+            font-size: 1rem;
+            font-weight: 800;
+        }
+
+        .logout-btn {
+            background: #ef4444;
+            color: #fff;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 8px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* Panels */
+        .panel {
+            display: none;
+        }
+
+        .panel.active {
+            display: block;
+        }
+
+        /* Cards */
+        .card {
+            background: #fff;
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 20px;
+            border: 1px solid #eef2ff;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+        }
+
+        .card h3 {
+            font-size: 0.85rem;
+            font-weight: 800;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card h3 i {
+            color: #7c3aed;
+        }
+
+        /* Forms */
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.65rem;
+            font-weight: 700;
+            color: #64748b;
+            margin-bottom: 4px;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 0.7rem;
+            font-family: inherit;
+            transition: 0.2s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #7c3aed;
+            box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+        }
+
+        .form-row {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+            min-width: 120px;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            border: none;
+            transition: 0.2s;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: #7c3aed;
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background: #6d28d9;
+            transform: translateY(-1px);
+        }
+
+        .btn-success {
+            background: #10b981;
+            color: #fff;
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            color: #fff;
+        }
+
+        .btn-secondary {
+            background: #f1f5f9;
+            color: #475569;
+            border: 1px solid #e2e8f0;
+        }
+
+        .btn-sm {
+            padding: 4px 8px;
+            font-size: 0.65rem;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+            flex-wrap: wrap;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: #fff;
+            border-radius: 14px;
+            padding: 16px;
+            border: 1px solid #eef2ff;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: #0f172a;
+        }
+
+        .stat-label {
+            font-size: 0.6rem;
+            color: #64748b;
+            margin-top: 5px;
+        }
+
+        /* Item Lists */
+        .items-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .item-row {
+            background: #f8fafc;
+            border: 1px solid #eef2ff;
+            border-radius: 12px;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+
+        .item-row .form-row {
+            margin-bottom: 6px;
+        }
+
+        .item-img-preview {
+            width: 50px;
+            height: 50px;
+            background: #fff;
+            border-radius: 8px;
+            border: 1px dashed #cbd5e1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .item-img-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .item-actions {
+            display: flex;
+            gap: 6px;
+            margin-top: 8px;
+            justify-content: flex-end;
+        }
+
+        /* Image Preview */
+        .img-preview {
+            width: 100%;
+            height: 100px;
+            background: #f8fafc;
+            border: 2px dashed #e2e8f0;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            margin-bottom: 12px;
+            overflow: hidden;
+        }
+
+        .img-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #1e293b;
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            z-index: 2000;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: 0.3s;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Banking specific styles */
+        .balance-highlight {
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: #10b981;
+        }
+        
+        .user-list-item {
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .user-list-item:hover {
+            background: #e0e7ff;
+            transform: translateX(4px);
+        }
+        
+        .selected-user {
+            background: #dbeafe;
+            border-left: 3px solid #7c3aed;
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .sidebar {
+                width: 80px;
+            }
+
+            .sidebar .sidebar-header p,
+            .sidebar .sidebar-nav li a span {
+                display: none;
+            }
+
+            .main-content {
+                margin-left: 80px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Lock Screen -->
+<div class="lock-screen" id="lockScreen">
+    <h2>Naya <span>Bato</span> Admin</h2>
+    <input type="email" id="adminEmail" placeholder="Admin Email">
+    <input type="password" id="adminPass" placeholder="Password">
+    <button id="adminLoginBtn">Login to Dashboard</button>
+    <div class="error" id="loginError"></div>
+</div>
+
+<!-- Main Admin App -->
+<div class="admin-app" id="adminApp" style="display:none;">
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h2>Naya <span>Bato</span></h2>
+            <p>Complete Control Panel</p>
+        </div>
+        <ul class="sidebar-nav">
+            <li><a data-panel="dashboard"><i class="fas fa-chart-pie"></i><span>Dashboard</span></a></li>
+            <li><a data-panel="branding"><i class="fas fa-palette"></i><span>Branding / Logo</span></a></li>
+            <li><a data-panel="leftbar"><i class="fas fa-bars"></i><span>Left Sidebar</span></a></li>
+            <li><a data-panel="rightbar"><i class="fas fa-bars"></i><span>Right Sidebar</span></a></li>
+            <li><a data-panel="topnav"><i class="fas fa-link"></i><span>Top Navigation</span></a></li>
+            <li><a data-panel="hero"><i class="fas fa-star"></i><span>Hero / Slogan</span></a></li>
+            <li><a data-panel="aibutton"><i class="fas fa-robot"></i><span>AI Button</span></a></li>
+            <li><a data-panel="categories"><i class="fas fa-circle"></i><span>Categories</span></a></li>
+            <li><a data-panel="products"><i class="fas fa-box"></i><span>Products</span></a></li>
+            <li><a data-panel="banking"><i class="fas fa-university"></i><span>Banking & YouTube</span></a></li>
+            <li><a data-panel="footer"><i class="fas fa-footer"></i><span>Footer</span></a></li>
+            <li><a data-panel="users"><i class="fas fa-users"></i><span>Users</span></a></li>
+            <li><a data-panel="settings"><i class="fas fa-cog"></i><span>Settings</span></a></li>
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="top-bar">
+            <h1 id="panelTitle">Dashboard</h1>
+            <button class="logout-btn" id="adminLogoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</button>
+        </div>
+
+        <!-- Dashboard Panel -->
+        <div class="panel active" id="panel-dashboard">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number" id="statProducts">0</div>
+                    <div class="stat-label">Products</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="statCategories">0</div>
+                    <div class="stat-label">Categories</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="statUsers">0</div>
+                    <div class="stat-label">Users</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="statBalance">$0</div>
+                    <div class="stat-label">Total Balance</div>
+                </div>
+            </div>
+            <div class="card">
+                <h3><i class="fas fa-bolt"></i> Quick Actions</h3>
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="switchPanel('products')">📦 Products</button>
+                    <button class="btn btn-primary" onclick="switchPanel('categories')">🏷️ Categories</button>
+                    <button class="btn btn-primary" onclick="switchPanel('leftbar')">📋 Sidebars</button>
+                    <button class="btn btn-primary" onclick="switchPanel('hero')">🎨 Hero</button>
+                    <button class="btn btn-primary" onclick="switchPanel('banking')">💰 Banking</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Branding Panel -->
+        <div class="panel" id="panel-branding">
+            <div class="card">
+                <h3><i class="fas fa-palette"></i> Logo & Brand Name</h3>
+                <div class="img-preview" id="logoPreview" onclick="document.getElementById('logoInput').click()"><span>Click to upload logo</span></div>
+                <input type="file" id="logoInput" accept="image/*" style="display:none;">
+                <div class="form-group"><label>Brand Name</label><input type="text" id="brandName" placeholder="Naya Bato"></div>
+                <div class="form-group"><label>Brand Link</label><input type="text" id="brandLink" placeholder="index.html"></div>
+                <button class="btn btn-success" id="saveBranding">Save Branding</button>
+            </div>
+        </div>
+
+        <!-- Left Sidebar Panel -->
+        <div class="panel" id="panel-leftbar">
+            <div class="card">
+                <h3><i class="fas fa-bars"></i> Left Sidebar Buttons</h3>
+                <div class="items-list" id="leftbarItems"></div>
+                <div class="btn-group"><button class="btn btn-secondary btn-sm" id="addLeftItem">+ Add Button</button><button class="btn btn-success btn-sm" id="saveLeftbar">Save All</button></div>
+            </div>
+        </div>
+
+        <!-- Right Sidebar Panel -->
+        <div class="panel" id="panel-rightbar">
+            <div class="card">
+                <h3><i class="fas fa-bars"></i> Right Sidebar Buttons</h3>
+                <div class="items-list" id="rightbarItems"></div>
+                <div class="btn-group"><button class="btn btn-secondary btn-sm" id="addRightItem">+ Add Button</button><button class="btn btn-success btn-sm" id="saveRightbar">Save All</button></div>
+            </div>
+        </div>
+
+        <!-- Top Nav Panel -->
+        <div class="panel" id="panel-topnav">
+            <div class="card">
+                <h3><i class="fas fa-link"></i> Top Navigation Links</h3>
+                <div class="items-list" id="topnavItems"></div>
+                <div class="btn-group"><button class="btn btn-secondary btn-sm" id="addTopnavItem">+ Add Link</button><button class="btn btn-success btn-sm" id="saveTopnav">Save All</button></div>
+            </div>
+        </div>
+
+        <!-- Hero Panel -->
+        <div class="panel" id="panel-hero">
+            <div class="card">
+                <h3><i class="fas fa-star"></i> Hero / Slogan</h3>
+                <div class="form-group"><label>Main Title</label><input type="text" id="heroTitle"></div>
+                <div class="form-row"><div class="form-group"><label>Title Color</label><input type="color" id="heroTitleColor"></div><div class="form-group"><label>Title Size</label><input type="text" id="heroTitleSize" placeholder="1.5rem"></div></div>
+                <div class="form-group"><label>Subtitle Text</label><textarea id="heroSubtitle" rows="2"></textarea></div>
+                <div class="form-row"><div class="form-group"><label>Subtitle Color</label><input type="color" id="heroSubColor"></div><div class="form-group"><label>Subtitle Size</label><input type="text" id="heroSubSize" placeholder="0.8rem"></div></div>
+                <div class="form-group"><label>Background</label><input type="text" id="heroBg" placeholder="linear-gradient(135deg,#f5f3ff,#fdf4ff)"></div>
+                <button class="btn btn-success" id="saveHero">Save Hero</button>
+            </div>
+        </div>
+
+        <!-- AI Button Panel -->
+        <div class="panel" id="panel-aibutton">
+            <div class="card">
+                <h3><i class="fas fa-robot"></i> AI Button</h3>
+                <div class="form-group"><label>Button Text</label><input type="text" id="aiText"></div>
+                <div class="form-group"><label>Icon Class</label><input type="text" id="aiIcon" placeholder="fas fa-robot"></div>
+                <div class="form-group"><label>Link URL</label><input type="text" id="aiLink" placeholder="bishalxtha ai.html"></div>
+                <div class="form-row"><div class="form-group"><label>Background</label><input type="color" id="aiBg"></div><div class="form-group"><label>Text Color</label><input type="color" id="aiTextColor"></div></div>
+                <button class="btn btn-success" id="saveAiBtn">Save AI Button</button>
+            </div>
+        </div>
+
+        <!-- Categories Panel -->
+        <div class="panel" id="panel-categories">
+            <div class="card">
+                <h3><i class="fas fa-circle"></i> Categories (Circles)</h3>
+                <div class="items-list" id="categoriesList"></div>
+                <button class="btn btn-secondary btn-sm" id="addCategoryBtn">+ Add Category</button>
+            </div>
+        </div>
+
+        <!-- Products Panel -->
+        <div class="panel" id="panel-products">
+            <div class="card">
+                <h3><i class="fas fa-fire"></i> Products Section Title</h3>
+                <div class="form-group"><label>Section Title</label><input type="text" id="prodSectionTitle" placeholder="Popular Picks"></div>
+                <div class="form-group"><label>Icon Class</label><input type="text" id="prodSectionIcon" placeholder="fas fa-fire"></div>
+                <div class="form-group"><label>Icon Color</label><input type="color" id="prodSectionIconColor" value="#f97316"></div>
+                <button class="btn btn-success btn-sm" id="saveProdSection">Save Section Title</button>
+            </div>
+            <div class="card">
+                <h3><i class="fas fa-box"></i> Products</h3>
+                <div class="items-list" id="productsList"></div>
+                <button class="btn btn-secondary btn-sm" id="addProductBtn">+ Add Product</button>
+            </div>
+        </div>
+
+        <!-- NEW: Banking & YouTube Panel -->
+        <div class="panel" id="panel-banking">
+            <div class="card">
+                <h3><i class="fas fa-coins"></i> User Balance Management</h3>
+                <div class="form-row">
+                    <div class="form-group" style="flex: 2;">
+                        <label>Select User</label>
+                        <div class="items-list" id="bankingUsersList" style="max-height: 250px;"></div>
+                    </div>
+                    <div class="form-group" style="flex: 1;">
+                        <label>Selected User</label>
+                        <div id="selectedUserInfo" style="background: #f1f5f9; padding: 8px; border-radius: 8px; font-size: 0.7rem;">None selected</div>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Current Balance</label>
+                        <input type="number" id="currentBalance" readonly style="background: #f1f5f9; font-weight: bold;">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Set Exact Balance</label>
+                        <input type="number" id="setBalanceAmount" placeholder="Enter amount" step="0.01">
+                    </div>
+                    <button class="btn btn-primary" id="setBalanceBtn">Set Balance</button>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Add Money</label>
+                        <input type="number" id="addMoneyAmount" placeholder="Amount to add" step="0.01">
+                    </div>
+                    <button class="btn btn-success" id="addMoneyBtn"><i class="fas fa-plus"></i> Add Money</button>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Remove Money</label>
+                        <input type="number" id="removeMoneyAmount" placeholder="Amount to remove" step="0.01">
+                    </div>
+                    <button class="btn btn-danger" id="removeMoneyBtn"><i class="fas fa-minus"></i> Remove Money</button>
+                </div>
+                <div id="bankingMessage" style="margin-top: 10px; padding: 8px; border-radius: 8px;"></div>
+            </div>
+
+            <div class="card">
+                <h3><i class="fab fa-youtube"></i> YouTube Links Management</h3>
+                <div class="form-row">
+                    <div class="form-group" style="flex: 3;">
+                        <label>YouTube URL</label>
+                        <input type="text" id="youtubeUrl" placeholder="https://www.youtube.com/watch?v=...">
+                    </div>
+                    <div class="form-group">
+                        <label>Title (Optional)</label>
+                        <input type="text" id="youtubeTitle" placeholder="Video Title">
+                    </div>
+                    <button class="btn btn-success" id="addYoutubeBtn" style="align-self: flex-end;"><i class="fas fa-plus"></i> Add Link</button>
+                </div>
+                <div class="items-list" id="youtubeLinksList" style="max-height: 300px;"></div>
+            </div>
+        </div>
+
+        <!-- Footer Panel -->
+        <div class="panel" id="panel-footer">
+            <div class="card">
+                <h3><i class="fas fa-footer"></i> Footer Rows</h3>
+                <div class="items-list" id="footerItems"></div>
+                <button class="btn btn-secondary btn-sm" id="addFooterItem">+ Add Row</button>
+                <div class="form-group" style="margin-top:12px;"><label>Bottom Text</label><input type="text" id="footerBottomText" placeholder="© 2025 Naya Bato. All rights reserved."></div>
+                <button class="btn btn-success" id="saveFooter">Save Footer</button>
+            </div>
+        </div>
+
+        <!-- Users Panel -->
+        <div class="panel" id="panel-users">
+            <div class="card">
+                <h3><i class="fas fa-users"></i> User Management</h3>
+                <div class="items-list" id="usersList"></div>
+            </div>
+        </div>
+
+        <!-- Settings Panel -->
+        <div class="panel" id="panel-settings">
+            <div class="card">
+                <h3><i class="fas fa-cog"></i> Settings</h3>
+                <div class="form-group"><label>Currency</label><select id="currency"><option>NPR</option><option>USD</option><option>EUR</option></select></div>
+                <div class="form-group"><label>Contact Email</label><input type="email" id="contactEmail" value="admin@nayabato.com"></div>
+                <button class="btn btn-success" id="saveSettings">Save Settings</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="toast" id="toast"><i class="fas fa-check-circle"></i> <span id="toastMsg"></span></div>
+
+<script>
+    // Firebase Config
+    const firebaseConfig = {
+        apiKey: "AIzaSyDJLnUB8XnXWPEtSRAMuQr9ASmD16HLIJc",
+        authDomain: "bishalshrestha17-de676.firebaseapp.com",
+        projectId: "bishalshrestha17-de676",
+        storageBucket: "bishalshrestha17-de676.firebasestorage.app",
+        messagingSenderId: "631628771230",
+        appId: "1:631628771230:web:389c6430535f6a46b6708f"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    // ImgBB API
+    const IMGBB_KEY = "c077a7dd2031a6ac352c597f8de1d48c";
+
+    // Helper Functions
+    function showToast(msg) {
+        const toast = document.getElementById('toast');
+        document.getElementById('toastMsg').innerText = msg;
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 2500);
+    }
+
+    async function uploadToImgBB(file) {
+        const formData = new FormData();
+        formData.append('key', IMGBB_KEY);
+        formData.append('image', file);
+        const res = await fetch('https://api.imgbb.com/1/upload', { method: 'POST', body: formData });
+        const data = await res.json();
+        if (!data.success) throw new Error('Upload failed');
+        return data.data.url;
+    }
+
+    function escapeHtml(str) {
+        return (str || '').toString().replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+    }
+
+    // Item Row Template
+    function itemRowHtml(item, idx, fields = {}) {
+        return `<div class="item-row" data-idx="${idx}">
+            <div class="form-row">
+                <div class="item-img-preview" onclick="this.nextElementSibling.click()">${item.image ? `<img src="${item.image}">` : '<i class="fas fa-image"></i>'}</div>
+                <input type="file" class="item-img-input" accept="image/*" style="display:none;">
+                <div class="form-group" style="flex:2;"><label>${fields.nameLabel || 'Name'}</label><input type="text" class="item-name" value="${escapeHtml(item.name || item.text || '')}"></div>
+                <div class="form-group" style="flex:2;"><label>Link</label><input type="text" class="item-link" value="${escapeHtml(item.link || '')}"></div>
+                <div class="form-group"><label>Icon</label><input type="text" class="item-icon" value="${escapeHtml(item.icon || '')}"></div>
+                <div class="form-group"><label>Order</label><input type="number" class="item-order" value="${item.order || idx + 1}"></div>
+            </div>
+            <div class="item-actions"><button class="btn btn-danger btn-sm" onclick="this.closest('.item-row').remove()">Remove</button></div>
+        </div>`;
+    }
+
+    function collectItems(containerId) {
+        const rows = document.querySelectorAll(`#${containerId} .item-row`);
+        return Array.from(rows).map(row => ({
+            name: row.querySelector('.item-name').value.trim(),
+            link: row.querySelector('.item-link').value.trim(),
+            icon: row.querySelector('.item-icon').value.trim(),
+            image: row.querySelector('.item-img-preview img')?.src || '',
+            order: parseInt(row.querySelector('.item-order').value) || 0
+        }));
+    }
+
+    function wireImageUploads(containerId) {
+        document.querySelectorAll(`#${containerId} .item-img-input`).forEach(input => {
+            input.onchange = async (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                const preview = input.previousElementSibling;
+                preview.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                try {
+                    const url = await uploadToImgBB(file);
+                    preview.innerHTML = `<img src="${url}">`;
+                } catch (err) {
+                    preview.innerHTML = '<i class="fas fa-image"></i>';
+                    showToast('Upload failed');
+                }
+            };
+        });
+    }
+
+    // ========== BANKING FEATURES ==========
+    let currentSelectedUserId = null;
+    let currentSelectedUserEmail = null;
+    let currentSelectedUserBalance = 0;
+
+    async function loadBankingUsers() {
+        const bankingUsersList = document.getElementById('bankingUsersList');
+        if (!bankingUsersList) return;
+        
+        try {
+            const usersSnapshot = await db.collection('users').get();
+            bankingUsersList.innerHTML = '';
+            
+            if (usersSnapshot.empty) {
+                bankingUsersList.innerHTML = '<div style="padding: 10px; text-align: center; color: #64748b;">No users found</div>';
+                return;
+            }
+            
+            usersSnapshot.forEach(doc => {
+                const userData = doc.data();
+                const balance = userData.balance || 0;
+                const email = userData.email || doc.id;
+                const name = userData.name || email.split('@')[0];
+                
+                const userDiv = document.createElement('div');
+                userDiv.className = 'item-row user-list-item';
+                userDiv.style.cursor = 'pointer';
+                userDiv.innerHTML = `
+                    <div class="form-row">
+                        <div class="form-group" style="flex: 2;">
+                            <strong>${escapeHtml(name)}</strong><br>
+                            <small style="color: #64748b;">${escapeHtml(email)}</small>
+                        </div>
+                        <div class="form-group">
+                            <span class="balance-highlight">$${balance.toLocaleString()}</span>
+                        </div>
+                    </div>
+                `;
+                userDiv.onclick = () => selectBankingUser(doc.id, email, balance, name);
+                bankingUsersList.appendChild(userDiv);
+            });
+        } catch (error) {
+            console.error('Error loading users:', error);
+            bankingUsersList.innerHTML = '<div style="padding: 10px; text-align: center; color: #ef4444;">Error loading users</div>';
+        }
+    }
+    
+    function selectBankingUser(userId, email, balance, name) {
+        currentSelectedUserId = userId;
+        currentSelectedUserEmail = email;
+        currentSelectedUserBalance = balance;
+        
+        document.getElementById('selectedUserInfo').innerHTML = `
+            <strong>${escapeHtml(name)}</strong><br>
+            ${escapeHtml(email)}<br>
+            <small>ID: ${userId.substring(0, 8)}...</small>
+        `;
+        document.getElementById('currentBalance').value = balance;
+        
+        // Highlight selected user in list
+        document.querySelectorAll('#bankingUsersList .item-row').forEach(row => {
+            row.style.background = '';
+            row.style.borderLeft = '';
+        });
+        event.currentTarget.style.background = '#dbeafe';
+        event.currentTarget.style.borderLeft = '3px solid #7c3aed';
+        
+        showToast(`Selected user: ${name}`, false);
+    }
+    
+    async function updateUserBalance(userId, newBalance, actionMsg) {
+        if (!userId) {
+            showToast('Please select a user first', true);
+            return false;
+        }
+        
+        try {
+            await db.collection('users').doc(userId).update({
+                balance: newBalance,
+                lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            showToast(actionMsg, false);
+            loadBankingUsers();
+            updateTotalBalance();
+            if (currentSelectedUserId === userId) {
+                document.getElementById('currentBalance').value = newBalance;
+                currentSelectedUserBalance = newBalance;
+            }
+            return true;
+        } catch (error) {
+            showToast('Error: ' + error.message, true);
+            return false;
+        }
+    }
+    
+    async function updateTotalBalance() {
+        try {
+            const usersSnapshot = await db.collection('users').get();
+            let total = 0;
+            usersSnapshot.forEach(doc => {
+                total += doc.data().balance || 0;
+            });
+            document.getElementById('statBalance').innerText = `$${total.toLocaleString()}`;
+        } catch (error) {
+            console.error('Error calculating total balance:', error);
+        }
+    }
+    
+    // Set Balance
+    document.getElementById('setBalanceBtn')?.addEventListener('click', async () => {
+        const amount = parseFloat(document.getElementById('setBalanceAmount').value);
+        if (isNaN(amount)) {
+            showToast('Please enter a valid amount', true);
+            return;
+        }
+        await updateUserBalance(currentSelectedUserId, amount, `Balance set to $${amount}`);
+        document.getElementById('setBalanceAmount').value = '';
+    });
+    
+    // Add Money
+    document.getElementById('addMoneyBtn')?.addEventListener('click', async () => {
+        const amount = parseFloat(document.getElementById('addMoneyAmount').value);
+        if (isNaN(amount) || amount <= 0) {
+            showToast('Please enter a positive amount', true);
+            return;
+        }
+        const newBalance = currentSelectedUserBalance + amount;
+        await updateUserBalance(currentSelectedUserId, newBalance, `Added $${amount}. New balance: $${newBalance}`);
+        document.getElementById('addMoneyAmount').value = '';
+    });
+    
+    // Remove Money
+    document.getElementById('removeMoneyBtn')?.addEventListener('click', async () => {
+        const amount = parseFloat(document.getElementById('removeMoneyAmount').value);
+        if (isNaN(amount) || amount <= 0) {
+            showToast('Please enter a positive amount', true);
+            return;
+        }
+        if (amount > currentSelectedUserBalance) {
+            showToast(`Insufficient balance! Current balance: $${currentSelectedUserBalance}`, true);
+            return;
+        }
+        const newBalance = currentSelectedUserBalance - amount;
+        await updateUserBalance(currentSelectedUserId, newBalance, `Removed $${amount}. New balance: $${newBalance}`);
+        document.getElementById('removeMoneyAmount').value = '';
+    });
+    
+    // YouTube Links Management
+    async function loadYouTubeLinks() {
+        const youtubeLinksList = document.getElementById('youtubeLinksList');
+        if (!youtubeLinksList) return;
+        
+        try {
+            const linksSnapshot = await db.collection('youtubeLinks').orderBy('createdAt', 'desc').get();
+            youtubeLinksList.innerHTML = '';
+            
+            if (linksSnapshot.empty) {
+                youtubeLinksList.innerHTML = '<div style="padding: 10px; text-align: center; color: #64748b;">No YouTube links added yet</div>';
+                return;
+            }
+            
+            linksSnapshot.forEach(doc => {
+                const link = doc.data();
+                const url = link.url;
+                const title = link.title || 'YouTube Video';
+                const videoId = extractYouTubeId(url);
+                const thumbnailUrl = videoId ? `https://img.youtube.com/vi/${videoId}/mqdefault.jpg` : '';
+                
+                const linkDiv = document.createElement('div');
+                linkDiv.className = 'item-row';
+                linkDiv.innerHTML = `
+                    <div class="form-row">
+                        ${thumbnailUrl ? `<div class="item-img-preview" style="width: 80px; height: 60px;"><img src="${thumbnailUrl}" style="width: 100%; height: 100%; object-fit: cover;"></div>` : ''}
+                        <div class="form-group" style="flex: 2;">
+                            <strong>${escapeHtml(title)}</strong><br>
+                            <a href="${url}" target="_blank" style="font-size: 0.65rem; color: #3b82f6;">${url.substring(0, 50)}...</a>
+                        </div>
+                        <div class="item-actions">
+                            <button class="btn btn-danger btn-sm delete-youtube" data-id="${doc.id}"><i class="fas fa-trash"></i> Delete</button>
+                        </div>
+                    </div>
+                `;
+                youtubeLinksList.appendChild(linkDiv);
+            });
+            
+            // Add delete event listeners
+            document.querySelectorAll('.delete-youtube').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    const id = btn.getAttribute('data-id');
+                    if (confirm('Delete this YouTube link?')) {
+                        await db.collection('youtubeLinks').doc(id).delete();
+                        showToast('YouTube link deleted');
+                        loadYouTubeLinks();
+                    }
+                });
+            });
+        } catch (error) {
+            console.error('Error loading YouTube links:', error);
+            youtubeLinksList.innerHTML = '<div style="padding: 10px; text-align: center; color: #ef4444;">Error loading links</div>';
+        }
+    }
+    
+    function extractYouTubeId(url) {
+        const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+        const match = url.match(regExp);
+        return (match && match[2].length === 11) ? match[2] : null;
+    }
+    
+    document.getElementById('addYoutubeBtn')?.addEventListener('click', async () => {
+        const url = document.getElementById('youtubeUrl').value.trim();
+        const title = document.getElementById('youtubeTitle').value.trim();
+        
+        if (!url) {
+            showToast('Please enter a YouTube URL', true);
+            return;
+        }
+        
+        try {
+            await db.collection('youtubeLinks').add({
+                url: url,
+                title: title || 'YouTube Video',
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            showToast('YouTube link added successfully!');
+            document.getElementById('youtubeUrl').value = '';
+            document.getElementById('youtubeTitle').value = '';
+            loadYouTubeLinks();
+        } catch (error) {
+            showToast('Error: ' + error.message, true);
+        }
+    });
+
+    // Load All Data
+    async function loadAllData() {
+        loadStats();
+        loadBranding();
+        loadLeftSidebar();
+        loadRightSidebar();
+        loadTopNav();
+        loadHero();
+        loadAiButton();
+        loadCategories();
+        loadProducts();
+        loadProdSection();
+        loadFooter();
+        loadUsers();
+        loadSettings();
+        loadBankingUsers();
+        loadYouTubeLinks();
+        updateTotalBalance();
+    }
+
+    // Stats
+    function loadStats() {
+        db.collection('products').onSnapshot(s => document.getElementById('statProducts').innerText = s.size);
+        db.collection('circleItems').onSnapshot(s => document.getElementById('statCategories').innerText = s.size);
+        db.collection('users').onSnapshot(s => {
+            document.getElementById('statUsers').innerText = s.size;
+            updateTotalBalance();
+        });
+    }
+
+    // Branding
+    let logoUrl = '';
+    function loadBranding() {
+        db.collection('config').doc('branding').get().then(doc => {
+            const d = doc.exists ? doc.data() : {};
+            document.getElementById('brandName').value = d.name || 'Naya Bato';
+            document.getElementById('brandLink').value = d.link || 'index.html';
+            logoUrl = d.logo || '';
+            if (logoUrl) document.getElementById('logoPreview').innerHTML = `<img src="${logoUrl}">`;
+        });
+    }
+
+    document.getElementById('logoPreview').onclick = () => document.getElementById('logoInput').click();
+    document.getElementById('logoInput').onchange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        document.getElementById('logoPreview').innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        try {
+            logoUrl = await uploadToImgBB(file);
+            document.getElementById('logoPreview').innerHTML = `<img src="${logoUrl}">`;
+        } catch (err) {
+            document.getElementById('logoPreview').innerHTML = '<span>Click to upload logo</span>';
+            showToast('Upload failed');
+        }
+    };
+
+    document.getElementById('saveBranding').onclick = async () => {
+        await db.collection('config').doc('branding').set({
+            name: document.getElementById('brandName').value,
+            link: document.getElementById('brandLink').value,
+            logo: logoUrl
+        });
+        showToast('Branding saved!');
+    };
+
+    // Left Sidebar
+    function loadLeftSidebar() {
+        db.collection('config').doc('leftSidebar').get().then(doc => {
+            const items = doc.exists ? doc.data().items : [{ icon: 'fas fa-home', name: 'Home', link: 'index.html', order: 1 }, { icon: 'fas fa-store', name: 'Shop', link: '#', order: 2 }];
+            document.getElementById('leftbarItems').innerHTML = items.map((it, i) => itemRowHtml(it, i, {})).join('');
+            wireImageUploads('leftbarItems');
+        });
+    }
+
+    document.getElementById('addLeftItem').onclick = () => {
+        document.getElementById('leftbarItems').insertAdjacentHTML('beforeend', itemRowHtml({}, Date.now(), {}));
+        wireImageUploads('leftbarItems');
+    };
+    document.getElementById('saveLeftbar').onclick = async () => {
+        await db.collection('config').doc('leftSidebar').set({ items: collectItems('leftbarItems') });
+        showToast('Left sidebar saved!');
+    };
+
+    // Right Sidebar
+    function loadRightSidebar() {
+        db.collection('config').doc('rightSidebar').get().then(doc => {
+            const items = doc.exists ? doc.data().items : [{ icon: 'fas fa-user', name: 'My Profile', link: '#', order: 1 }];
+            document.getElementById('rightbarItems').innerHTML = items.map((it, i) => itemRowHtml(it, i, {})).join('');
+            wireImageUploads('rightbarItems');
+        });
+    }
+
+    document.getElementById('addRightItem').onclick = () => {
+        document.getElementById('rightbarItems').insertAdjacentHTML('beforeend', itemRowHtml({}, Date.now(), {}));
+        wireImageUploads('rightbarItems');
+    };
+    document.getElementById('saveRightbar').onclick = async () => {
+        await db.collection('config').doc('rightSidebar').set({ items: collectItems('rightbarItems') });
+        showToast('Right sidebar saved!');
+    };
+
+    // Top Nav
+    function loadTopNav() {
+        db.collection('config').doc('topNav').get().then(doc => {
+            const items = doc.exists ? doc.data().items : ['Home', 'Shop', 'Products'].map((n, i) => ({ name: n, link: '#', order: i + 1 }));
+            document.getElementById('topnavItems').innerHTML = items.map((it, i) => itemRowHtml(it, i, { nameLabel: 'Text' })).join('');
+            wireImageUploads('topnavItems');
+        });
+    }
+
+    document.getElementById('addTopnavItem').onclick = () => {
+        document.getElementById('topnavItems').insertAdjacentHTML('beforeend', itemRowHtml({}, Date.now(), { nameLabel: 'Text' }));
+        wireImageUploads('topnavItems');
+    };
+    document.getElementById('saveTopnav').onclick = async () => {
+        await db.collection('config').doc('topNav').set({ items: collectItems('topnavItems') });
+        showToast('Top navigation saved!');
+    };
+
+    // Hero
+    function loadHero() {
+        db.collection('config').doc('hero').get().then(doc => {
+            const d = doc.exists ? doc.data() : {};
+            document.getElementById('heroTitle').value = d.title || 'Find Everything You Need in One Place';
+            document.getElementById('heroTitleColor').value = d.titleColor || '#0f172a';
+            document.getElementById('heroTitleSize').value = d.titleSize || '1.5rem';
+            document.getElementById('heroSubtitle').value = d.subtitle || 'Shop the best products and explore top categories.';
+            document.getElementById('heroSubColor').value = d.subtitleColor || '#64748b';
+            document.getElementById('heroSubSize').value = d.subtitleSize || '0.8rem';
+            document.getElementById('heroBg').value = d.bgColor || 'linear-gradient(135deg,#f5f3ff,#fdf4ff)';
+        });
+    }
+
+    document.getElementById('saveHero').onclick = async () => {
+        await db.collection('config').doc('hero').set({
+            title: document.getElementById('heroTitle').value,
+            titleColor: document.getElementById('heroTitleColor').value,
+            titleSize: document.getElementById('heroTitleSize').value,
+            subtitle: document.getElementById('heroSubtitle').value,
+            subtitleColor: document.getElementById('heroSubColor').value,
+            subtitleSize: document.getElementById('heroSubSize').value,
+            bgColor: document.getElementById('heroBg').value
+        });
+        showToast('Hero saved!');
+    };
+
+    // AI Button
+    function loadAiButton() {
+        db.collection('config').doc('aiButton').get().then(doc => {
+            const d = doc.exists ? doc.data() : {};
+            document.getElementById('aiText').value = d.text || 'Ask with AI';
+            document.getElementById('aiIcon').value = d.icon || 'fas fa-robot';
+            document.getElementById('aiLink').value = d.link || 'bishalxtha ai.html';
+            document.getElementById('aiBg').value = d.bgColor || '#0f172a';
+            document.getElementById('aiTextColor').value = d.textColor || '#ffffff';
+        });
+    }
+
+    document.getElementById('saveAiBtn').onclick = async () => {
+        await db.collection('config').doc('aiButton').set({
+            text: document.getElementById('aiText').value,
+            icon: document.getElementById('aiIcon').value,
+            link: document.getElementById('aiLink').value,
+            bgColor: document.getElementById('aiBg').value,
+            textColor: document.getElementById('aiTextColor').value
+        });
+        showToast('AI button saved!');
+    };
+
+    // Categories
+    function loadCategories() {
+        db.collection('circleItems').orderBy('order', 'asc').onSnapshot(snap => {
+            const items = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            const container = document.getElementById('categoriesList');
+            if (!items.length) { container.innerHTML = '<p style="color:#94a3b8;">No categories yet.</p>'; return; }
+            container.innerHTML = items.map(c => `
+                <div class="item-row" data-id="${c.id}">
+                    <div class="form-row">
+                        <div class="item-img-preview" onclick="this.nextElementSibling.click()">${c.imageUrl ? `<img src="${c.imageUrl}">` : '<i class="fas fa-image"></i>'}</div>
+                        <input type="file" class="cat-img-input" accept="image/*" style="display:none;">
+                        <div class="form-group" style="flex:2;"><label>Name</label><input type="text" class="cat-name" value="${escapeHtml(c.name)}"></div>
+                        <div class="form-group" style="flex:2;"><label>Link</label><input type="text" class="cat-link" value="${escapeHtml(c.link || '')}"></div>
+                        <div class="form-group"><label>Order</label><input type="number" class="cat-order" value="${c.order || 0}"></div>
+                    </div>
+                    <div class="item-actions"><button class="btn btn-success btn-sm" onclick="saveCategory('${c.id}')">Save</button><button class="btn btn-danger btn-sm" onclick="deleteCategory('${c.id}')">Delete</button></div>
+                </div>`).join('');
+            document.querySelectorAll('.cat-img-input').forEach(input => {
+                input.onchange = async (e) => {
+                    const file = e.target.files[0];
+                    if (!file) return;
+                    const prev = input.previousElementSibling;
+                    prev.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                    try {
+                        const url = await uploadToImgBB(file);
+                        prev.innerHTML = `<img src="${url}">`;
+                    } catch (err) { prev.innerHTML = '<i class="fas fa-image"></i>'; }
+                };
+            });
+        });
+    }
+
+    window.saveCategory = async (id) => {
+        const row = document.querySelector(`#categoriesList .item-row[data-id="${id}"]`);
+        const img = row.querySelector('.item-img-preview img');
+        await db.collection('circleItems').doc(id).update({
+            name: row.querySelector('.cat-name').value,
+            link: row.querySelector('.cat-link').value,
+            order: parseInt(row.querySelector('.cat-order').value) || 0,
+            imageUrl: img ? img.src : ''
+        });
+        showToast('Saved');
+    };
+
+    window.deleteCategory = async (id) => {
+        if (confirm('Delete?')) { await db.collection('circleItems').doc(id).delete(); showToast('Deleted'); }
+    };
+
+    document.getElementById('addCategoryBtn').onclick = async () => {
+        await db.collection('circleItems').add({ name: 'New Category', link: '#', order: 99, imageUrl: '' });
+        showToast('Added');
+    };
+
+    // Products Section
+    function loadProdSection() {
+        db.collection('config').doc('productsSection').get().then(doc => {
+            const d = doc.exists ? doc.data() : {};
+            document.getElementById('prodSectionTitle').value = d.title || 'Popular Picks';
+            document.getElementById('prodSectionIcon').value = d.icon || 'fas fa-fire';
+            document.getElementById('prodSectionIconColor').value = d.iconColor || '#f97316';
+        });
+    }
+
+    document.getElementById('saveProdSection').onclick = async () => {
+        await db.collection('config').doc('productsSection').set({
+            title: document.getElementById('prodSectionTitle').value,
+            icon: document.getElementById('prodSectionIcon').value,
+            iconColor: document.getElementById('prodSectionIconColor').value
+        });
+        showToast('Section title saved!');
+    };
+
+    // Products
+    function loadProducts() {
+        db.collection('products').orderBy('createdAt', 'desc').onSnapshot(snap => {
+            const items = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            const container = document.getElementById('productsList');
+            if (!items.length) { container.innerHTML = '<p style="color:#94a3b8;">No products yet.</p>'; return; }
+            container.innerHTML = items.map(p => `
+                <div class="item-row" data-id="${p.id}">
+                    <div class="form-row">
+                        <div class="item-img-preview" onclick="this.nextElementSibling.click()">${p.imageUrl ? `<img src="${p.imageUrl}">` : '<i class="fas fa-image"></i>'}</div>
+                        <input type="file" class="prod-img-input" accept="image/*" style="display:none;">
+                        <div class="form-group" style="flex:2;"><label>Title</label><input type="text" class="prod-title" value="${escapeHtml(p.title)}"></div>
+                        <div class="form-group"><label>Price</label><input type="number" class="prod-price" value="${p.price || 0}"></div>
+                        <div class="form-group"><label>Link</label><input type="text" class="prod-link" value="${escapeHtml(p.link || '#')}"></div>
+                    </div>
+                    <div class="item-actions"><button class="btn btn-success btn-sm" onclick="saveProduct('${p.id}')">Save</button><button class="btn btn-danger btn-sm" onclick="deleteProduct('${p.id}')">Delete</button></div>
+                </div>`).join('');
+            document.querySelectorAll('.prod-img-input').forEach(input => {
+                input.onchange = async (e) => {
+                    const file = e.target.files[0];
+                    if (!file) return;
+                    const prev = input.previousElementSibling;
+                    prev.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                    try {
+                        const url = await uploadToImgBB(file);
+                        prev.innerHTML = `<img src="${url}">`;
+                    } catch (err) { prev.innerHTML = '<i class="fas fa-image"></i>'; }
+                };
+            });
+        });
+    }
+
+    window.saveProduct = async (id) => {
+        const row = document.querySelector(`#productsList .item-row[data-id="${id}"]`);
+        const img = row.querySelector('.item-img-preview img');
+        await db.collection('products').doc(id).update({
+            title: row.querySelector('.prod-title').value,
+            price: parseFloat(row.querySelector('.prod-price').value) || 0,
+            link: row.querySelector('.prod-link').value,
+            imageUrl: img ? img.src : ''
+        });
+        showToast('Saved');
+    };
+
+    window.deleteProduct = async (id) => {
+        if (confirm('Delete?')) { await db.collection('products').doc(id).delete(); showToast('Deleted'); }
+    };
+
+    document.getElementById('addProductBtn').onclick = async () => {
+        await db.collection('products').add({ title: 'New Product', price: 0, link: '#', createdAt: new Date() });
+        showToast('Added');
+    };
+
+    // Footer
+    function loadFooter() {
+        db.collection('config').doc('footer').get().then(doc => {
+            const d = doc.exists ? doc.data() : {};
+            const items = d.rows || [{ icon: 'fas fa-phone', text: '9761614027', link: 'tel:9761614027' }];
+            document.getElementById('footerItems').innerHTML = items.map((it, i) => itemRowHtml({ ...it, name: it.text }, i, { nameLabel: 'Text' })).join('');
+            document.getElementById('footerBottomText').value = d.bottomText || '© 2025 Naya Bato. All rights reserved.';
+            wireImageUploads('footerItems');
+        });
+    }
+
+    document.getElementById('addFooterItem').onclick = () => {
+        document.getElementById('footerItems').insertAdjacentHTML('beforeend', itemRowHtml({}, Date.now(), { nameLabel: 'Text' }));
+        wireImageUploads('footerItems');
+    };
+
+    document.getElementById('saveFooter').onclick = async () => {
+        const rows = collectItems('footerItems').map(it => ({ text: it.name, link: it.link, icon: it.icon, image: it.image }));
+        await db.collection('config').doc('footer').set({ rows, bottomText: document.getElementById('footerBottomText').value });
+        showToast('Footer saved!');
+    };
+
+    // Users
+    function loadUsers() {
+        db.collection('users').onSnapshot(snap => {
+            const container = document.getElementById('usersList');
+            if (!snap.size) { container.innerHTML = '<p style="color:#94a3b8;">No users yet.</p>'; return; }
+            container.innerHTML = Array.from(snap.docs).map(doc => `
+                <div class="item-row">
+                    <div class="form-row">
+                        <div class="form-group" style="flex:2;"><strong>${escapeHtml(doc.data().name || doc.data().email)}</strong><br><span style="font-size:0.65rem;color:#64748b;">${escapeHtml(doc.data().email)}</span><br><span style="font-size:0.65rem;color:#10b981;">Balance: $${(doc.data().balance || 0).toLocaleString()}</span></div>
+                        <div class="form-group"><label>Role</label><select class="user-role" data-id="${doc.id}"><option value="user" ${doc.data().role === 'user' ? 'selected' : ''}>User</option><option value="admin" ${doc.data().role === 'admin' ? 'selected' : ''}>Admin</option></select></div>
+                        <button class="btn btn-success btn-sm" onclick="saveUserRole('${doc.id}')">Save</button>
+                    </div>
+                </div>`).join('');
+        });
+    }
+
+    window.saveUserRole = async (id) => {
+        const sel = document.querySelector(`.user-role[data-id="${id}"]`);
+        await db.collection('users').doc(id).update({ role: sel.value });
+        showToast('Role updated');
+    };
+
+    // Settings
+    function loadSettings() {
+        db.collection('config').doc('settings').get().then(doc => {
+            const d = doc.exists ? doc.data() : {};
+            document.getElementById('currency').value = d.currency || 'NPR';
+            document.getElementById('contactEmail').value = d.contactEmail || 'admin@nayabato.com';
+        });
+    }
+
+    document.getElementById('saveSettings').onclick = async () => {
+        await db.collection('config').doc('settings').set({
+            currency: document.getElementById('currency').value,
+            contactEmail: document.getElementById('contactEmail').value
+        });
+        showToast('Settings saved');
+    };
+
+    // Auth
+    document.getElementById('adminLoginBtn').onclick = async () => {
+        const email = document.getElementById('adminEmail').value;
+        const pass = document.getElementById('adminPass').value;
+        try {
+            await auth.signInWithEmailAndPassword(email, pass);
+        } catch (e) { document.getElementById('loginError').innerText = e.message; }
+    };
+
+    document.getElementById('adminLogoutBtn').onclick = () => auth.signOut();
+
+    auth.onAuthStateChanged(async (user) => {
+        if (!user) {
+            document.getElementById('lockScreen').style.display = 'flex';
+            document.getElementById('adminApp').style.display = 'none';
+            return;
+        }
+        const userDoc = await db.collection('users').doc(user.uid).get();
+        if (userDoc.exists && userDoc.data().role === 'admin') {
+            document.getElementById('lockScreen').style.display = 'none';
+            document.getElementById('adminApp').style.display = 'flex';
+            loadAllData();
+        } else {
+            document.getElementById('loginError').innerText = 'Not an admin account';
+            auth.signOut();
+        }
+    });
+
+    function showToast(msg, isError = false) {
+        const toast = document.getElementById('toast');
+        document.getElementById('toastMsg').innerHTML = `<i class="fas ${isError ? 'fa-exclamation-circle' : 'fa-check-circle'}"></i> ${msg}`;
+        toast.style.background = isError ? '#dc2626' : '#1e293b';
+        toast.classList.add('show');
+        setTimeout(() => {
+            toast.classList.remove('show');
+            toast.style.background = '#1e293b';
+        }, 3000);
+    }
+
+    // Navigation
+    window.switchPanel = function (panelId) {
+        document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+        const targetPanel = document.getElementById(`panel-${panelId}`);
+        if (targetPanel) targetPanel.classList.add('active');
+        document.querySelectorAll('.sidebar-nav a').forEach(a => a.classList.remove('active'));
+        const activeLink = document.querySelector(`.sidebar-nav a[data-panel="${panelId}"]`);
+        if (activeLink) activeLink.classList.add('active');
+        document.getElementById('panelTitle').innerText = activeLink ? activeLink.querySelector('span').innerText : panelId;
+    };
+
+    document.querySelectorAll('.sidebar-nav a').forEach(a => {
+        a.onclick = (e) => { 
+            e.preventDefault(); 
+            switchPanel(a.dataset.panel); 
+        };
+    });
+</script>
+</body>
+</html>

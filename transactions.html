@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>Transactions - Naya Bato</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+    body { background: #f1f5f9; overflow-x: hidden; }
+    
+    /* Sidebar Styles */
+    .sidebar {
+      position: fixed;
+      left: 0;
+      top: 0;
+      width: 280px;
+      height: 100vh;
+      background: linear-gradient(180deg, #0f172a 0%, #020617 100%);
+      transition: all 0.3s ease;
+      z-index: 1000;
+      overflow-y: auto;
+      overflow-x: hidden;
+      box-shadow: 4px 0 20px rgba(0,0,0,0.2);
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .sidebar.collapsed { width: 85px; }
+    .sidebar.collapsed .sidebar-text { display: none; }
+    .sidebar.collapsed .logo-text { display: none; }
+    .sidebar.collapsed .logo-subtext { display: none; }
+    .sidebar.collapsed .sidebar-link { justify-content: center; padding: 14px 0; margin: 6px 12px; }
+    .sidebar.collapsed .sidebar-link i { margin-right: 0; font-size: 1.3rem; }
+    .sidebar.collapsed .logo-icon { margin: 0 auto; }
+    .sidebar.collapsed .auth-btn-text { display: none; }
+    .sidebar.collapsed .auth-btn { justify-content: center; padding: 12px 0; }
+    
+    .sidebar::-webkit-scrollbar { width: 4px; }
+    .sidebar::-webkit-scrollbar-track { background: #1e293b; }
+    .sidebar::-webkit-scrollbar-thumb { background: #3b82f6; border-radius: 10px; }
+    
+    .sidebar-link {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 12px 20px;
+      margin: 6px 16px;
+      border-radius: 12px;
+      color: #94a3b8;
+      transition: all 0.2s;
+      text-decoration: none;
+      white-space: nowrap;
+      font-weight: 500;
+    }
+    .sidebar-link:hover { background: rgba(59, 130, 246, 0.15); color: white; transform: translateX(4px); }
+    .sidebar-link.active { background: #3b82f6; color: white; box-shadow: 0 4px 12px rgba(59,130,246,0.4); }
+    .sidebar-link i { width: 22px; font-size: 1.1rem; }
+    
+    /* Main Content */
+    .main-content { margin-left: 280px; transition: all 0.3s ease; min-height: 100vh; }
+    .main-content.collapsed { margin-left: 85px; }
+    
+    /* Top Bar */
+    .top-bar { background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.05); padding: 16px 24px; position: sticky; top: 0; z-index: 99; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; }
+    
+    /* Cards */
+    .stat-card { background: white; border-radius: 20px; padding: 20px; transition: all 0.3s; border: 1px solid #e2e8f0; }
+    .stat-card:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(0,0,0,0.08); }
+    
+    /* Modal */
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1100; justify-content: center; align-items: center; }
+    .modal-content { background: white; border-radius: 24px; padding: 28px; max-width: 500px; width: 90%; max-height: 85vh; overflow-y: auto; }
+    
+    /* Transaction Row */
+    .transaction-row { background: white; border-radius: 16px; padding: 16px; margin-bottom: 10px; transition: all 0.2s; border: 1px solid #e2e8f0; }
+    .transaction-row:hover { transform: translateX(5px); border-color: #3b82f6; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+    
+    .badge-income { background: #dcfce7; color: #166534; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+    .badge-expense { background: #fee2e2; color: #991b1b; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+    .badge-pending { background: #fef3c7; color: #92400e; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+    .badge-success { background: #dcfce7; color: #166534; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+    
+    /* Loading & Empty State */
+    .loading-spinner { width: 45px; height: 45px; border: 3px solid #e2e8f0; border-top-color: #3b82f6; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .empty-state { text-align: center; padding: 60px 20px; background: white; border-radius: 20px; }
+    .empty-state i { font-size: 64px; color: #cbd5e1; margin-bottom: 20px; }
+    
+    /* Toast */
+    .toast { position: fixed; bottom: 24px; right: 24px; background: #1e293b; color: white; padding: 14px 24px; border-radius: 16px; z-index: 1200; animation: slideIn 0.3s ease; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+    @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    
+    .user-avatar { width: 42px; height: 42px; background: linear-gradient(135deg, #3b82f6, #8b5cf6); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 16px; box-shadow: 0 4px 10px rgba(59,130,246,0.3); }
+    
+    @media (max-width: 768px) {
+      .sidebar { transform: translateX(-100%); }
+      .sidebar.mobile-open { transform: translateX(0); }
+      .main-content, .main-content.collapsed { margin-left: 0; }
+      .mobile-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 999; display: none; }
+      .mobile-overlay.active { display: block; }
+      .top-bar { padding: 12px 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Mobile Overlay -->
+<div id="mobileOverlay" class="mobile-overlay" onclick="closeMobileSidebar()"></div>
+
+<!-- Sidebar -->
+<div id="sidebar" class="sidebar">
+  <div class="p-5 pb-4 border-b border-gray-800">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg logo-icon">
+          <i class="fas fa-chart-line text-white text-lg"></i>
+        </div>
+        <div class="logo-text">
+          <span class="text-white text-xl font-bold">Naya Bato</span>
+          <p class="text-gray-500 text-xs mt-0.5 logo-subtext">Business Platform</p>
+        </div>
+      </div>
+      <button id="toggleSidebarBtn" class="text-gray-400 hover:text-white transition hidden md:block">
+        <i class="fas fa-chevron-left"></i>
+      </button>
+    </div>
+  </div>
+  
+  <nav class="flex-1 py-4">
+    <a href="dashboard.html" class="sidebar-link"><i class="fas fa-tachometer-alt"></i><span class="sidebar-text">Dashboard</span></a>
+    <a href="transactions.html" class="sidebar-link active"><i class="fas fa-exchange-alt"></i><span class="sidebar-text">Transactions</span></a>
+    <a href="products.html" class="sidebar-link"><i class="fas fa-box"></i><span class="sidebar-text">Products</span></a>
+    <a href="orders.html" class="sidebar-link"><i class="fas fa-shopping-cart"></i><span class="sidebar-text">Orders</span></a>
+    <a href="customers.html" class="sidebar-link"><i class="fas fa-users"></i><span class="sidebar-text">Customers</span></a>
+    <a href="categories.html" class="sidebar-link"><i class="fas fa-tags"></i><span class="sidebar-text">Categories</span></a>
+    <a href="coupons.html" class="sidebar-link"><i class="fas fa-ticket-alt"></i><span class="sidebar-text">Coupons</span></a>
+    <a href="reviews.html" class="sidebar-link"><i class="fas fa-star"></i><span class="sidebar-text">Reviews</span></a>
+    <a href="inventory.html" class="sidebar-link"><i class="fas fa-warehouse"></i><span class="sidebar-text">Inventory</span></a>
+    <a href="reports.html" class="sidebar-link"><i class="fas fa-chart-bar"></i><span class="sidebar-text">Reports</span></a>
+    <a href="marketing.html" class="sidebar-link"><i class="fas fa-bullhorn"></i><span class="sidebar-text">Marketing</span></a>
+    <a href="settings.html" class="sidebar-link"><i class="fas fa-cog"></i><span class="sidebar-text">Settings</span></a>
+    <a href="activity-logs.html" class="sidebar-link"><i class="fas fa-history"></i><span class="sidebar-text">Activity Logs</span></a>
+  </nav>
+  
+  <div class="p-5 border-t border-gray-800 mt-auto">
+    <div id="authButtonsSection">
+      <a href="login.html" class="auth-btn flex items-center justify-center gap-2 bg-blue-600 text-white py-3 rounded-xl text-sm font-medium transition hover:bg-blue-700 w-full">
+        <i class="fas fa-sign-in-alt"></i><span class="auth-btn-text">Login</span>
+      </a>
+      <a href="register.html" class="auth-btn flex items-center justify-center gap-2 border border-blue-500 text-blue-400 py-3 rounded-xl text-sm font-medium transition hover:bg-blue-600/10 w-full mt-3">
+        <i class="fas fa-user-plus"></i><span class="auth-btn-text">Register</span>
+      </a>
+    </div>
+    <button id="logoutBtn" onclick="logout()" class="hidden w-full flex items-center justify-center gap-2 bg-red-600/20 text-red-400 py-3 rounded-xl text-sm font-medium transition hover:bg-red-600/30">
+      <i class="fas fa-sign-out-alt"></i><span class="auth-btn-text">Logout</span>
+    </button>
+  </div>
+</div>
+
+<!-- Mobile Toggle -->
+<button id="mobileToggleBtn" class="fixed top-4 left-4 z-50 bg-blue-600 text-white p-3 rounded-xl shadow-lg md:hidden">
+  <i class="fas fa-bars text-lg"></i>
+</button>
+
+<!-- Main Content -->
+<div id="mainContent" class="main-content">
+  <div class="top-bar">
+    <h1 class="text-xl font-bold text-gray-800">Transactions</h1>
+    <div class="flex items-center gap-4">
+      <span id="userEmail" class="text-gray-500 text-sm hidden md:inline"></span>
+      <div id="userAvatar" class="user-avatar">NB</div>
+    </div>
+  </div>
+
+  <div id="contentArea" class="p-6">
+    <div class="flex justify-center items-center h-64">
+      <div class="loading-spinner"></div>
+      <p class="ml-3 text-gray-500">Loading transactions...</p>
+    </div>
+  </div>
+
+  <footer class="bg-white border-t border-gray-100 py-5 px-6 mt-8">
+    <div class="flex flex-col md:flex-row justify-between items-center text-sm text-gray-400">
+      <p>© 2025 Naya Bato. All rights reserved. Made with ❤️ in Nepal</p>
+      <div class="flex gap-6 mt-3 md:mt-0">
+        <a href="privacy.html" class="hover:text-gray-600 transition">Privacy Policy</a>
+        <a href="terms.html" class="hover:text-gray-600 transition">Terms of Service</a>
+        <a href="support.html" class="hover:text-gray-600 transition">Support</a>
+      </div>
+    </div>
+  </footer>
+</div>
+
+<!-- Add Transaction Modal -->
+<div id="transactionModal" class="modal">
+  <div class="modal-content">
+    <div class="flex justify-between items-center mb-5">
+      <h2 class="text-xl font-bold text-gray-800"><i class="fas fa-plus-circle text-blue-500 mr-2"></i>Add Transaction</h2>
+      <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 text-xl">&times;</button>
+    </div>
+    
+    <div class="space-y-4">
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Transaction Type</label>
+        <select id="transType" class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+          <option value="income">💰 Income (Credit)</option>
+          <option value="expense">💸 Expense (Debit)</option>
+        </select>
+      </div>
+      
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+        <input type="text" id="transDesc" placeholder="e.g., Product Sale, Rent Payment" class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+      </div>
+      
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Amount (NPR)</label>
+        <input type="number" id="transAmount" placeholder="0.00" class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+      </div>
+      
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Sender Name</label>
+        <input type="text" id="transSender" placeholder="From" class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+      </div>
+      
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Receiver Name</label>
+        <input type="text" id="transReceiver" placeholder="To" class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+      </div>
+      
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Payment Method</label>
+        <select id="transPayment" class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+          <option value="Cash">💵 Cash</option>
+          <option value="Bank Transfer">🏦 Bank Transfer</option>
+          <option value="eSewa">📱 eSewa</option>
+          <option value="Khalti">📱 Khalti</option>
+          <option value="Card">💳 Card Payment</option>
+          <option value="Mobile Banking">📲 Mobile Banking</option>
+        </select>
+      </div>
+      
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Reference Number</label>
+        <input type="text" id="transRef" placeholder="Transaction ID / Reference" class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+      </div>
+      
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Date</label>
+        <input type="date" id="transDate" class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+      </div>
+      
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+        <select id="transStatus" class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+          <option value="Success">✅ Success</option>
+          <option value="Pending">⏳ Pending</option>
+          <option value="Failed">❌ Failed</option>
+        </select>
+      </div>
+      
+      <div class="flex gap-3 pt-4">
+        <button onclick="closeModal()" class="flex-1 border border-gray-300 text-gray-700 py-3 rounded-xl font-medium hover:bg-gray-50 transition">Cancel</button>
+        <button onclick="saveTransaction()" class="flex-1 bg-blue-600 text-white py-3 rounded-xl font-medium hover:bg-blue-700 transition">Save Transaction</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyDJLnUB8XnXWPEtSRAMuQr9ASmD16HLIJc",
+    authDomain: "bishalshrestha17-de676.firebaseapp.com",
+    projectId: "bishalshrestha17-de676",
+    storageBucket: "bishalshrestha17-de676.firebasestorage.app",
+    messagingSenderId: "631628771230",
+    appId: "1:631628771230:web:389c6430535f6a46b6708f"
+  };
+  
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.firestore();
+  let currentUser = null;
+  let allTransactions = [];
+
+  auth.onAuthStateChanged(async (user) => {
+    currentUser = user;
+    if (user) {
+      document.getElementById('authButtonsSection').style.display = 'none';
+      document.getElementById('logoutBtn').style.display = 'flex';
+      document.getElementById('userEmail').innerText = user.email;
+      document.getElementById('userAvatar').innerText = user.email.charAt(0).toUpperCase();
+      await loadTransactions();
+    } else {
+      document.getElementById('authButtonsSection').style.display = 'block';
+      document.getElementById('logoutBtn').style.display = 'none';
+      document.getElementById('userEmail').innerText = '';
+      showLoginMessage();
+    }
+  });
+
+  function logout() { auth.signOut(); showToast('Logged out'); setTimeout(() => location.reload(), 1000); }
+  function showToast(msg) { const t = document.createElement('div'); t.className = 'toast'; t.innerHTML = `<i class="fas fa-check-circle mr-2 text-green-400"></i>${msg}`; document.body.appendChild(t); setTimeout(() => t.remove(), 3000); }
+  
+  function showLoginMessage() {
+    document.getElementById('contentArea').innerHTML = `
+      <div class="empty-state">
+        <i class="fas fa-lock"></i>
+        <h3 class="text-xl font-semibold mb-2">Please Login to Continue</h3>
+        <p class="text-gray-500 mb-6">Login to view and manage your transactions.</p>
+        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+          <a href="login.html" class="bg-blue-600 text-white px-8 py-3 rounded-xl font-medium hover:bg-blue-700">Login Now</a>
+          <a href="register.html" class="border-2 border-blue-600 text-blue-600 px-8 py-3 rounded-xl font-medium hover:bg-blue-50">Create Account</a>
+        </div>
+      </div>
+    `;
+  }
+
+  async function loadTransactions() {
+    document.getElementById('contentArea').innerHTML = '<div class="flex justify-center items-center h-64"><div class="loading-spinner"></div><p class="ml-3 text-gray-500">Loading transactions...</p></div>';
+    
+    try {
+      const snap = await db.collection('transactions').where('userId', '==', currentUser.uid).get();
+      allTransactions = [];
+      snap.forEach(doc => allTransactions.push({ id: doc.id, ...doc.data() }));
+      allTransactions.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+      renderTransactions();
+    } catch(e) {
+      document.getElementById('contentArea').innerHTML = `<div class="empty-state"><i class="fas fa-exclamation-triangle text-red-500"></i><h3 class="text-xl font-semibold mb-2">Error</h3><p class="text-gray-500">${e.message}</p><button onclick="location.reload()" class="mt-4 bg-blue-600 text-white px-6 py-2 rounded-xl">Retry</button></div>`;
+    }
+  }
+
+  function renderTransactions() {
+    let totalIncome = 0, totalExpense = 0;
+    allTransactions.forEach(t => {
+      if (t.type === 'income') totalIncome += t.amount || 0;
+      else totalExpense += t.amount || 0;
+    });
+    
+    const html = `
+      <!-- Stats Cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+        <div class="stat-card"><div><p class="text-gray-500 text-sm">Total Income</p><p class="text-2xl font-bold text-green-600">NPR ${totalIncome.toLocaleString()}</p></div></div>
+        <div class="stat-card"><div><p class="text-gray-500 text-sm">Total Expense</p><p class="text-2xl font-bold text-red-600">NPR ${totalExpense.toLocaleString()}</p></div></div>
+        <div class="stat-card"><div><p class="text-gray-500 text-sm">Net Balance</p><p class="text-2xl font-bold ${totalIncome - totalExpense >= 0 ? 'text-green-600' : 'text-red-600'}">NPR ${(totalIncome - totalExpense).toLocaleString()}</p></div></div>
+        <div class="stat-card"><div><p class="text-gray-500 text-sm">Total Transactions</p><p class="text-2xl font-bold">${allTransactions.length}</p></div></div>
+      </div>
+      
+      <!-- Search and Filter Bar -->
+      <div class="bg-white rounded-xl p-5 mb-6 border border-gray-100">
+        <div class="flex flex-wrap gap-3">
+          <input type="text" id="searchInput" placeholder="🔍 Search transactions..." class="flex-1 border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500">
+          <select id="typeFilter" class="border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500">
+            <option value="all">All Types</option><option value="income">Income</option><option value="expense">Expense</option>
+          </select>
+          <select id="statusFilter" class="border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500">
+            <option value="all">All Status</option><option value="Success">Success</option><option value="Pending">Pending</option><option value="Failed">Failed</option>
+          </select>
+          <input type="date" id="dateFrom" class="border border-gray-300 rounded-xl px-4 py-3">
+          <input type="date" id="dateTo" class="border border-gray-300 rounded-xl px-4 py-3">
+          <button onclick="applyFilters()" class="bg-gray-600 text-white px-6 py-3 rounded-xl hover:bg-gray-700 transition">Filter</button>
+          <button onclick="exportToCSV()" class="border border-gray-300 px-6 py-3 rounded-xl hover:bg-gray-50 transition"><i class="fas fa-download mr-2"></i>Export</button>
+        </div>
+      </div>
+      
+      <!-- Add Transaction Button -->
+      <div class="mb-6 text-right">
+        <button onclick="openModal()" class="bg-blue-600 text-white px-6 py-3 rounded-xl font-medium hover:bg-blue-700 transition shadow-md">
+          <i class="fas fa-plus mr-2"></i>Add Transaction
+        </button>
+      </div>
+      
+      <!-- Transactions List -->
+      <div id="transactionsList" class="space-y-3"></div>
+    `;
+    
+    document.getElementById('contentArea').innerHTML = html;
+    renderTransactionsList(allTransactions);
+  }
+
+  function renderTransactionsList(transactions) {
+    const container = document.getElementById('transactionsList');
+    if (!container) return;
+    
+    if (transactions.length === 0) {
+      container.innerHTML = '<div class="empty-state py-12"><i class="fas fa-receipt"></i><p class="text-gray-400">No transactions found. Click "Add Transaction" to get started.</p></div>';
+      return;
+    }
+    
+    let html = '';
+    transactions.forEach(t => {
+      html += `
+        <div class="transaction-row flex flex-wrap md:flex-nowrap justify-between items-center gap-3">
+          <div class="flex-1 min-w-[150px]">
+            <p class="font-semibold text-gray-800">${t.description || 'Untitled'}</p>
+            <p class="text-xs text-gray-400 mt-1"><i class="far fa-calendar-alt mr-1"></i>${t.date || 'No date'}</p>
+          </div>
+          <div class="flex-1 min-w-[120px]">
+            <p class="text-sm text-gray-600"><i class="fas fa-user mr-1"></i>${t.senderName || '-'} → ${t.receiverName || '-'}</p>
+            <p class="text-xs text-gray-400"><i class="fas fa-credit-card mr-1"></i>${t.paymentMethod || 'Cash'}</p>
+          </div>
+          <div class="text-right">
+            <p class="text-lg font-bold ${t.type === 'income' ? 'text-green-600' : 'text-red-600'}">${t.type === 'income' ? '+' : '-'} NPR ${(t.amount || 0).toLocaleString()}</p>
+            <span class="${t.type === 'income' ? 'badge-income' : 'badge-expense'} text-xs">${t.type === 'income' ? 'Income' : 'Expense'}</span>
+            <span class="ml-2 ${t.status === 'Success' ? 'badge-success' : t.status === 'Pending' ? 'badge-pending' : 'badge-expense'} text-xs">${t.status || 'Success'}</span>
+          </div>
+          <div class="flex gap-2">
+            <button onclick="deleteTransaction('${t.id}')" class="text-red-500 hover:text-red-700 p-2"><i class="fas fa-trash-alt"></i></button>
+            <button onclick="downloadReceipt('${t.id}')" class="text-blue-500 hover:text-blue-700 p-2"><i class="fas fa-download"></i></button>
+          </div>
+        </div>
+      `;
+    });
+    container.innerHTML = html;
+  }
+
+  function applyFilters() {
+    let filtered = [...allTransactions];
+    const search = document.getElementById('searchInput')?.value.toLowerCase();
+    if (search) filtered = filtered.filter(t => (t.description || '').toLowerCase().includes(search));
+    const type = document.getElementById('typeFilter')?.value;
+    if (type && type !== 'all') filtered = filtered.filter(t => t.type === type);
+    const status = document.getElementById('statusFilter')?.value;
+    if (status && status !== 'all') filtered = filtered.filter(t => t.status === status);
+    const dateFrom = document.getElementById('dateFrom')?.value;
+    if (dateFrom) filtered = filtered.filter(t => t.date >= dateFrom);
+    const dateTo = document.getElementById('dateTo')?.value;
+    if (dateTo) filtered = filtered.filter(t => t.date <= dateTo);
+    renderTransactionsList(filtered);
+  }
+
+  function exportToCSV() {
+    let filtered = [...allTransactions];
+    const search = document.getElementById('searchInput')?.value.toLowerCase();
+    if (search) filtered = filtered.filter(t => (t.description || '').toLowerCase().includes(search));
+    
+    const headers = ['Date', 'Description', 'Type', 'Amount (NPR)', 'Sender', 'Receiver', 'Payment Method', 'Status'];
+    const rows = filtered.map(t => [t.date || '', t.description || '', t.type || '', t.amount || 0, t.senderName || '', t.receiverName || '', t.paymentMethod || '', t.status || '']);
+    
+    let csv = headers.join(',') + '\n';
+    rows.forEach(row => { csv += row.map(cell => `"${cell}"`).join(',') + '\n'; });
+    
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `transactions_${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('Transactions exported successfully!');
+  }
+
+  function openModal() {
+    document.getElementById('transactionModal').style.display = 'flex';
+    document.getElementById('transDate').value = new Date().toISOString().split('T')[0];
+    document.getElementById('transDesc').value = '';
+    document.getElementById('transAmount').value = '';
+    document.getElementById('transSender').value = '';
+    document.getElementById('transReceiver').value = '';
+    document.getElementById('transRef').value = '';
+  }
+  
+  function closeModal() { document.getElementById('transactionModal').style.display = 'none'; }
+  
+  async function saveTransaction() {
+    const amount = parseFloat(document.getElementById('transAmount').value);
+    if (!amount || amount <= 0) { showToast('Please enter a valid amount', 'error'); return; }
+    
+    const data = {
+      userId: currentUser.uid,
+      type: document.getElementById('transType').value,
+      description: document.getElementById('transDesc').value,
+      amount: amount,
+      senderName: document.getElementById('transSender').value,
+      receiverName: document.getElementById('transReceiver').value,
+      paymentMethod: document.getElementById('transPayment').value,
+      referenceNumber: document.getElementById('transRef').value,
+      date: document.getElementById('transDate').value,
+      status: document.getElementById('transStatus').value,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    };
+    
+    await db.collection('transactions').add(data);
+    closeModal();
+    await loadTransactions();
+    showToast('Transaction added successfully!');
+  }
+  
+  async function deleteTransaction(id) {
+    if (confirm('Are you sure you want to delete this transaction?')) {
+      await db.collection('transactions').doc(id).delete();
+      await loadTransactions();
+      showToast('Transaction deleted');
+    }
+  }
+  
+  function downloadReceipt(id) {
+    const transaction = allTransactions.find(t => t.id === id);
+    if (transaction) {
+      const receipt = `NAYA BATO RECEIPT\n==================\nDate: ${transaction.date}\nDescription: ${transaction.description}\nType: ${transaction.type}\nAmount: NPR ${(transaction.amount || 0).toLocaleString()}\nFrom: ${transaction.senderName || '-'}\nTo: ${transaction.receiverName || '-'}\nPayment: ${transaction.paymentMethod || 'Cash'}\nStatus: ${transaction.status || 'Success'}\n==================\nThank you for using Naya Bato!`;
+      const blob = new Blob([receipt], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `receipt_${transaction.id.slice(0,8)}.txt`;
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast('Receipt downloaded');
+    }
+  }
+
+  // Sidebar Toggle
+  let isExpanded = true;
+  const sidebar = document.getElementById('sidebar');
+  const main = document.getElementById('mainContent');
+  const toggle = document.getElementById('toggleSidebarBtn');
+  
+  function toggleSidebar() {
+    isExpanded = !isExpanded;
+    if (isExpanded) { sidebar.classList.remove('collapsed'); main.classList.remove('collapsed'); if(toggle) toggle.innerHTML = '<i class="fas fa-chevron-left"></i>'; }
+    else { sidebar.classList.add('collapsed'); main.classList.add('collapsed'); if(toggle) toggle.innerHTML = '<i class="fas fa-chevron-right"></i>'; }
+    localStorage.setItem('sidebarExpanded', isExpanded);
+  }
+  if (toggle) toggle.addEventListener('click', toggleSidebar);
+  if (localStorage.getItem('sidebarExpanded') === 'false') toggleSidebar();
+  
+  // Mobile
+  const mobileBtn = document.getElementById('mobileToggleBtn');
+  const mobileOverlay = document.getElementById('mobileOverlay');
+  function openMobileSidebar() { sidebar.classList.add('mobile-open'); mobileOverlay.classList.add('active'); document.body.style.overflow = 'hidden'; }
+  function closeMobileSidebar() { sidebar.classList.remove('mobile-open'); mobileOverlay.classList.remove('active'); document.body.style.overflow = ''; }
+  if (mobileBtn) mobileBtn.addEventListener('click', openMobileSidebar);
+  window.addEventListener('resize', () => { if (window.innerWidth > 768) closeMobileSidebar(); });
+  
+  window.openModal = openModal;
+  window.closeModal = closeModal;
+  window.saveTransaction = saveTransaction;
+  window.deleteTransaction = deleteTransaction;
+  window.downloadReceipt = downloadReceipt;
+  window.applyFilters = applyFilters;
+  window.exportToCSV = exportToCSV;
+</script>
+</body>
+</html>

@@ -1,0 +1,1155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<title>Naya Bato - Complete E-Commerce Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background: #f8fafc;
+    overflow-x: hidden;
+}
+
+/* Layout */
+.app {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* Left Sidebar */
+.left-sidebar {
+    width: 260px;
+    background: linear-gradient(180deg, #0f172a, #1e293b);
+    position: fixed;
+    height: 100vh;
+    overflow-y: auto;
+    transition: all 0.3s ease;
+    z-index: 100;
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.left-sidebar.collapsed {
+    width: 70px;
+}
+
+.left-sidebar.collapsed .menu-text,
+.left-sidebar.collapsed .logo-text,
+.left-sidebar.collapsed .promo-card {
+    display: none;
+}
+
+.sidebar-header {
+    padding: 20px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.logo-icon {
+    width: 38px;
+    height: 38px;
+    background: linear-gradient(135deg, #7c3aed, #a855f7);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    color: white;
+}
+
+.logo-text {
+    font-size: 1rem;
+    font-weight: 700;
+    color: white;
+}
+
+.logo-text span {
+    color: #a855f7;
+}
+
+.minimize-btn {
+    background: rgba(255, 255, 255, 0.08);
+    border: none;
+    padding: 6px 12px;
+    margin: 10px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    color: white;
+    transition: 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.7rem;
+}
+
+.minimize-btn:hover {
+    background: #7c3aed;
+}
+
+.sidebar-menu {
+    list-style: none;
+    padding: 12px 8px;
+}
+
+.sidebar-menu li a {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    color: rgba(255, 255, 255, 0.7);
+    text-decoration: none;
+    font-size: 0.75rem;
+    font-weight: 500;
+    border-radius: 8px;
+    transition: 0.2s;
+}
+
+.sidebar-menu li a:hover {
+    background: #7c3aed;
+    color: white;
+    transform: translateX(4px);
+}
+
+.sidebar-menu li a i {
+    width: 22px;
+    text-align: center;
+}
+
+.promo-card {
+    margin: 12px;
+    padding: 14px;
+    background: linear-gradient(135deg, #7c3aed, #a855f7);
+    border-radius: 12px;
+    text-align: center;
+}
+
+.promo-card h4 {
+    font-size: 0.8rem;
+    margin: 6px 0;
+}
+
+.promo-card p {
+    font-size: 0.65rem;
+    opacity: 0.9;
+}
+
+.promo-btn {
+    background: white;
+    color: #7c3aed;
+    display: inline-block;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.65rem;
+    font-weight: 600;
+    text-decoration: none;
+    margin-top: 6px;
+}
+
+/* Right Sidebar with Minimize/Maximize */
+.right-sidebar {
+    width: 260px;
+    background: white;
+    position: fixed;
+    right: 0;
+    height: 100vh;
+    overflow-y: auto;
+    transition: all 0.3s ease;
+    z-index: 100;
+    border-left: 1px solid #eef2ff;
+}
+
+.right-sidebar.collapsed {
+    width: 70px;
+    right: -190px;
+}
+
+.right-sidebar.collapsed .menu-text {
+    display: none;
+}
+
+.right-sidebar.collapsed .right-sidebar-header h4,
+.right-sidebar.collapsed .right-sidebar-header p {
+    display: none;
+}
+
+.right-sidebar-header {
+    padding: 16px;
+    border-bottom: 1px solid #eef2ff;
+}
+
+.right-sidebar-header h4 {
+    font-size: 0.8rem;
+    font-weight: 800;
+}
+
+.right-sidebar-header p {
+    font-size: 0.65rem;
+    color: #64748b;
+}
+
+.right-menu {
+    list-style: none;
+    padding: 8px 10px;
+}
+
+.right-menu li a {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    color: #475569;
+    text-decoration: none;
+    font-size: 0.75rem;
+    font-weight: 500;
+    border-radius: 8px;
+    transition: 0.2s;
+    position: relative;
+}
+
+.right-menu li a:hover {
+    background: #f1f5f9;
+    color: #7c3aed;
+    transform: translateX(-3px);
+}
+
+.badge-count {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: #ef4444;
+    color: white;
+    font-size: 0.55rem;
+    padding: 2px 6px;
+    border-radius: 20px;
+}
+
+/* Main Content */
+.main-content {
+    flex: 1;
+    margin-left: 260px;
+    margin-right: 260px;
+    transition: all 0.3s ease;
+}
+
+/* Top Nav */
+.top-nav {
+    background: white;
+    padding: 8px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 99;
+    border-bottom: 1px solid #eef2ff;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.brand img {
+    height: 32px;
+    border-radius: 6px;
+}
+
+.brand h2 {
+    font-size: 1rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #0f172a, #7c3aed);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.nav-links {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.nav-links a {
+    font-size: 0.7rem;
+    font-weight: 500;
+    text-decoration: none;
+    padding: 6px 14px;
+    border-radius: 20px;
+    background: #f1f5f9;
+    color: #475569;
+    transition: 0.2s;
+}
+
+.nav-links a:hover {
+    background: #7c3aed;
+    color: white;
+}
+
+.user-area {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #f1f5f9;
+    padding: 4px 14px 4px 8px;
+    border-radius: 30px;
+    cursor: pointer;
+    position: relative;
+}
+
+.user-avatar {
+    width: 30px;
+    height: 30px;
+    background: linear-gradient(135deg, #7c3aed, #a855f7);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    font-size: 0.75rem;
+}
+
+.user-dropdown {
+    position: absolute;
+    top: 42px;
+    right: 0;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    width: 200px;
+    padding: 6px;
+    display: none;
+    z-index: 200;
+    border: 1px solid #eef2ff;
+}
+
+.user-dropdown.show {
+    display: block;
+}
+
+.user-dropdown a {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    color: #475569;
+    text-decoration: none;
+    font-size: 0.7rem;
+}
+
+.user-dropdown a:hover {
+    background: #f1f5f9;
+    color: #7c3aed;
+}
+
+/* Hero */
+.hero {
+    margin: 20px;
+    padding: 30px 35px;
+    background: linear-gradient(135deg, #f5f3ff, #fdf4ff);
+    border-radius: 24px;
+    text-align: center;
+}
+
+.hero h1 {
+    font-size: 1.5rem;
+    font-weight: 800;
+    margin-bottom: 10px;
+}
+
+.hero h1 .gradient {
+    background: linear-gradient(135deg, #7c3aed, #a855f7);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.hero p {
+    color: #64748b;
+    font-size: 0.8rem;
+}
+
+.ai-btn {
+    background: linear-gradient(135deg, #0f172a, #1e293b);
+    color: white;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 30px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 15px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.ai-btn:hover {
+    background: linear-gradient(135deg, #7c3aed, #a855f7);
+    transform: translateX(3px);
+}
+
+/* Sections */
+.section {
+    padding: 0 20px;
+    margin-bottom: 30px;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.section-title {
+    font-size: 1rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Categories */
+.categories {
+    display: flex;
+    gap: 20px;
+    overflow-x: auto;
+    padding-bottom: 8px;
+}
+
+.category {
+    text-align: center;
+    min-width: 75px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: 0.2s;
+}
+
+.category:hover {
+    transform: translateY(-4px);
+}
+
+.category-img {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid white;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.category-name {
+    font-size: 0.65rem;
+    font-weight: 600;
+    margin-top: 6px;
+    color: #1e293b;
+}
+
+/* Products */
+.products {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+    gap: 16px;
+}
+
+.product {
+    background: white;
+    border-radius: 14px;
+    overflow: hidden;
+    transition: 0.3s;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+    border: 1px solid #eef2ff;
+    cursor: pointer;
+    position: relative;
+}
+
+.product:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 20px rgba(124, 58, 237, 0.1);
+    border-color: #a855f7;
+}
+
+.product-img {
+    width: 100%;
+    height: 130px;
+    object-fit: cover;
+}
+
+.wishlist-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.9);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #94a3b8;
+}
+
+.wishlist-btn.active {
+    color: #ef4444;
+}
+
+.product-info {
+    padding: 10px;
+}
+
+.product-cat {
+    font-size: 0.55rem;
+    color: #94a3b8;
+    text-transform: uppercase;
+    margin-bottom: 3px;
+}
+
+.product-title {
+    font-weight: 700;
+    font-size: 0.75rem;
+    margin-bottom: 4px;
+}
+
+.product-price {
+    font-weight: 800;
+    font-size: 0.85rem;
+    color: #7c3aed;
+}
+
+/* Horizontal Scroll Rows */
+.horiz-scroll {
+    display: flex;
+    gap: 16px;
+    overflow-x: auto;
+    padding-bottom: 12px;
+    scroll-behavior: smooth;
+}
+
+.horiz-scroll::-webkit-scrollbar {
+    height: 5px;
+}
+
+.horiz-card {
+    min-width: 180px;
+    background: white;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    border: 1px solid #eef2ff;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.horiz-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(124, 58, 237, 0.1);
+}
+
+.horiz-card img {
+    width: 100%;
+    height: 120px;
+    object-fit: cover;
+}
+
+.horiz-card .info {
+    padding: 10px;
+}
+
+.horiz-card .title {
+    font-weight: 700;
+    font-size: 0.75rem;
+}
+
+.horiz-card .sub {
+    font-size: 0.6rem;
+    color: #64748b;
+}
+
+/* Video Cards */
+.video-card {
+    min-width: 280px;
+    position: relative;
+}
+
+.video-card video {
+    width: 100%;
+    height: 160px;
+    object-fit: cover;
+    border-radius: 12px;
+}
+
+/* Banking Modal */
+.banking-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 4000;
+}
+
+.banking-modal.show {
+    display: flex;
+}
+
+.banking-content {
+    background: white;
+    border-radius: 28px;
+    padding: 28px;
+    max-width: 500px;
+    width: 90%;
+    max-height: 85vh;
+    overflow-y: auto;
+}
+
+.wallet-balance {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+    padding: 20px;
+    border-radius: 20px;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.wallet-balance .amount {
+    font-size: 2rem;
+    font-weight: 800;
+}
+
+.banking-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.banking-tab {
+    flex: 1;
+    padding: 10px;
+    text-align: center;
+    background: #f1f5f9;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 0.75rem;
+    font-weight: 600;
+    transition: 0.2s;
+}
+
+.banking-tab.active {
+    background: #7c3aed;
+    color: white;
+}
+
+.qr-container {
+    display: flex;
+    justify-content: center;
+    margin: 20px 0;
+}
+
+.transaction-list {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.transaction-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px;
+    border-bottom: 1px solid #eef2ff;
+    font-size: 0.7rem;
+}
+
+.transaction-amount.sent {
+    color: #ef4444;
+}
+
+.transaction-amount.received {
+    color: #10b981;
+}
+
+/* User ID Cards */
+.users-id-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.user-id-card {
+    background: white;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    border: 1px solid #eef2ff;
+    transition: 0.2s;
+}
+
+.user-id-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 20px rgba(124, 58, 237, 0.1);
+}
+
+.user-card-header {
+    background: linear-gradient(135deg, #7c3aed, #a855f7);
+    padding: 20px;
+    text-align: center;
+}
+
+.user-card-avatar {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    border: 3px solid white;
+    margin: 0 auto;
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.user-card-avatar .initials {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #7c3aed;
+}
+
+.user-card-body {
+    padding: 16px;
+    text-align: center;
+}
+
+.user-card-name {
+    font-size: 0.9rem;
+    font-weight: 800;
+}
+
+.user-card-email {
+    font-size: 0.65rem;
+    color: #64748b;
+    margin: 4px 0;
+}
+
+.user-card-id {
+    font-size: 0.6rem;
+    color: #94a3b8;
+    margin-bottom: 10px;
+}
+
+.user-card-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.user-card-btn {
+    flex: 1;
+    padding: 8px;
+    border-radius: 30px;
+    font-size: 0.65rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+    border: none;
+}
+
+.user-card-btn.wallet {
+    background: #10b981;
+    color: white;
+}
+
+.user-card-btn:hover {
+    transform: translateY(-2px);
+}
+
+/* Zoom Modal */
+.zoom-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.9);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 5000;
+    cursor: pointer;
+}
+
+.zoom-modal.show {
+    display: flex;
+}
+
+.zoom-modal img {
+    max-width: 90%;
+    max-height: 90%;
+    object-fit: contain;
+}
+
+/* Pro Banner */
+.pro-banner {
+    margin: 20px;
+    padding: 25px 30px;
+    background: linear-gradient(135deg, #1e1b4b, #312e81);
+    border-radius: 24px;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.pro-btn {
+    background: white;
+    color: #1e1b4b;
+    padding: 8px 22px;
+    border-radius: 40px;
+    font-weight: 700;
+    text-decoration: none;
+    font-size: 0.75rem;
+}
+
+/* Footer */
+.footer {
+    background: #0f172a;
+    color: rgba(255, 255, 255, 0.7);
+    padding: 30px 40px 20px;
+    margin-top: 20px;
+}
+
+.footer-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 30px;
+    margin-bottom: 25px;
+}
+
+.footer-col strong {
+    color: white;
+    display: block;
+    margin-bottom: 8px;
+    font-size: 0.8rem;
+}
+
+.footer-col a,
+.footer-col span {
+    color: rgba(255, 255, 255, 0.6);
+    text-decoration: none;
+    font-size: 0.7rem;
+    display: block;
+    margin-bottom: 6px;
+    transition: 0.2s;
+}
+
+.footer-col a:hover {
+    color: #a855f7;
+    transform: translateX(3px);
+}
+
+.social-icons {
+    display: flex;
+    gap: 10px;
+    margin-top: 8px;
+}
+
+.social-icons a {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.social-icons a:hover {
+    background: #7c3aed;
+}
+
+.footer-bottom {
+    text-align: center;
+    padding-top: 15px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    font-size: 0.65rem;
+}
+
+/* Modal */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 3000;
+}
+
+.modal-overlay.show {
+    display: flex;
+}
+
+.modal {
+    background: white;
+    border-radius: 20px;
+    padding: 22px;
+    max-width: 400px;
+    width: 90%;
+}
+
+.modal input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    font-size: 0.8rem;
+}
+
+.modal-btn {
+    width: 100%;
+    padding: 10px;
+    background: linear-gradient(135deg, #7c3aed, #a855f7);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+/* Toast */
+.toast {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: #1e293b;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 30px;
+    font-size: 0.75rem;
+    z-index: 3500;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.toast.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Admin Fab */
+.admin-fab {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    width: 44px;
+    height: 44px;
+    background: linear-gradient(135deg, #7c3aed, #a855f7);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(124, 58, 237, 0.4);
+    z-index: 2000;
+    color: white;
+    font-size: 1rem;
+    text-decoration: none;
+}
+
+.admin-fab:hover {
+    transform: scale(1.1);
+}
+
+/* Responsive */
+@media (max-width: 1100px) {
+    .right-sidebar { display: none; }
+    .main-content { margin-right: 0; }
+}
+@media (max-width: 900px) {
+    .left-sidebar { width: 70px; }
+    .left-sidebar .menu-text, .left-sidebar .logo-text, .left-sidebar .promo-card { display: none; }
+    .main-content { margin-left: 70px; }
+    .nav-links { display: none; }
+}
+@media (max-width: 600px) {
+    .hero { padding: 20px; margin: 12px; }
+    .hero h1 { font-size: 1.2rem; }
+    .products { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+}
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: #e2e8f0; border-radius: 10px; }
+::-webkit-scrollbar-thumb { background: #7c3aed; border-radius: 10px; }
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- LEFT SIDEBAR -->
+  <div class="left-sidebar" id="leftSidebar">
+    <div class="sidebar-header"><div class="logo-icon"><i class="fas fa-store"></i></div><span class="logo-text">Naya <span>Bato</span></span></div>
+    <button class="minimize-btn" id="minimizeLeft"><i class="fas fa-chevron-left"></i> <span class="menu-text">Minimize</span></button>
+    <ul class="sidebar-menu" id="leftMenu"></ul>
+    <div class="promo-card"><i class="fas fa-crown"></i><h4>Unlock Pro</h4><p>Premium features</p><a href="#" class="promo-btn">Upgrade →</a></div>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div class="main-content">
+    <div class="top-nav">
+      <div class="brand" id="refreshLogo"><img id="brandLogo" src="https://placehold.co/80x32/7c3aed/white?text=NB" alt="logo"><h2>Naya <span>Bato</span></h2></div>
+      <div class="nav-links" id="topNav"></div>
+      <div class="user-area" id="userWidget">
+        <div class="user-avatar" id="userAvatar"><i class="fas fa-user"></i></div>
+        <span id="userName">Login</span>
+        <i class="fas fa-chevron-down"></i>
+        <div class="user-dropdown" id="userDropdown"></div>
+      </div>
+    </div>
+
+    <div class="hero" id="heroSection">
+      <h1 id="heroTitle">Find <span class="gradient">Everything You Need</span> in One Place</h1>
+      <p id="heroSubtitle">Shop products, connect with community, and send money instantly within Naya Bato.</p>
+      <button class="ai-btn" id="aiBtn"><i class="fas fa-robot"></i> <span id="aiText">Vabishya AI</span></button>
+    </div>
+
+    <div class="section"><div class="section-header"><div class="section-title"><i class="fas fa-chart-simple" style="color:#f97316;"></i> Top Categories</div></div><div class="categories" id="categoriesContainer"></div></div>
+
+    <div class="section" id="productsSection"><div class="section-header"><div class="section-title" id="prodSectionTitle"><i class="fas fa-fire" style="color:#f97316;"></i> Popular Products</div></div><div class="products" id="productsGrid"></div></div>
+
+    <div class="section"><div class="section-header"><div class="section-title"><i class="fas fa-gamepad"></i> Apps & Games</div><a href="#" class="view-all" style="font-size:0.7rem;">View All</a></div><div class="horiz-scroll" id="appsGamesRow"></div></div>
+
+    <div class="section"><div class="section-header"><div class="section-title"><i class="fab fa-youtube" style="color:#ff0000;"></i> Trending Videos</div><a href="#" class="view-all" style="font-size:0.7rem;">View All</a></div><div class="horiz-scroll" id="videosRow"></div></div>
+
+    <div class="section"><div class="section-header"><div class="section-title"><i class="fas fa-id-card"></i> Community Members</div></div><div class="users-id-grid" id="usersGrid"></div></div>
+
+    <div class="section"><div class="section-header"><div class="section-title"><i class="fas fa-star"></i> Recommended for You</div></div><div class="horiz-scroll" id="recommendedRow"></div></div>
+
+    <div class="pro-banner"><div><h3><i class="fas fa-crown"></i> Unlock Naya Bato Pro</h3><p>Premium features & exclusive benefits</p></div><a href="#" class="pro-btn">Upgrade Now →</a></div>
+
+    <div class="footer" id="footer"></div>
+  </div>
+
+  <!-- RIGHT SIDEBAR -->
+  <div class="right-sidebar" id="rightSidebar">
+    <button class="minimize-btn" id="minimizeRight" style="margin-left:auto; margin-right:12px;"><i class="fas fa-chevron-right"></i></button>
+    <div class="right-sidebar-header"><h4>Quick Menu</h4><p>Navigate fast</p></div>
+    <ul class="right-menu" id="rightMenu"></ul>
+    <div class="right-sidebar-header" style="margin-top:10px;"><h4>Naya Bato Banking</h4></div>
+    <div class="right-menu">
+      <li><a href="#" onclick="openBankingModal()"><i class="fas fa-wallet"></i> My Wallet</a></li>
+      <li><a href="#" onclick="openBankingModal()"><i class="fas fa-paper-plane"></i> Send Money</a></li>
+      <li><a href="#" onclick="openBankingModal()"><i class="fas fa-qrcode"></i> Receive Money</a></li>
+      <li><a href="#" onclick="openBankingModal()"><i class="fas fa-history"></i> Transactions</a></li>
+    </div>
+  </div>
+</div>
+
+<!-- Banking Modal -->
+<div class="banking-modal" id="bankingModal">
+  <div class="banking-content">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;"><h3><i class="fas fa-wallet" style="color:#10b981;"></i> Naya Bato Wallet</h3><i class="fas fa-times" style="cursor:pointer; font-size:1.2rem;" onclick="closeBankingModal()"></i></div>
+    <div class="wallet-balance"><p>Your Balance</p><div class="amount" id="walletBalance">Rs 0</div></div>
+    <div class="banking-tabs"><div class="banking-tab active" onclick="showSendMoney()">Send</div><div class="banking-tab" onclick="showReceiveMoney()">Receive</div><div class="banking-tab" onclick="showTransactionHistory()">History</div></div>
+    <div id="bankingContent"><div class="form-group"><label>Email / Username</label><input type="text" id="receiverEmail" placeholder="Receiver's email"></div><div class="form-group"><label>Amount (Rs)</label><input type="number" id="sendAmount" placeholder="Enter amount"></div><div class="form-group"><label>Message (Optional)</label><input type="text" id="sendMessage" placeholder="Add a note"></div><button class="modal-btn" onclick="sendMoney()">Send Money</button></div>
+  </div>
+</div>
+
+<!-- Zoom Modal -->
+<div class="zoom-modal" id="zoomModal" onclick="closeZoom()"><img id="zoomImg" src=""></div>
+
+<a href="admin.html" class="admin-fab" id="adminFab" style="display:none;"><i class="fas fa-crown"></i></a>
+
+<!-- Auth Modal -->
+<div class="modal-overlay" id="authModal"><div class="modal"><h3 style="margin-bottom:15px;">Login <i class="fas fa-times" style="float:right; cursor:pointer;" onclick="closeModal('authModal')"></i></h3><div id="nameField" style="display:none;"><input type="text" id="authName" placeholder="Full Name"></div><input type="email" id="authEmail" placeholder="Email"><input type="password" id="authPassword" placeholder="Password"><div id="authError" style="color:#ef4444; font-size:0.7rem; margin-bottom:10px;"></div><button class="modal-btn" id="authSubmitBtn">Login</button><p style="text-align:center; margin-top:10px; cursor:pointer; color:#7c3aed;" id="authToggle">Don't have an account? Register</p></div></div>
+
+<div class="toast" id="toast"><i class="fas fa-check-circle"></i> <span id="toastMsg"></span></div>
+
+<script>
+// Firebase Config
+const firebaseConfig = { apiKey: "AIzaSyDJLnUB8XnXWPEtSRAMuQr9ASmD16HLIJc", authDomain: "bishalshrestha17-de676.firebaseapp.com", projectId: "bishalshrestha17-de676", storageBucket: "bishalshrestha17-de676.firebasestorage.app", messagingSenderId: "631628771230", appId: "1:631628771230:web:389c6430535f6a46b6708f" };
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+let currentUser = null, isAdmin = false, wishlist = [], allProductsFull = [], categories = [], userWallet = 0;
+
+function showToast(msg) { const t = document.getElementById('toast'); document.getElementById('toastMsg').innerText = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3000); }
+function openModal(id) { document.getElementById(id).classList.add('show'); }
+function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+function openZoom(src) { document.getElementById('zoomImg').src = src; document.getElementById('zoomModal').classList.add('show'); }
+function closeZoom() { document.getElementById('zoomModal').classList.remove('show'); }
+function openBankingModal() { if(!currentUser){ openModal('authModal'); return; } document.getElementById('bankingModal').classList.add('show'); loadWallet(); }
+function closeBankingModal() { document.getElementById('bankingModal').classList.remove('show'); }
+
+async function loadWallet() { if(currentUser) { const doc = await db.collection('users').doc(currentUser.uid).get(); userWallet = doc.data()?.wallet || 0; document.getElementById('walletBalance').innerText = `Rs ${userWallet}`; } }
+async function sendMoney() { const toEmail = document.getElementById('receiverEmail')?.value; const amt = parseFloat(document.getElementById('sendAmount')?.value); if(!toEmail || amt<=0 || amt>userWallet) { showToast('Invalid details or insufficient balance'); return; } const snap = await db.collection('users').where('email','==',toEmail).get(); if(snap.empty) { showToast('User not found'); return; } const toId = snap.docs[0].id; await db.collection('users').doc(currentUser.uid).update({ wallet: firebase.firestore.FieldValue.increment(-amt) }); await db.collection('users').doc(toId).update({ wallet: firebase.firestore.FieldValue.increment(amt) }); await db.collection('transactions').add({ from: currentUser.uid, fromEmail: currentUser.email, to: toId, toEmail, amount: amt, type: 'transfer', createdAt: new Date() }); await loadWallet(); showToast(`Sent Rs ${amt} to ${toEmail}`); closeBankingModal(); }
+function showSendMoney() { document.getElementById('bankingContent').innerHTML = `<div class="form-group"><label>Email / Username</label><input type="text" id="receiverEmail" placeholder="Receiver's email"></div><div class="form-group"><label>Amount (Rs)</label><input type="number" id="sendAmount" placeholder="Enter amount"></div><div class="form-group"><label>Message (Optional)</label><input type="text" id="sendMessage" placeholder="Add a note"></div><button class="modal-btn" onclick="sendMoney()">Send Money</button>`; document.querySelectorAll('.banking-tab').forEach(t=>t.classList.remove('active')); event.target.classList.add('active'); }
+function showReceiveMoney() { document.getElementById('bankingContent').innerHTML = `<div class="qr-container" id="receiveQR"></div><p style="text-align:center; font-size:0.8rem;">Scan QR to receive</p><p style="text-align:center; font-size:0.7rem;">ID: ${currentUser?.uid?.substring(0,8)}</p>`; setTimeout(()=>{ if(document.getElementById("receiveQR")) new QRCode(document.getElementById("receiveQR"),{text:currentUser?.uid||"",width:150,height:150}); },100); document.querySelectorAll('.banking-tab').forEach(t=>t.classList.remove('active')); event.target.classList.add('active'); }
+async function showTransactionHistory() { const sent = await db.collection('transactions').where('from','==',currentUser?.uid).orderBy('createdAt','desc').limit(20).get(); const rec = await db.collection('transactions').where('to','==',currentUser?.uid).orderBy('createdAt','desc').limit(20).get(); let all=[]; sent.forEach(d=>all.push({...d.data(),type:'sent'})); rec.forEach(d=>all.push({...d.data(),type:'received'})); all.sort((a,b)=>(b.createdAt?.toDate?.()||0)-(a.createdAt?.toDate?.()||0)); document.getElementById('bankingContent').innerHTML = `<div class="transaction-list">${all.length?all.map(t=>`<div class="transaction-item"><div>${t.type==='sent'?'Sent to: '+(t.toEmail||'User'):'Received from: '+(t.fromEmail||'User')}</div><div class="transaction-amount ${t.type}">${t.type==='sent'?'- Rs '+t.amount:'+ Rs '+t.amount}</div></div>`).join(''):'<div style="padding:20px;text-align:center;">No transactions</div>'}</div>`; document.querySelectorAll('.banking-tab').forEach(t=>t.classList.remove('active')); event.target.classList.add('active'); }
+
+// Render functions
+function renderLeftMenu() { db.collection('config').doc('leftSidebar').get().then(d=>{ const items=d.exists?d.data().items:[{icon:"fas fa-home",name:"Home",link:"#"},{icon:"fas fa-store",name:"Shop",link:"#"}]; document.getElementById('leftMenu').innerHTML=items.map(i=>`<li><a href="${i.link||'#'}"><i class="${i.icon}"></i><span class="menu-text">${i.name}</span></a></li>`).join(''); }); }
+function renderRightMenu() { db.collection('config').doc('rightSidebar').get().then(d=>{ const items=d.exists?d.data().items:[{icon:"fas fa-user",name:"Profile",link:"#"},{icon:"fas fa-heart",name:"Wishlist",link:"#"}]; document.getElementById('rightMenu').innerHTML=items.map(i=>`<li><a href="${i.link||'#'}"><i class="${i.icon}"></i><span class="menu-text">${i.name}</span></a></li>`).join(''); }); }
+function renderTopNav() { db.collection('config').doc('topNav').get().then(d=>{ const items=d.exists?d.data().items:[{name:"Home",link:"#"},{name:"Shop",link:"#"}]; document.getElementById('topNav').innerHTML=items.map(i=>`<a href="${i.link||'#'}">${i.name}</a>`).join(''); }); }
+function renderHero() { db.collection('config').doc('hero').get().then(d=>{ if(d.exists){ document.getElementById('heroTitle').innerHTML=d.data().title||'Find <span class="gradient">Everything</span>'; document.getElementById('heroSubtitle').innerText=d.data().subtitle||''; if(d.data().bgColor) document.querySelector('.hero').style.background=d.data().bgColor; } }); }
+function renderBranding() { db.collection('config').doc('branding').get().then(d=>{ if(d.exists){ if(d.data().logo) document.getElementById('brandLogo').src=d.data().logo; if(d.data().name) document.querySelector('.brand h2').innerHTML=d.data().name; } }); }
+function renderFooter() { db.collection('config').doc('footer').get().then(d=>{ const data=d.exists?d.data():{}; const rows=data.rows||[{text:'9761614027',link:'tel:9761614027',icon:'fas fa-phone'}]; document.getElementById('footer').innerHTML=`<div class="footer-grid"><div class="footer-col"><strong>Naya Bato</strong><span>All in one platform</span><div class="social-icons"><a href="#"><i class="fab fa-facebook-f"></i></a><a href="#"><i class="fab fa-instagram"></i></a></div></div><div class="footer-col"><strong>Links</strong><a href="#">About</a><a href="#">Contact</a></div><div class="footer-col"><strong>Contact</strong>${rows.map(r=>`<a href="${r.link||'#'}"><i class="${r.icon||'fas fa-link'}"></i> ${r.text}</a>`).join('')}</div></div><div class="footer-bottom">${data.bottomText||'© 2025 Naya Bato'}</div>`; }); }
+function renderProducts() { document.getElementById('productsGrid').innerHTML = allProductsFull.slice(0,8).map(p=>`<div class="product" onclick="window.location.href='${p.link||'#'}'"><div style="position:relative;"><img class="product-img" src="${p.imageUrl||'https://placehold.co/170x130'}" onclick="event.stopPropagation();openZoom(this.src)"><button class="wishlist-btn ${wishlist.includes(p.id)?'active':''}" onclick="event.stopPropagation();toggleWishlist('${p.id}')"><i class="fa-${wishlist.includes(p.id)?'solid':'regular'} fa-heart"></i></button></div><div class="product-info"><div class="product-cat">${p.category||'General'}</div><div class="product-title">${p.title||'Product'}</div><div class="product-price">Rs ${p.price||0}</div></div></div>`).join(''); }
+function renderCategories() { document.getElementById('categoriesContainer').innerHTML = categories.slice(0,8).map(c=>`<a href="${c.link||'#'}" class="category"><img class="category-img" src="${c.imageUrl||'https://placehold.co/60'}" onerror="this.src='https://placehold.co/60'"><div class="category-name">${c.name}</div></a>`).join(''); }
+async function renderUsers() { const snap=await db.collection('users').limit(12).get(); const users=snap.docs.map(d=>({id:d.id,...d.data()})).filter(u=>u.id!==currentUser?.uid); document.getElementById('usersGrid').innerHTML=users.map(u=>`<div class="user-id-card"><div class="user-card-header"><div class="user-card-avatar"><div class="initials">${(u.name||u.email||'U').charAt(0).toUpperCase()}</div></div></div><div class="user-card-body"><div class="user-card-name">${u.name||u.email?.split('@')[0]||'User'}</div><div class="user-card-email">${u.email||''}</div><div class="user-card-id">ID: ${u.id.substring(0,8)}</div><div class="user-card-actions"><button class="user-card-btn wallet" onclick="openSendToUser('${u.email}')">Send Money</button></div></div></div>`).join(''); }
+function openSendToUser(email) { openBankingModal(); setTimeout(()=>{ if(document.getElementById('receiverEmail')) document.getElementById('receiverEmail').value=email; showSendMoney(); },100); }
+async function toggleWishlist(pid){ if(!currentUser){ openModal('authModal'); return; } const idx=wishlist.indexOf(pid); if(idx>-1) wishlist.splice(idx,1); else wishlist.push(pid); localStorage.setItem('wishlist',JSON.stringify(wishlist)); await db.collection('users').doc(currentUser.uid).set({wishlist},{merge:true}); renderProducts(); showToast(idx>-1?'Removed from wishlist':'Added to wishlist'); }
+function renderAppsGames() { document.getElementById('appsGamesRow').innerHTML = [1,2,3,4].map(i=>`<div class="horiz-card"><img src="https://placehold.co/180x120/7c3aed/white?text=Game" onclick="event.stopPropagation();openZoom(this.src)"><div class="info"><div class="title">Game ${i}</div><div class="sub">Play Now</div></div></div>`).join(''); }
+function renderVideos() { document.getElementById('videosRow').innerHTML = [1,2].map(i=>`<div class="horiz-card video-card"><video src="https://www.w3schools.com/html/mov_bbb.mp4" controls muted loop onmouseenter="this.play()" onmouseleave="this.pause();this.currentTime=0;"></video><div class="info"><div class="title">Video ${i}</div></div></div>`).join(''); }
+function renderRecommended() { document.getElementById('recommendedRow').innerHTML = allProductsFull.slice(4,12).map(p=>`<div class="horiz-card" onclick="window.location.href='${p.link||'#'}'"><img src="${p.imageUrl||'https://placehold.co/180x120'}" onclick="event.stopPropagation();openZoom(this.src)"><div class="info"><div class="title">${p.title||'Product'}</div><div class="sub">Rs ${p.price||0}</div></div></div>`).join(''); }
+
+// Auth
+let authMode='login';
+document.getElementById('authToggle').onclick=()=>{ authMode=authMode==='login'?'register':'login'; document.getElementById('nameField').style.display=authMode==='register'?'block':'none'; document.getElementById('authSubmitBtn').innerText=authMode==='login'?'Login':'Register'; document.getElementById('authToggle').innerText=authMode==='login'?"Don't have an account? Register":"Already have an account? Login"; };
+document.getElementById('authSubmitBtn').onclick=async()=>{ const email=document.getElementById('authEmail').value, pass=document.getElementById('authPassword').value, name=document.getElementById('authName').value; if(!email||!pass){ document.getElementById('authError').innerText='Required'; return; } try{ if(authMode==='login'){ await auth.signInWithEmailAndPassword(email,pass); } else { const cred=await auth.createUserWithEmailAndPassword(email,pass); await cred.user.updateProfile({displayName:name}); await db.collection('users').doc(cred.user.uid).set({name,email,role:'user',wishlist:[],wallet:100,createdAt:new Date()}); } closeModal('authModal'); showToast(authMode==='login'?'Logged in!':'Account created!'); } catch(e){ document.getElementById('authError').innerText=e.message; } };
+function updateUserUI(){ if(currentUser){ document.getElementById('userAvatar').innerHTML=currentUser.email?.charAt(0).toUpperCase()||'U'; document.getElementById('userName').innerText=currentUser.email?.split('@')[0]||'User'; document.getElementById('adminFab').style.display=isAdmin?'flex':'none'; } else { document.getElementById('userAvatar').innerHTML='<i class="fas fa-user"></i>'; document.getElementById('userName').innerText='Login'; document.getElementById('adminFab').style.display='none'; } }
+document.getElementById('userDropdown').innerHTML=`<a href="#"><i class="fas fa-user"></i> Profile</a><a href="#"><i class="fas fa-heart"></i> Wishlist (${wishlist.length})</a><hr><a href="#" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</a>`;
+document.getElementById('logoutBtn')?.addEventListener('click',(e)=>{ e.preventDefault(); auth.signOut(); showToast('Logged out'); location.reload(); });
+
+// Listeners
+auth.onAuthStateChanged(async(user)=>{ currentUser=user; if(user){ const doc=await db.collection('users').doc(user.uid).get(); isAdmin=doc.exists&&doc.data().role==='admin'; wishlist=doc.exists&&doc.data().wishlist?doc.data().wishlist:[]; userWallet=doc.exists&&doc.data().wallet?doc.data().wallet:0; localStorage.setItem('wishlist',JSON.stringify(wishlist)); await renderUsers(); } else { isAdmin=false; wishlist=[]; userWallet=0; } updateUserUI(); renderProducts(); });
+db.collection('products').orderBy('createdAt','desc').onSnapshot(snap=>{ allProductsFull=snap.docs.map(d=>({id:d.id,...d.data()})); renderProducts(); renderRecommended(); });
+db.collection('circleItems').orderBy('order','asc').onSnapshot(snap=>{ categories=snap.docs.map(d=>({id:d.id,...d.data()})); renderCategories(); });
+
+// UI Events
+document.getElementById('minimizeLeft').onclick=()=>{ document.getElementById('leftSidebar').classList.toggle('collapsed'); document.querySelector('.main-content').style.marginLeft=document.getElementById('leftSidebar').classList.contains('collapsed')?'70px':'260px'; };
+document.getElementById('minimizeRight').onclick=()=>{ document.getElementById('rightSidebar').classList.toggle('collapsed'); document.querySelector('.main-content').style.marginRight=document.getElementById('rightSidebar').classList.contains('collapsed')?'0':'260px'; };
+document.getElementById('refreshLogo').onclick=()=>location.reload();
+document.getElementById('aiBtn').onclick=()=>window.location.href='vabishya.html';
+document.getElementById('userWidget').onclick=(e)=>{ e.stopPropagation(); document.getElementById('userDropdown').classList.toggle('show'); };
+document.addEventListener('click',()=>document.getElementById('userDropdown').classList.remove('show'));
+
+// Initial Load
+renderLeftMenu(); renderRightMenu(); renderTopNav(); renderHero(); renderBranding(); renderFooter(); renderAppsGames(); renderVideos(); renderUsers();
+</script>
+</body>
+</html>

@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Create your Naya Bato account - Modern Business Management Platform for Nepal">
+  <meta name="author" content="Bishal Shrestha">
+  <title>Register - Naya Bato | Create Account</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <style>
+    * { font-family: 'Inter', sans-serif; }
+    .gradient-bg { background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%); }
+    .input-focus:focus { outline: none; border-color: #8b5cf6; box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1); }
+    .toast { position: fixed; bottom: 20px; right: 20px; background: white; border-radius: 8px; padding: 12px 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 1000; animation: slideIn 0.3s ease; max-width: 350px; border-left: 4px solid #10b981; }
+    @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    .spinner { border: 2px solid #f3f3f3; border-top: 2px solid #8b5cf6; border-radius: 50%; width: 16px; height: 16px; animation: spin 1s linear infinite; display: inline-block; margin-right: 8px; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    .user-id-card { background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%); border: 1px solid #c4b5fd; }
+    .profile-upload { width: 120px; height: 120px; border-radius: 50%; background: #f3f4f6; border: 3px solid #e5e7eb; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s; overflow: hidden; position: relative; margin: 0 auto; }
+    .profile-upload:hover { border-color: #8b5cf6; transform: scale(1.02); }
+    .profile-upload img { width: 100%; height: 100%; object-fit: cover; }
+    .profile-upload .upload-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s; color: white; font-size: 1.5rem; }
+    .profile-upload:hover .upload-overlay { opacity: 1; }
+    .progress-bar { height: 4px; background: linear-gradient(90deg, #7c3aed, #a855f7); width: 0%; transition: width 0.3s; border-radius: 2px; margin-top: 8px; }
+    .loader-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); z-index: 9999; display: none; align-items: center; justify-content: center; flex-direction: column; }
+    .loader-overlay.show { display: flex; }
+    .loader-spinner { width: 50px; height: 50px; border: 4px solid #f3f3f3; border-top: 4px solid #7c3aed; border-radius: 50%; animation: spin 1s linear infinite; }
+    .loader-text { color: white; margin-top: 15px; font-size: 0.9rem; }
+  </style>
+</head>
+<body class="bg-gray-50">
+  <!-- Loader -->
+  <div class="loader-overlay" id="loaderOverlay">
+    <div class="loader-spinner"></div>
+    <div class="loader-text" id="loaderText">Processing...</div>
+  </div>
+
+  <!-- Navigation -->
+  <nav class="bg-white shadow-md sticky top-0 z-50">
+    <div class="container mx-auto px-6 py-4">
+      <div class="flex justify-between items-center">
+        <a href="index.html" class="text-2xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
+          <i class="fas fa-chart-line text-purple-600 mr-2"></i>Naya Bato
+        </a>
+        <div class="space-x-4">
+          <a href="login.html" class="text-gray-600 hover:text-purple-600 transition">Sign In</a>
+          <a href="register.html" class="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition shadow-sm">Get Started</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Registration Form -->
+  <div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-2xl w-full space-y-8">
+      <!-- Header -->
+      <div class="text-center">
+        <div class="mx-auto h-12 w-12 rounded-full gradient-bg flex items-center justify-center">
+          <i class="fas fa-user-plus text-white text-xl"></i>
+        </div>
+        <h2 class="mt-6 text-3xl font-extrabold text-gray-900">Create your account</h2>
+        <p class="mt-2 text-sm text-gray-600">Join Naya Bato and start your business journey</p>
+      </div>
+
+      <!-- Profile Picture Upload -->
+      <div class="flex justify-center">
+        <div class="profile-upload" id="profileUpload">
+          <img id="profilePreview" src="https://placehold.co/120x120/e2e8f0/7c3aed?text=📷" alt="Profile Picture">
+          <div class="upload-overlay">
+            <i class="fas fa-camera"></i>
+          </div>
+        </div>
+        <input type="file" id="profileImageInput" accept="image/*" style="display: none;">
+      </div>
+      <div class="progress-bar" id="uploadProgress"></div>
+
+      <!-- Auto-generated User ID Display -->
+      <div class="user-id-card rounded-xl p-4">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <i class="fas fa-id-card text-purple-600 text-2xl"></i>
+            <div>
+              <p class="text-xs text-purple-600 font-semibold uppercase tracking-wide">Your Naya Bato ID</p>
+              <p class="text-xl font-bold text-gray-800" id="userIdDisplay">977-0-000000</p>
+            </div>
+          </div>
+          <i class="fas fa-copy text-gray-400 hover:text-purple-600 cursor-pointer transition" onclick="copyUserId()" title="Copy ID"></i>
+        </div>
+        <p class="text-xs text-gray-500 mt-2">Unique ID format: 977-{0-9}-{6 digits} - This will be your permanent identifier</p>
+      </div>
+
+      <!-- Registration Form -->
+      <form id="registerForm" class="mt-8 space-y-5" onsubmit="return false;">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <!-- Full Name -->
+          <div>
+            <label for="fullName" class="block text-sm font-medium text-gray-700 mb-1">Full Name <span class="text-red-500">*</span></label>
+            <input type="text" id="fullName" required 
+              class="input-focus block w-full px-4 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition"
+              placeholder="Enter your full name">
+          </div>
+
+          <!-- Username -->
+          <div>
+            <label for="username" class="block text-sm font-medium text-gray-700 mb-1">Username <span class="text-red-500">*</span></label>
+            <input type="text" id="username" required 
+              class="input-focus block w-full px-4 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition"
+              placeholder="Choose a username">
+            <div id="usernameMessage" class="text-xs mt-1"></div>
+          </div>
+
+          <!-- Email Address -->
+          <div>
+            <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email Address <span class="text-red-500">*</span></label>
+            <input type="email" id="email" required 
+              class="input-focus block w-full px-4 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition"
+              placeholder="Enter your email address">
+          </div>
+
+          <!-- Phone Number -->
+          <div>
+            <label for="phone" class="block text-sm font-medium text-gray-700 mb-1">Phone Number <span class="text-red-500">*</span></label>
+            <div class="relative">
+              <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500 text-sm font-semibold">+977-</span>
+              <input type="tel" id="phone" required 
+                class="input-focus block w-full pl-16 pr-3 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition"
+                placeholder="Enter 10-digit mobile number">
+            </div>
+            <p class="text-xs text-gray-500 mt-1">Enter 10-digit mobile number (e.g., 9812345678)</p>
+          </div>
+
+          <!-- Gender Selection -->
+          <div>
+            <label for="gender" class="block text-sm font-medium text-gray-700 mb-1">Gender <span class="text-red-500">*</span></label>
+            <select id="gender" required class="input-focus block w-full px-4 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition bg-white">
+              <option value="">Select your gender</option>
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+              <option value="other">Other</option>
+              <option value="prefer-not">Prefer not to say</option>
+            </select>
+          </div>
+
+          <!-- City/District -->
+          <div>
+            <label for="city" class="block text-sm font-medium text-gray-700 mb-1">City/District <span class="text-red-500">*</span></label>
+            <input type="text" id="city" required 
+              class="input-focus block w-full px-4 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition"
+              placeholder="Kathmandu, Lalitpur, etc.">
+          </div>
+
+          <!-- Password -->
+          <div>
+            <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Password <span class="text-red-500">*</span></label>
+            <div class="relative">
+              <input type="password" id="password" required 
+                class="input-focus block w-full px-4 pr-10 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition"
+                placeholder="Create a password (min 6 characters)">
+              <button type="button" onclick="togglePassword('password')" class="absolute inset-y-0 right-0 pr-3 flex items-center">
+                <i class="fas fa-eye text-gray-400 hover:text-gray-600"></i>
+              </button>
+            </div>
+            <div id="passwordStrength" class="text-xs mt-1"></div>
+          </div>
+
+          <!-- Confirm Password -->
+          <div>
+            <label for="confirmPassword" class="block text-sm font-medium text-gray-700 mb-1">Confirm Password <span class="text-red-500">*</span></label>
+            <div class="relative">
+              <input type="password" id="confirmPassword" required 
+                class="input-focus block w-full px-4 pr-10 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition"
+                placeholder="Confirm your password">
+              <button type="button" onclick="togglePassword('confirmPassword')" class="absolute inset-y-0 right-0 pr-3 flex items-center">
+                <i class="fas fa-eye text-gray-400 hover:text-gray-600"></i>
+              </button>
+            </div>
+            <div id="passwordMatch" class="text-xs mt-1"></div>
+          </div>
+        </div>
+
+        <!-- Terms and Conditions -->
+        <div class="flex items-center mt-4">
+          <input id="terms" type="checkbox" required class="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded">
+          <label for="terms" class="ml-2 block text-sm text-gray-700">
+            I agree to the <a href="#" class="text-purple-600 hover:text-purple-500">Terms and Conditions</a> and <a href="#" class="text-purple-600 hover:text-purple-500">Privacy Policy</a>
+          </label>
+        </div>
+
+        <!-- Submit Button -->
+        <div>
+          <button type="submit" id="registerBtn" 
+            class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white gradient-bg hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed">
+            <span id="btnText">Create Account</span>
+            <span id="btnSpinner" class="hidden"><div class="spinner"></div>Creating...</span>
+          </button>
+        </div>
+
+        <!-- Sign In Link -->
+        <div class="text-center">
+          <p class="text-sm text-gray-600">
+            Already have an account? 
+            <a href="login.html" class="font-medium text-purple-600 hover:text-purple-500">Sign in here</a>
+          </p>
+        </div>
+      </form>
+
+      <!-- Features -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center text-sm">
+        <div class="text-gray-600"><i class="fas fa-chart-line text-purple-500 mr-1"></i> Analytics</div>
+        <div class="text-gray-600"><i class="fas fa-box text-purple-500 mr-1"></i> Inventory</div>
+        <div class="text-gray-600"><i class="fas fa-users text-purple-500 mr-1"></i> CRM</div>
+        <div class="text-gray-600"><i class="fas fa-shield-alt text-purple-500 mr-1"></i> Secure</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toastContainer"></div>
+
+  <script>
+    // Firebase Configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyDJLnUB8XnXWPEtSRAMuQr9ASmD16HLIJc",
+      authDomain: "bishalshrestha17-de676.firebaseapp.com",
+      projectId: "bishalshrestha17-de676",
+      storageBucket: "bishalshrestha17-de676.firebasestorage.app",
+      messagingSenderId: "631628771230",
+      appId: "1:631628771230:web:389c6430535f6a46b6708f"
+    };
+    
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    // ImgBB API for image upload (no Firebase Storage needed)
+    const IMGBB_API_KEY = "c077a7dd2031a6ac352c597f8de1d48c";
+
+    async function uploadToImgBB(file) {
+      const formData = new FormData();
+      formData.append('key', IMGBB_API_KEY);
+      formData.append('image', file);
+      const res = await fetch('https://api.imgbb.com/1/upload', { method: 'POST', body: formData });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error?.message || 'Upload failed');
+      return data.data.url;
+    }
+
+    // Loading functions
+    function showLoader(text) { 
+      document.getElementById('loaderText').innerText = text; 
+      document.getElementById('loaderOverlay').classList.add('show'); 
+    }
+    function hideLoader() { 
+      document.getElementById('loaderOverlay').classList.remove('show'); 
+    }
+
+    function showToast(message, type = 'success') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = 'toast';
+      const bgColor = type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#f59e0b';
+      toast.style.borderLeft = `4px solid ${bgColor}`;
+      toast.innerHTML = `
+        <div class="flex items-center gap-3">
+          <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'}" style="color: ${bgColor}"></i>
+          <span class="text-gray-700">${message}</span>
+          <button onclick="this.parentElement.parentElement.remove()" class="ml-4 text-gray-400 hover:text-gray-600">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+      `;
+      container.appendChild(toast);
+      setTimeout(() => toast.remove(), 5000);
+    }
+
+    // Profile Picture Upload
+    let profileImageUrl = null;
+    const profileUpload = document.getElementById('profileUpload');
+    const profileImageInput = document.getElementById('profileImageInput');
+    const profilePreview = document.getElementById('profilePreview');
+    const uploadProgress = document.getElementById('uploadProgress');
+
+    profileUpload.addEventListener('click', () => profileImageInput.click());
+    
+    profileImageInput.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      
+      uploadProgress.style.width = '30%';
+      showLoader('Uploading profile picture...');
+      try {
+        uploadProgress.style.width = '60%';
+        const url = await uploadToImgBB(file);
+        profileImageUrl = url;
+        profilePreview.src = url;
+        uploadProgress.style.width = '100%';
+        setTimeout(() => { uploadProgress.style.width = '0%'; }, 1000);
+        showToast('Profile picture uploaded successfully!', 'success');
+      } catch (err) {
+        uploadProgress.style.width = '0%';
+        showToast('Failed to upload image: ' + err.message, 'error');
+      } finally {
+        hideLoader();
+      }
+    });
+
+    // Generate unique User ID
+    function generateUserId() {
+      const prefix = Math.floor(Math.random() * 10);
+      const randomNum = Math.floor(Math.random() * 900000) + 100000;
+      return `977-${prefix}-${randomNum}`;
+    }
+
+    async function isUserIdUnique(userId) {
+      const snapshot = await db.collection('users').where('userId', '==', userId).get();
+      return snapshot.empty;
+    }
+
+    async function generateUniqueUserId() {
+      let attempts = 0;
+      let userId = generateUserId();
+      let isUnique = await isUserIdUnique(userId);
+      
+      while (!isUnique && attempts < 20) {
+        userId = generateUserId();
+        isUnique = await isUserIdUnique(userId);
+        attempts++;
+      }
+      return userId;
+    }
+
+    let generatedUserId = null;
+    async function refreshUserId() {
+      generatedUserId = await generateUniqueUserId();
+      document.getElementById('userIdDisplay').innerText = generatedUserId;
+    }
+    refreshUserId();
+
+    window.copyUserId = function() {
+      const userId = document.getElementById('userIdDisplay').innerText;
+      navigator.clipboard.writeText(userId);
+      showToast('User ID copied to clipboard!', 'info');
+    };
+
+    window.togglePassword = function(fieldId) {
+      const field = document.getElementById(fieldId);
+      const icon = field.parentElement.querySelector('button i');
+      if (field.type === 'password') {
+        field.type = 'text';
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
+      } else {
+        field.type = 'password';
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
+      }
+    };
+
+    function isValidEmail(email) {
+      return /^[^\s@]+@([^\s@.,]+\.)+[^\s@.,]{2,}$/.test(email);
+    }
+
+    function isValidPhone(phone) {
+      return /^[0-9]{10}$/.test(phone);
+    }
+
+    function isValidUsername(username) {
+      return username && username.length >= 2;
+    }
+
+    // Check username availability
+    let usernameCheckTimeout = null;
+    const usernameInput = document.getElementById('username');
+    const usernameMessage = document.getElementById('usernameMessage');
+    let isUsernameAvailableFlag = false;
+
+    async function checkUsernameAvailability(username) {
+      if (!username || username.trim() === "") {
+        usernameMessage.innerHTML = '<span class="text-red-500">Username is required</span>';
+        isUsernameAvailableFlag = false;
+        return false;
+      }
+      
+      try {
+        const snapshot = await db.collection('users').where('username', '==', username).get();
+        const available = snapshot.empty;
+        
+        if (available) {
+          usernameMessage.innerHTML = '<span class="text-green-500">✓ Username available</span>';
+          isUsernameAvailableFlag = true;
+          return true;
+        } else {
+          usernameMessage.innerHTML = '<span class="text-red-500">✗ Username already taken</span>';
+          isUsernameAvailableFlag = false;
+          return false;
+        }
+      } catch (error) {
+        console.error('Error checking username:', error);
+        return false;
+      }
+    }
+
+    usernameInput.addEventListener('input', function() {
+      clearTimeout(usernameCheckTimeout);
+      const username = this.value;
+      
+      if (!username) {
+        usernameMessage.innerHTML = '<span class="text-red-500">Username is required</span>';
+        isUsernameAvailableFlag = false;
+        return;
+      }
+      
+      usernameCheckTimeout = setTimeout(async () => {
+        await checkUsernameAvailability(username);
+      }, 500);
+    });
+
+    // Password strength
+    const passwordInput = document.getElementById('password');
+    const strengthDiv = document.getElementById('passwordStrength');
+    
+    passwordInput.addEventListener('input', function() {
+      const password = this.value;
+      if (password.length === 0) {
+        strengthDiv.innerHTML = '';
+      } else if (password.length < 6) {
+        strengthDiv.innerHTML = '<span class="text-red-500">⚠️ Weak - Use at least 6 characters</span>';
+      } else if (password.length >= 6 && password.length < 8) {
+        strengthDiv.innerHTML = '<span class="text-yellow-500">🟡 Medium</span>';
+      } else {
+        strengthDiv.innerHTML = '<span class="text-green-500">✅ Strong password!</span>';
+      }
+      checkPasswordMatch();
+    });
+
+    const confirmInput = document.getElementById('confirmPassword');
+    const matchDiv = document.getElementById('passwordMatch');
+    
+    function checkPasswordMatch() {
+      const password = passwordInput.value;
+      const confirm = confirmInput.value;
+      
+      if (confirm.length === 0) {
+        matchDiv.innerHTML = '';
+      } else if (password === confirm) {
+        matchDiv.innerHTML = '<span class="text-green-500">✓ Passwords match</span>';
+      } else {
+        matchDiv.innerHTML = '<span class="text-red-500">✗ Passwords do not match</span>';
+      }
+    }
+    
+    confirmInput.addEventListener('input', checkPasswordMatch);
+
+    // Phone input restriction
+    document.getElementById('phone').addEventListener('input', function(e) {
+      this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);
+    });
+
+    // Register User
+    document.getElementById('registerForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const fullName = document.getElementById('fullName').value.trim();
+      const username = document.getElementById('username').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const phoneRaw = document.getElementById('phone').value.trim();
+      const phone = phoneRaw.replace(/\D/g, '');
+      const gender = document.getElementById('gender').value;
+      const city = document.getElementById('city').value.trim();
+      const password = document.getElementById('password').value;
+      const confirmPassword = document.getElementById('confirmPassword').value;
+      const termsAccepted = document.getElementById('terms').checked;
+
+      if (!fullName) { showToast('Please enter your full name', 'error'); return; }
+      if (!username) { showToast('Please enter a username', 'error'); return; }
+      if (!isUsernameAvailableFlag) { showToast('Username is not available', 'error'); return; }
+      if (!email) { showToast('Please enter your email address', 'error'); return; }
+      if (!isValidEmail(email)) { showToast('Please enter a valid email address', 'error'); return; }
+      if (!phone) { showToast('Please enter your phone number', 'error'); return; }
+      if (!isValidPhone(phone)) { showToast('Please enter a valid 10-digit phone number', 'error'); return; }
+      if (!gender) { showToast('Please select your gender', 'error'); return; }
+      if (!city) { showToast('Please enter your city/district', 'error'); return; }
+      if (!password) { showToast('Please create a password', 'error'); return; }
+      if (password.length < 6) { showToast('Password must be at least 6 characters', 'error'); return; }
+      if (password !== confirmPassword) { showToast('Passwords do not match', 'error'); return; }
+      if (!termsAccepted) { showToast('Please accept the Terms and Conditions', 'error'); return; }
+
+      const btn = document.getElementById('registerBtn');
+      const btnText = document.getElementById('btnText');
+      const btnSpinner = document.getElementById('btnSpinner');
+      btn.disabled = true;
+      btnText.classList.add('hidden');
+      btnSpinner.classList.remove('hidden');
+
+      try {
+        const finalUserId = await generateUniqueUserId();
+        showLoader('Creating your account...');
+        
+        const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+        const user = userCredential.user;
+        await user.sendEmailVerification();
+        await user.updateProfile({ displayName: fullName, photoURL: profileImageUrl || '' });
+        const formattedPhone = `+977-${phone}`;
+
+        await db.collection('users').doc(user.uid).set({
+          userId: finalUserId,
+          fullName: fullName,
+          username: username,
+          email: email,
+          phone: formattedPhone,
+          phoneRaw: phone,
+          gender: gender,
+          city: city,
+          profilePicture: profileImageUrl || '',
+          role: 'user',
+          status: 'active',
+          emailVerified: false,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+          lastLogin: firebase.firestore.FieldValue.serverTimestamp(),
+          wishlist: [],
+          following: [],
+          followers: 0,
+          posts: 0,
+          wallet: 0,
+          points: 0,
+          photos: []
+        });
+
+        hideLoader();
+        showToast(`Account created! Your Naya Bato ID: ${finalUserId}. Please verify your email.`, 'success');
+        
+        setTimeout(() => {
+          auth.signOut();
+          window.location.href = 'login.html?registered=true';
+        }, 2500);
+        
+      } catch (error) {
+        hideLoader();
+        console.error('Registration error:', error);
+        let errorMessage = 'Registration failed. Please try again.';
+        switch (error.code) {
+          case 'auth/email-already-in-use':
+            errorMessage = 'This email is already registered. Please login instead.';
+            break;
+          case 'auth/invalid-email':
+            errorMessage = 'Invalid email address format.';
+            break;
+          case 'auth/weak-password':
+            errorMessage = 'Password is too weak. Please use a stronger password.';
+            break;
+          default:
+            errorMessage = error.message;
+        }
+        showToast(errorMessage, 'error');
+        
+        btn.disabled = false;
+        btnText.classList.remove('hidden');
+        btnSpinner.classList.add('hidden');
+      }
+    });
+
+    auth.onAuthStateChanged((user) => {
+      if (user && user.emailVerified) {
+        window.location.href = 'dashboard.html';
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>Reviews - Naya Bato | Advanced Review Management</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+    body { background: #f1f5f9; overflow-x: hidden; }
+    
+    .sidebar {
+      position: fixed;
+      left: 0;
+      top: 0;
+      width: 280px;
+      height: 100vh;
+      background: linear-gradient(180deg, #0f172a 0%, #020617 100%);
+      transition: all 0.3s ease;
+      z-index: 1000;
+      overflow-y: auto;
+      overflow-x: hidden;
+      box-shadow: 4px 0 20px rgba(0,0,0,0.2);
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .sidebar.collapsed { width: 85px; }
+    .sidebar.collapsed .sidebar-text { display: none; }
+    .sidebar.collapsed .logo-text { display: none; }
+    .sidebar.collapsed .logo-subtext { display: none; }
+    .sidebar.collapsed .sidebar-link { justify-content: center; padding: 14px 0; margin: 6px 12px; }
+    .sidebar.collapsed .sidebar-link i { margin-right: 0; font-size: 1.3rem; }
+    .sidebar.collapsed .logo-icon { margin: 0 auto; }
+    .sidebar.collapsed .auth-btn-text { display: none; }
+    .sidebar.collapsed .auth-btn { justify-content: center; padding: 12px 0; }
+    
+    .sidebar::-webkit-scrollbar { width: 4px; }
+    .sidebar::-webkit-scrollbar-track { background: #1e293b; }
+    .sidebar::-webkit-scrollbar-thumb { background: #3b82f6; border-radius: 10px; }
+    
+    .sidebar-link {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 12px 20px;
+      margin: 6px 16px;
+      border-radius: 12px;
+      color: #94a3b8;
+      transition: all 0.2s;
+      text-decoration: none;
+      white-space: nowrap;
+      font-weight: 500;
+    }
+    .sidebar-link:hover { background: rgba(59, 130, 246, 0.15); color: white; transform: translateX(4px); }
+    .sidebar-link.active { background: #3b82f6; color: white; box-shadow: 0 4px 12px rgba(59,130,246,0.4); }
+    .sidebar-link i { width: 22px; font-size: 1.1rem; }
+    
+    .main-content { margin-left: 280px; transition: all 0.3s ease; min-height: 100vh; }
+    .main-content.collapsed { margin-left: 85px; }
+    
+    .top-bar { background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.05); padding: 16px 24px; position: sticky; top: 0; z-index: 99; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; }
+    
+    .stat-card { background: white; border-radius: 20px; padding: 20px; transition: all 0.3s; border: 1px solid #e2e8f0; }
+    .stat-card:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(0,0,0,0.08); }
+    
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1100; justify-content: center; align-items: center; }
+    .modal-content { background: white; border-radius: 24px; padding: 28px; max-width: 600px; width: 90%; max-height: 85vh; overflow-y: auto; }
+    
+    .review-card { background: white; border-radius: 20px; padding: 20px; transition: all 0.2s; border: 1px solid #e2e8f0; margin-bottom: 16px; }
+    .review-card:hover { transform: translateX(5px); border-color: #3b82f6; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+    
+    .badge-active { background: #dcfce7; color: #166534; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; display: inline-block; }
+    .badge-pending { background: #fef3c7; color: #92400e; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; display: inline-block; }
+    .badge-flagged { background: #fee2e2; color: #991b1b; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; display: inline-block; }
+    .badge-verified { background: #dbeafe; color: #1e40af; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; display: inline-block; }
+    
+    .loading-spinner { width: 45px; height: 45px; border: 3px solid #e2e8f0; border-top-color: #3b82f6; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .empty-state { text-align: center; padding: 60px 20px; background: white; border-radius: 20px; }
+    .empty-state i { font-size: 64px; color: #cbd5e1; margin-bottom: 20px; }
+    
+    .toast { position: fixed; bottom: 24px; right: 24px; background: #1e293b; color: white; padding: 14px 24px; border-radius: 16px; z-index: 1200; animation: slideIn 0.3s ease; }
+    @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    
+    .user-avatar { width: 42px; height: 42px; background: linear-gradient(135deg, #3b82f6, #8b5cf6); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 16px; box-shadow: 0 4px 10px rgba(59,130,246,0.3); }
+    
+    .rating-stars { color: #fbbf24; font-size: 18px; letter-spacing: 2px; }
+    .progress-bar { height: 8px; background: #e2e8f0; border-radius: 10px; overflow: hidden; }
+    .progress-fill { height: 100%; background: #3b82f6; border-radius: 10px; transition: width 0.5s; }
+    
+    @media (max-width: 768px) {
+      .sidebar { transform: translateX(-100%); }
+      .sidebar.mobile-open { transform: translateX(0); }
+      .main-content, .main-content.collapsed { margin-left: 0; }
+      .mobile-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 999; display: none; }
+      .mobile-overlay.active { display: block; }
+      .top-bar { padding: 12px 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="mobileOverlay" class="mobile-overlay" onclick="closeMobileSidebar()"></div>
+
+<div id="sidebar" class="sidebar">
+  <div class="p-5 pb-4 border-b border-gray-800">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg logo-icon">
+          <i class="fas fa-chart-line text-white text-lg"></i>
+        </div>
+        <div class="logo-text">
+          <span class="text-white text-xl font-bold">Naya Bato</span>
+          <p class="text-gray-500 text-xs mt-0.5 logo-subtext">Business Platform</p>
+        </div>
+      </div>
+      <button id="toggleSidebarBtn" class="text-gray-400 hover:text-white transition hidden md:block">
+        <i class="fas fa-chevron-left"></i>
+      </button>
+    </div>
+  </div>
+  
+  <nav class="flex-1 py-4">
+    <a href="dashboard.html" class="sidebar-link"><i class="fas fa-tachometer-alt"></i><span class="sidebar-text">Dashboard</span></a>
+    <a href="transactions.html" class="sidebar-link"><i class="fas fa-exchange-alt"></i><span class="sidebar-text">Transactions</span></a>
+    <a href="products.html" class="sidebar-link"><i class="fas fa-box"></i><span class="sidebar-text">Products</span></a>
+    <a href="orders.html" class="sidebar-link"><i class="fas fa-shopping-cart"></i><span class="sidebar-text">Orders</span></a>
+    <a href="customers.html" class="sidebar-link"><i class="fas fa-users"></i><span class="sidebar-text">Customers</span></a>
+    <a href="categories.html" class="sidebar-link"><i class="fas fa-tags"></i><span class="sidebar-text">Categories</span></a>
+    <a href="coupons.html" class="sidebar-link"><i class="fas fa-ticket-alt"></i><span class="sidebar-text">Coupons</span></a>
+    <a href="reviews.html" class="sidebar-link active"><i class="fas fa-star"></i><span class="sidebar-text">Reviews</span></a>
+    <a href="inventory.html" class="sidebar-link"><i class="fas fa-warehouse"></i><span class="sidebar-text">Inventory</span></a>
+    <a href="reports.html" class="sidebar-link"><i class="fas fa-chart-bar"></i><span class="sidebar-text">Reports</span></a>
+    <a href="marketing.html" class="sidebar-link"><i class="fas fa-bullhorn"></i><span class="sidebar-text">Marketing</span></a>
+    <a href="settings.html" class="sidebar-link"><i class="fas fa-cog"></i><span class="sidebar-text">Settings</span></a>
+    <a href="activity-logs.html" class="sidebar-link"><i class="fas fa-history"></i><span class="sidebar-text">Activity Logs</span></a>
+  </nav>
+  
+  <div class="p-5 border-t border-gray-800 mt-auto">
+    <div id="authButtonsSection">
+      <a href="login.html" class="auth-btn flex items-center justify-center gap-2 bg-blue-600 text-white py-3 rounded-xl text-sm font-medium transition hover:bg-blue-700 w-full">
+        <i class="fas fa-sign-in-alt"></i><span class="auth-btn-text">Login</span>
+      </a>
+      <a href="register.html" class="auth-btn flex items-center justify-center gap-2 border border-blue-500 text-blue-400 py-3 rounded-xl text-sm font-medium transition hover:bg-blue-600/10 w-full mt-3">
+        <i class="fas fa-user-plus"></i><span class="auth-btn-text">Register</span>
+      </a>
+    </div>
+    <button id="logoutBtn" onclick="logout()" class="hidden w-full flex items-center justify-center gap-2 bg-red-600/20 text-red-400 py-3 rounded-xl text-sm font-medium transition hover:bg-red-600/30">
+      <i class="fas fa-sign-out-alt"></i><span class="auth-btn-text">Logout</span>
+    </button>
+  </div>
+</div>
+
+<button id="mobileToggleBtn" class="fixed top-4 left-4 z-50 bg-blue-600 text-white p-3 rounded-xl shadow-lg md:hidden">
+  <i class="fas fa-bars text-lg"></i>
+</button>
+
+<div id="mainContent" class="main-content">
+  <div class="top-bar">
+    <h1 class="text-xl font-bold text-gray-800">Reviews & Ratings</h1>
+    <div class="flex items-center gap-4">
+      <span id="userEmail" class="text-gray-500 text-sm hidden md:inline"></span>
+      <div id="userAvatar" class="user-avatar">NB</div>
+    </div>
+  </div>
+
+  <div id="contentArea" class="p-6">
+    <div class="flex justify-center items-center h-64">
+      <div class="loading-spinner"></div>
+      <p class="ml-3 text-gray-500">Loading reviews...</p>
+    </div>
+  </div>
+
+  <footer class="bg-white border-t border-gray-100 py-5 px-6 mt-8">
+    <div class="flex flex-col md:flex-row justify-between items-center text-sm text-gray-400">
+      <p>© 2025 Naya Bato. All rights reserved. Made with ❤️ in Nepal</p>
+      <div class="flex gap-6 mt-3 md:mt-0">
+        <a href="privacy.html" class="hover:text-gray-600 transition">Privacy Policy</a>
+        <a href="terms.html" class="hover:text-gray-600 transition">Terms of Service</a>
+        <a href="support.html" class="hover:text-gray-600 transition">Support</a>
+      </div>
+    </div>
+  </footer>
+</div>
+
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyDJLnUB8XnXWPEtSRAMuQr9ASmD16HLIJc",
+    authDomain: "bishalshrestha17-de676.firebaseapp.com",
+    projectId: "bishalshrestha17-de676",
+    storageBucket: "bishalshrestha17-de676.firebasestorage.app",
+    messagingSenderId: "631628771230",
+    appId: "1:631628771230:web:389c6430535f6a46b6708f"
+  };
+  
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.firestore();
+  let currentUser = null;
+  let allReviews = [];
+  let allProducts = [];
+  let isAdmin = false;
+  let editingReviewId = null;
+  let ratingChart = null;
+  let sentimentChart = null;
+
+  auth.onAuthStateChanged(async (user) => {
+    currentUser = user;
+    if (user) {
+      document.getElementById('authButtonsSection').style.display = 'none';
+      document.getElementById('logoutBtn').style.display = 'flex';
+      document.getElementById('userEmail').innerText = user.email;
+      document.getElementById('userAvatar').innerText = user.email.charAt(0).toUpperCase();
+      await checkIfAdmin();
+      await loadProducts();
+      await loadReviews();
+    } else {
+      document.getElementById('authButtonsSection').style.display = 'block';
+      document.getElementById('logoutBtn').style.display = 'none';
+      document.getElementById('userEmail').innerText = '';
+      showLoginMessage();
+    }
+  });
+
+  async function checkIfAdmin() {
+    try {
+      const userDoc = await db.collection('users').doc(currentUser.uid).get();
+      isAdmin = userDoc.data()?.role === 'admin';
+    } catch(e) { isAdmin = false; }
+  }
+
+  function logout() { auth.signOut(); showToast('Logged out'); setTimeout(() => location.reload(), 1000); }
+  
+  function showToast(msg, isError = false) { 
+    const t = document.createElement('div'); 
+    t.className = 'toast'; 
+    t.innerHTML = `<i class="fas ${isError ? 'fa-exclamation-circle' : 'fa-check-circle'} mr-2 ${isError ? 'text-red-400' : 'text-green-400'}"></i>${msg}`; 
+    document.body.appendChild(t); 
+    setTimeout(() => t.remove(), 3000); 
+  }
+  
+  function showLoginMessage() {
+    document.getElementById('contentArea').innerHTML = `<div class="empty-state"><i class="fas fa-lock"></i><h3 class="text-xl font-semibold mb-2">Please Login to Continue</h3><p class="text-gray-500 mb-6">Login to view and manage reviews.</p><div class="flex gap-4 justify-center"><a href="login.html" class="bg-blue-600 text-white px-8 py-3 rounded-xl">Login Now</a><a href="register.html" class="border-2 border-blue-600 text-blue-600 px-8 py-3 rounded-xl">Create Account</a></div></div>`;
+  }
+
+  async function loadProducts() {
+    try {
+      const snap = await db.collection('products').get();
+      allProducts = [];
+      snap.forEach(doc => allProducts.push({ id: doc.id, name: doc.data().name, category: doc.data().category }));
+    } catch(e) { console.log('Products load error:', e); }
+  }
+
+  async function loadReviews() {
+    document.getElementById('contentArea').innerHTML = '<div class="flex justify-center items-center h-64"><div class="loading-spinner"></div><p class="ml-3">Loading reviews...</p></div>';
+    
+    try {
+      let query;
+      if (isAdmin) {
+        query = await db.collection('reviews').get();
+      } else {
+        query = await db.collection('reviews').where('userId', '==', currentUser.uid).get();
+      }
+      
+      allReviews = [];
+      query.forEach(doc => {
+        allReviews.push({ id: doc.id, ...doc.data() });
+      });
+      allReviews.sort((a, b) => {
+        const dateA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(0);
+        const dateB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(0);
+        return dateB - dateA;
+      });
+      renderReviews();
+    } catch(e) {
+      document.getElementById('contentArea').innerHTML = `<div class="empty-state"><i class="fas fa-exclamation-triangle text-red-500"></i><h3 class="text-xl font-semibold mb-2">Error</h3><p class="text-gray-500">${e.message}</p><button onclick="location.reload()" class="mt-4 bg-blue-600 text-white px-6 py-2 rounded-xl">Retry</button></div>`;
+    }
+  }
+
+  function getSentiment(text) {
+    const positive = ['good', 'great', 'excellent', 'amazing', 'awesome', 'love', 'best', 'perfect', 'wonderful', 'fantastic'];
+    const negative = ['bad', 'poor', 'terrible', 'awful', 'horrible', 'worst', 'disappointing', 'waste', 'useless', 'hate'];
+    const lowerText = text.toLowerCase();
+    let posCount = positive.filter(w => lowerText.includes(w)).length;
+    let negCount = negative.filter(w => lowerText.includes(w)).length;
+    if (posCount > negCount) return { text: 'Positive', class: 'badge-active', icon: '😊' };
+    if (negCount > posCount) return { text: 'Negative', class: 'badge-flagged', icon: '😞' };
+    return { text: 'Neutral', class: 'badge-pending', icon: '😐' };
+  }
+
+  function getStarRatingStars(rating) {
+    let stars = '';
+    for (let i = 1; i <= 5; i++) {
+      stars += `<i class="fas ${i <= rating ? 'fa-star' : 'fa-star-o'}"></i>`;
+    }
+    return stars;
+  }
+
+  async function renderReviews() {
+    const totalReviews = allReviews.length;
+    const avgRating = totalReviews > 0 ? (allReviews.reduce((sum, r) => sum + (r.rating || 0), 0) / totalReviews).toFixed(1) : 0;
+    const verifiedCount = allReviews.filter(r => r.isVerifiedPurchase).length;
+    const flaggedCount = allReviews.filter(r => r.isFlagged).length;
+    const pendingCount = allReviews.filter(r => r.status === 'pending').length;
+    const approvedCount = allReviews.filter(r => r.status === 'approved').length;
+    
+    // Rating distribution
+    const ratingCounts = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+    allReviews.forEach(r => { if (r.rating) ratingCounts[r.rating]++; });
+    
+    // Sentiment distribution
+    const sentiments = { Positive: 0, Neutral: 0, Negative: 0 };
+    allReviews.forEach(r => { const s = getSentiment(r.comment || ''); sentiments[s.text]++; });
+    
+    const html = `
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
+        <div class="stat-card"><div><p class="text-gray-500 text-sm">Total Reviews</p><p class="text-3xl font-bold">${totalReviews}</p></div></div>
+        <div class="stat-card"><div><p class="text-gray-500 text-sm">Average Rating</p><p class="text-3xl font-bold text-yellow-600">${avgRating} / 5</p><div class="rating-stars">${getStarRatingStars(Math.round(avgRating))}</div></div></div>
+        <div class="stat-card"><div><p class="text-gray-500 text-sm">Verified Purchases</p><p class="text-3xl font-bold text-green-600">${verifiedCount}</p></div></div>
+        <div class="stat-card"><div><p class="text-gray-500 text-sm">Flagged Reviews</p><p class="text-3xl font-bold text-red-600">${flaggedCount}</p></div></div>
+      </div>
+      
+      <div class="grid lg:grid-cols-3 gap-5 mb-6">
+        <div class="bg-white rounded-xl p-5 shadow-sm"><h3 class="font-semibold mb-3">Rating Distribution</h3><div class="space-y-2">${[5,4,3,2,1].map(r => `<div><div class="flex justify-between text-sm"><span>${r} Star</span><span>${ratingCounts[r]} reviews</span></div><div class="progress-bar mt-1"><div class="progress-fill" style="width: ${totalReviews ? (ratingCounts[r] / totalReviews * 100) : 0}%"></div></div></div>`).join('')}</div></div>
+        <div class="bg-white rounded-xl p-5 shadow-sm"><h3 class="font-semibold mb-3">Sentiment Analysis</h3><canvas id="sentimentChart" height="150"></canvas></div>
+        <div class="bg-white rounded-xl p-5 shadow-sm"><h3 class="font-semibold mb-3">Review Status</h3><div class="space-y-2"><div class="flex justify-between"><span>Approved</span><span class="font-bold text-green-600">${approvedCount}</span></div><div class="flex justify-between"><span>Pending</span><span class="font-bold text-yellow-600">${pendingCount}</span></div><div class="flex justify-between"><span>Flagged</span><span class="font-bold text-red-600">${flaggedCount}</span></div><div class="progress-bar mt-2"><div class="progress-fill" style="width: ${totalReviews ? (approvedCount / totalReviews * 100) : 0}%"></div></div></div></div>
+      </div>
+      
+      <div class="bg-white rounded-xl p-5 mb-6 border border-gray-100">
+        <div class="flex flex-wrap justify-between items-center gap-4">
+          <div class="flex gap-3 flex-1 flex-wrap">
+            <input type="text" id="searchReview" placeholder="🔍 Search reviews..." class="flex-1 min-w-[180px] border border-gray-300 rounded-xl px-4 py-3">
+            <select id="ratingFilter" class="border border-gray-300 rounded-xl px-4 py-3"><option value="all">All Ratings</option><option value="5">5 Stars</option><option value="4">4 Stars</option><option value="3">3 Stars</option><option value="2">2 Stars</option><option value="1">1 Star</option></select>
+            <select id="statusFilter" class="border border-gray-300 rounded-xl px-4 py-3"><option value="all">All Status</option><option value="approved">Approved</option><option value="pending">Pending</option><option value="flagged">Flagged</option></select>
+            <select id="sentimentFilter" class="border border-gray-300 rounded-xl px-4 py-3"><option value="all">All Sentiment</option><option value="Positive">Positive 😊</option><option value="Neutral">Neutral 😐</option><option value="Negative">Negative 😞</option></select>
+            <button onclick="filterReviews()" class="bg-gray-600 text-white px-6 py-3 rounded-xl hover:bg-gray-700">Filter</button>
+            <button onclick="exportReviewsCSV()" class="border border-gray-300 px-6 py-3 rounded-xl hover:bg-gray-50"><i class="fas fa-download mr-2"></i>Export</button>
+          </div>
+          <button onclick="openAddReviewModal()" class="bg-blue-600 text-white px-6 py-3 rounded-xl font-medium hover:bg-blue-700 shadow-md"><i class="fas fa-plus mr-2"></i>Write Review</button>
+        </div>
+      </div>
+      
+      <div id="reviewsList" class="space-y-3"></div>
+      <div id="pagination" class="mt-6 flex justify-center space-x-2"></div>
+    `;
+    
+    document.getElementById('contentArea').innerHTML = html;
+    
+    // Initialize sentiment chart
+    const ctx = document.getElementById('sentimentChart')?.getContext('2d');
+    if (ctx) {
+      if (sentimentChart) sentimentChart.destroy();
+      sentimentChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: { labels: ['Positive', 'Neutral', 'Negative'], datasets: [{ data: [sentiments.Positive, sentiments.Neutral, sentiments.Negative], backgroundColor: ['#10b981', '#f59e0b', '#ef4444'] }] },
+        options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { position: 'bottom' } } }
+      });
+    }
+    
+    renderReviewsList(allReviews);
+    
+    document.getElementById('searchReview')?.addEventListener('input', () => filterReviews());
+    document.getElementById('ratingFilter')?.addEventListener('change', () => filterReviews());
+    document.getElementById('statusFilter')?.addEventListener('change', () => filterReviews());
+    document.getElementById('sentimentFilter')?.addEventListener('change', () => filterReviews());
+  }
+
+  function filterReviews() {
+    let filtered = [...allReviews];
+    const search = document.getElementById('searchReview')?.value.toLowerCase();
+    if (search) filtered = filtered.filter(r => (r.comment || '').toLowerCase().includes(search) || (r.productName || '').toLowerCase().includes(search));
+    const rating = document.getElementById('ratingFilter')?.value;
+    if (rating && rating !== 'all') filtered = filtered.filter(r => r.rating === parseInt(rating));
+    const status = document.getElementById('statusFilter')?.value;
+    if (status && status !== 'all') filtered = filtered.filter(r => r.status === status);
+    const sentiment = document.getElementById('sentimentFilter')?.value;
+    if (sentiment && sentiment !== 'all') filtered = filtered.filter(r => getSentiment(r.comment || '').text === sentiment);
+    renderReviewsList(filtered);
+  }
+
+  function renderReviewsList(reviews, page = 1) {
+    const container = document.getElementById('reviewsList');
+    if (!container) return;
+    
+    const itemsPerPage = 10;
+    const start = (page - 1) * itemsPerPage;
+    const end = start + itemsPerPage;
+    const pageReviews = reviews.slice(start, end);
+    const totalPages = Math.ceil(reviews.length / itemsPerPage);
+    
+    if (reviews.length === 0) {
+      container.innerHTML = '<div class="empty-state py-12"><i class="fas fa-star"></i><p class="text-gray-400">No reviews yet. Be the first to write a review!</p><button onclick="openAddReviewModal()" class="mt-4 bg-blue-600 text-white px-6 py-2 rounded-xl">Write a Review</button></div>';
+      if (document.getElementById('pagination')) document.getElementById('pagination').innerHTML = '';
+      return;
+    }
+    
+    let html = '';
+    pageReviews.forEach(review => {
+      const sentiment = getSentiment(review.comment || '');
+      const isOwner = review.userId === currentUser?.uid;
+      const product = allProducts.find(p => p.name === review.productName);
+      
+      html += `
+        <div class="review-card">
+          <div class="flex flex-wrap md:flex-nowrap gap-4">
+            <div class="text-center min-w-[100px]"><div class="rating-stars text-2xl">${getStarRatingStars(review.rating || 5)}</div><span class="text-2xl font-bold text-yellow-600 mt-1 block">${review.rating || 5}.0</span></div>
+            <div class="flex-1">
+              <div class="flex flex-wrap justify-between items-start gap-2">
+                <div><h3 class="font-bold text-lg text-gray-800">${review.title || 'Review'}</h3><div class="flex flex-wrap gap-2 mt-1"><span class="${review.status === 'approved' ? 'badge-active' : review.status === 'pending' ? 'badge-pending' : 'badge-flagged'}">${review.status || 'pending'}</span>${review.isVerifiedPurchase ? '<span class="badge-verified">✓ Verified Purchase</span>' : ''}<span class="${sentiment.class}">${sentiment.icon} ${sentiment.text}</span>${isOwner ? '<span class="badge-active">Your Review</span>' : ''}</div></div>
+                <div class="text-right"><p class="text-sm text-gray-500"><i class="far fa-user mr-1"></i>${review.userName || 'Anonymous'}</p><p class="text-xs text-gray-400"><i class="far fa-calendar-alt mr-1"></i>${review.createdAt?.toDate().toLocaleDateString() || 'Unknown'}</p></div>
+              </div>
+              <p class="text-gray-600 mt-2">${review.comment || 'No comment provided.'}</p>
+              ${review.productName ? `<p class="text-sm text-gray-500 mt-2"><i class="fas fa-box mr-1"></i>Product: ${review.productName}</p>` : ''}
+              ${review.images && review.images.length ? `<div class="flex gap-2 mt-3"><img src="${review.images[0]}" class="w-16 h-16 object-cover rounded-lg"></div>` : ''}
+              ${review.adminResponse ? `<div class="mt-3 p-3 bg-gray-50 rounded-lg"><p class="text-sm font-semibold">Admin Response:</p><p class="text-sm text-gray-600">${review.adminResponse}</p><p class="text-xs text-gray-400 mt-1">${review.adminResponseDate?.toDate().toLocaleDateString() || ''}</p></div>` : ''}
+              <div class="flex flex-wrap gap-2 mt-4 pt-3 border-t border-gray-100">
+                <button onclick="viewReviewDetails('${review.id}')" class="text-blue-600 border border-blue-600 rounded-xl px-3 py-1.5 text-sm hover:bg-blue-50"><i class="fas fa-eye mr-1"></i>View</button>
+                ${(isAdmin || isOwner) && review.status !== 'approved' ? `<button onclick="approveReview('${review.id}')" class="text-green-600 border border-green-600 rounded-xl px-3 py-1.5 text-sm hover:bg-green-50"><i class="fas fa-check mr-1"></i>Approve</button>` : ''}
+                ${isAdmin ? `<button onclick="flagReview('${review.id}')" class="text-red-600 border border-red-600 rounded-xl px-3 py-1.5 text-sm hover:bg-red-50"><i class="fas fa-flag mr-1"></i>Flag</button><button onclick="respondToReview('${review.id}')" class="text-purple-600 border border-purple-600 rounded-xl px-3 py-1.5 text-sm hover:bg-purple-50"><i class="fas fa-reply mr-1"></i>Respond</button>` : ''}
+                ${isOwner ? `<button onclick="editReview('${review.id}')" class="text-green-600 border border-green-600 rounded-xl px-3 py-1.5 text-sm hover:bg-green-50"><i class="fas fa-edit mr-1"></i>Edit</button><button onclick="deleteReview('${review.id}')" class="text-red-600 border border-red-600 rounded-xl px-3 py-1.5 text-sm hover:bg-red-50"><i class="fas fa-trash-alt mr-1"></i>Delete</button>` : ''}
+                <button onclick="shareReview('${review.id}')" class="text-gray-600 border border-gray-300 rounded-xl px-3 py-1.5 text-sm hover:bg-gray-50"><i class="fas fa-share mr-1"></i>Share</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    });
+    container.innerHTML = html;
+    
+    if (document.getElementById('pagination')) {
+      let paginationHtml = '';
+      for (let i = 1; i <= Math.min(totalPages, 10); i++) paginationHtml += `<button onclick="renderReviewsList(filteredReviews || allReviews, ${i})" class="px-3 py-1 border rounded ${page === i ? 'bg-blue-600 text-white' : 'hover:bg-gray-100'}">${i}</button>`;
+      document.getElementById('pagination').innerHTML = paginationHtml;
+      window.filteredReviews = reviews;
+    }
+  }
+
+  function openAddReviewModal() {
+    editingReviewId = null;
+    document.getElementById('modalTitle').innerHTML = '<i class="fas fa-star text-yellow-500 mr-2"></i>Write a Review';
+    document.getElementById('reviewTitle').value = '';
+    document.getElementById('reviewRating').value = 5;
+    document.getElementById('reviewComment').value = '';
+    document.getElementById('reviewProduct').innerHTML = `<option value="">Select Product</option>${allProducts.map(p => `<option value="${p.name}">${p.name}</option>`).join('')}`;
+    document.getElementById('reviewModal').style.display = 'flex';
+  }
+
+  async function editReview(id) {
+    const review = allReviews.find(r => r.id === id);
+    if (!review) return;
+    editingReviewId = id;
+    document.getElementById('modalTitle').innerHTML = '<i class="fas fa-edit text-blue-500 mr-2"></i>Edit Review';
+    document.getElementById('reviewTitle').value = review.title || '';
+    document.getElementById('reviewRating').value = review.rating || 5;
+    document.getElementById('reviewComment').value = review.comment || '';
+    document.getElementById('reviewProduct').innerHTML = `<option value="${review.productName}">${review.productName}</option>${allProducts.filter(p => p.name !== review.productName).map(p => `<option value="${p.name}">${p.name}</option>`).join('')}`;
+    document.getElementById('reviewModal').style.display = 'flex';
+  }
+
+  async function saveReview() {
+    const title = document.getElementById('reviewTitle').value.trim();
+    const rating = parseInt(document.getElementById('reviewRating').value);
+    const comment = document.getElementById('reviewComment').value.trim();
+    const productName = document.getElementById('reviewProduct').value;
+    
+    if (!comment) { showToast('Please write a comment', true); return; }
+    
+    const data = {
+      title: title,
+      rating: rating,
+      comment: comment,
+      productName: productName,
+      userName: currentUser.email.split('@')[0],
+      userEmail: currentUser.email,
+      userId: currentUser.uid,
+      status: 'pending',
+      isVerifiedPurchase: false,
+      isFlagged: false,
+      helpfulCount: 0,
+      notHelpfulCount: 0,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    };
+    
+    if (editingReviewId) {
+      await db.collection('reviews').doc(editingReviewId).update(data);
+      showToast('Review updated!');
+    } else {
+      data.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+      data.helpfulUsers = [];
+      data.notHelpfulUsers = [];
+      await db.collection('reviews').add(data);
+      showToast('Review submitted! Waiting for approval.');
+    }
+    
+    closeReviewModal();
+    await loadReviews();
+  }
+
+  async function approveReview(id) {
+    await db.collection('reviews').doc(id).update({ status: 'approved', approvedAt: firebase.firestore.FieldValue.serverTimestamp() });
+    await loadReviews();
+    showToast('Review approved!');
+  }
+
+  async function flagReview(id) {
+    const review = allReviews.find(r => r.id === id);
+    const newFlagStatus = !review?.isFlagged;
+    await db.collection('reviews').doc(id).update({ isFlagged: newFlagStatus, status: newFlagStatus ? 'flagged' : 'pending' });
+    await loadReviews();
+    showToast(newFlagStatus ? 'Review flagged!' : 'Review un flagged!');
+  }
+
+  async function respondToReview(id) {
+    const response = prompt('Enter your response to this review:');
+    if (response) {
+      await db.collection('reviews').doc(id).update({ 
+        adminResponse: response, 
+        adminResponseDate: firebase.firestore.FieldValue.serverTimestamp(),
+        status: 'approved'
+      });
+      await loadReviews();
+      showToast('Response added!');
+    }
+  }
+
+  async function deleteReview(id) {
+    if (confirm('Delete this review?')) {
+      await db.collection('reviews').doc(id).delete();
+      await loadReviews();
+      showToast('Review deleted');
+    }
+  }
+
+  async function viewReviewDetails(id) {
+    const review = allReviews.find(r => r.id === id);
+    if (!review) return;
+    const sentiment = getSentiment(review.comment || '');
+    document.getElementById('detailReviewTitle').innerText = review.title || 'Review';
+    document.getElementById('detailRating').innerHTML = `<div class="rating-stars text-xl">${getStarRatingStars(review.rating || 5)} (${review.rating}/5)</div>`;
+    document.getElementById('detailComment').innerText = review.comment || 'No comment';
+    document.getElementById('detailProduct').innerText = review.productName || 'N/A';
+    document.getElementById('detailUser').innerText = review.userName || 'Anonymous';
+    document.getElementById('detailStatus').innerHTML = `<span class="${review.status === 'approved' ? 'badge-active' : review.status === 'pending' ? 'badge-pending' : 'badge-flagged'}">${review.status || 'pending'}</span>`;
+    document.getElementById('detailSentiment').innerHTML = `<span class="${sentiment.class}">${sentiment.icon} ${sentiment.text}</span>`;
+    document.getElementById('detailVerified').innerHTML = review.isVerifiedPurchase ? 'Yes ✓' : 'No';
+    document.getElementById('detailHelpful').innerText = review.helpfulCount || 0;
+    document.getElementById('detailDate').innerText = review.createdAt?.toDate().toLocaleString() || 'Unknown';
+    document.getElementById('detailModal').style.display = 'flex';
+  }
+
+  function shareReview(id) {
+    const review = allReviews.find(r => r.id === id);
+    if (review) {
+      navigator.clipboard.writeText(`Check out this review: "${review.comment?.substring(0, 100)}..." - Rating: ${review.rating}/5 stars`);
+      showToast('Review link copied to clipboard!');
+    }
+  }
+
+  function exportReviewsCSV() {
+    const headers = ['Title', 'Rating', 'Comment', 'Product', 'User', 'Status', 'Verified', 'Helpful', 'Date'];
+    const rows = allReviews.map(r => [r.title, r.rating, r.comment, r.productName, r.userName, r.status, r.isVerifiedPurchase ? 'Yes' : 'No', r.helpfulCount || 0, r.createdAt?.toDate().toLocaleDateString() || '']);
+    let csv = headers.join(',') + '\n';
+    rows.forEach(row => { csv += row.map(cell => `"${cell || ''}"`).join(',') + '\n'; });
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `reviews_${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('Reviews exported!');
+  }
+
+  function closeReviewModal() { document.getElementById('reviewModal').style.display = 'none'; }
+  function closeDetailModal() { document.getElementById('detailModal').style.display = 'none'; }
+
+  const modalHtml = `
+    <div id="reviewModal" class="modal"><div class="modal-content"><div class="flex justify-between items-center mb-5"><h2 id="modalTitle" class="text-xl font-bold">Write a Review</h2><button onclick="closeReviewModal()" class="text-gray-400 text-xl">&times;</button></div><div class="space-y-4"><div><label class="block text-sm font-medium mb-1">Title</label><input type="text" id="reviewTitle" placeholder="Summary of your experience" class="w-full border rounded-xl px-4 py-3"></div><div><label class="block text-sm font-medium mb-1">Rating</label><select id="reviewRating" class="w-full border rounded-xl px-4 py-3"><option value="5">★★★★★ (5/5) - Excellent</option><option value="4">★★★★☆ (4/5) - Good</option><option value="3">★★★☆☆ (3/5) - Average</option><option value="2">★★☆☆☆ (2/5) - Poor</option><option value="1">★☆☆☆☆ (1/5) - Terrible</option></select></div><div><label class="block text-sm font-medium mb-1">Product</label><select id="reviewProduct" class="w-full border rounded-xl px-4 py-3"><option value="">Select Product</option></select></div><div><label class="block text-sm font-medium mb-1">Review Comment *</label><textarea id="reviewComment" rows="4" placeholder="Share your experience..." class="w-full border rounded-xl px-4 py-3"></textarea></div><div class="flex gap-3 pt-4"><button onclick="closeReviewModal()" class="flex-1 border py-3 rounded-xl">Cancel</button><button onclick="saveReview()" class="flex-1 bg-blue-600 text-white py-3 rounded-xl">Submit Review</button></div></div></div></div>
+    <div id="detailModal" class="modal"><div class="modal-content"><div class="flex justify-between items-center mb-4"><h2 class="text-xl font-bold">Review Details</h2><button onclick="closeDetailModal()" class="text-gray-400 text-xl">&times;</button></div><div class="space-y-3"><p><strong>Title:</strong> <span id="detailReviewTitle"></span></p><p><strong>Rating:</strong> <span id="detailRating"></span></p><p><strong>Comment:</strong> <span id="detailComment"></span></p><p><strong>Product:</strong> <span id="detailProduct"></span></p><p><strong>User:</strong> <span id="detailUser"></span></p><p><strong>Status:</strong> <span id="detailStatus"></span></p><p><strong>Sentiment:</strong> <span id="detailSentiment"></span></p><p><strong>Verified Purchase:</strong> <span id="detailVerified"></span></p><p><strong>Helpful Count:</strong> <span id="detailHelpful"></span></p><p><strong>Date:</strong> <span id="detailDate"></span></p></div></div></div>
+  `;
+  document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+  // Sidebar Toggle
+  let isExpanded = true;
+  const sidebar = document.getElementById('sidebar');
+  const main = document.getElementById('mainContent');
+  const toggle = document.getElementById('toggleSidebarBtn');
+  function toggleSidebar() {
+    isExpanded = !isExpanded;
+    if (isExpanded) { sidebar.classList.remove('collapsed'); main.classList.remove('collapsed'); if(toggle) toggle.innerHTML = '<i class="fas fa-chevron-left"></i>'; }
+    else { sidebar.classList.add('collapsed'); main.classList.add('collapsed'); if(toggle) toggle.innerHTML = '<i class="fas fa-chevron-right"></i>'; }
+    localStorage.setItem('sidebarExpanded', isExpanded);
+  }
+  if (toggle) toggle.addEventListener('click', toggleSidebar);
+  if (localStorage.getItem('sidebarExpanded') === 'false') toggleSidebar();
+  
+  const mobileBtn = document.getElementById('mobileToggleBtn');
+  const mobileOverlay = document.getElementById('mobileOverlay');
+  function openMobileSidebar() { sidebar.classList.add('mobile-open'); mobileOverlay.classList.add('active'); document.body.style.overflow = 'hidden'; }
+  function closeMobileSidebar() { sidebar.classList.remove('mobile-open'); mobileOverlay.classList.remove('active'); document.body.style.overflow = ''; }
+  if (mobileBtn) mobileBtn.addEventListener('click', openMobileSidebar);
+  window.addEventListener('resize', () => { if (window.innerWidth > 768) closeMobileSidebar(); });
+  
+  window.filterReviews = filterReviews;
+  window.exportReviewsCSV = exportReviewsCSV;
+  window.openAddReviewModal = openAddReviewModal;
+  window.editReview = editReview;
+  window.deleteReview = deleteReview;
+  window.saveReview = saveReview;
+  window.closeReviewModal = closeReviewModal;
+  window.approveReview = approveReview;
+  window.flagReview = flagReview;
+  window.respondToReview = respondToReview;
+  window.viewReviewDetails = viewReviewDetails;
+  window.closeDetailModal = closeDetailModal;
+  window.shareReview = shareReview;
+  window.renderReviewsList = renderReviewsList;
+</script>
+</body>
+</html>

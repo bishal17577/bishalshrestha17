@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>Inventory - Naya Bato | Advanced Inventory Management</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+    body { background: #f1f5f9; overflow-x: hidden; }
+    
+    .sidebar {
+      position: fixed;
+      left: 0;
+      top: 0;
+      width: 280px;
+      height: 100vh;
+      background: linear-gradient(180deg, #0f172a 0%, #020617 100%);
+      transition: all 0.3s ease;
+      z-index: 1000;
+      overflow-y: auto;
+      overflow-x: hidden;
+      box-shadow: 4px 0 20px rgba(0,0,0,0.2);
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .sidebar.collapsed { width: 85px; }
+    .sidebar.collapsed .sidebar-text { display: none; }
+    .sidebar.collapsed .logo-text { display: none; }
+    .sidebar.collapsed .logo-subtext { display: none; }
+    .sidebar.collapsed .sidebar-link { justify-content: center; padding: 14px 0; margin: 6px 12px; }
+    .sidebar.collapsed .sidebar-link i { margin-right: 0; font-size: 1.3rem; }
+    .sidebar.collapsed .logo-icon { margin: 0 auto; }
+    .sidebar.collapsed .auth-btn-text { display: none; }
+    .sidebar.collapsed .auth-btn { justify-content: center; padding: 12px 0; }
+    
+    .sidebar::-webkit-scrollbar { width: 4px; }
+    .sidebar::-webkit-scrollbar-track { background: #1e293b; }
+    .sidebar::-webkit-scrollbar-thumb { background: #3b82f6; border-radius: 10px; }
+    
+    .sidebar-link {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 12px 20px;
+      margin: 6px 16px;
+      border-radius: 12px;
+      color: #94a3b8;
+      transition: all 0.2s;
+      text-decoration: none;
+      white-space: nowrap;
+      font-weight: 500;
+    }
+    .sidebar-link:hover { background: rgba(59, 130, 246, 0.15); color: white; transform: translateX(4px); }
+    .sidebar-link.active { background: #3b82f6; color: white; box-shadow: 0 4px 12px rgba(59,130,246,0.4); }
+    .sidebar-link i { width: 22px; font-size: 1.1rem; }
+    
+    .main-content { margin-left: 280px; transition: all 0.3s ease; min-height: 100vh; }
+    .main-content.collapsed { margin-left: 85px; }
+    
+    .top-bar { background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.05); padding: 16px 24px; position: sticky; top: 0; z-index: 99; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; }
+    
+    .stat-card { background: white; border-radius: 20px; padding: 20px; transition: all 0.3s; border: 1px solid #e2e8f0; }
+    .stat-card:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(0,0,0,0.08); }
+    
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1100; justify-content: center; align-items: center; }
+    .modal-content { background: white; border-radius: 24px; padding: 28px; max-width: 600px; width: 90%; max-height: 85vh; overflow-y: auto; }
+    
+    .inventory-item { background: white; border-radius: 20px; padding: 20px; transition: all 0.2s; border: 1px solid #e2e8f0; margin-bottom: 16px; }
+    .inventory-item:hover { transform: translateX(5px); border-color: #3b82f6; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+    
+    .badge-success { background: #dcfce7; color: #166534; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; display: inline-block; }
+    .badge-warning { background: #fef3c7; color: #92400e; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; display: inline-block; }
+    .badge-danger { background: #fee2e2; color: #991b1b; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; display: inline-block; }
+    .badge-info { background: #dbeafe; color: #1e40af; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; display: inline-block; }
+    
+    .loading-spinner { width: 45px; height: 45px; border: 3px solid #e2e8f0; border-top-color: #3b82f6; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .empty-state { text-align: center; padding: 60px 20px; background: white; border-radius: 20px; }
+    .empty-state i { font-size: 64px; color: #cbd5e1; margin-bottom: 20px; }
+    
+    .toast { position: fixed; bottom: 24px; right: 24px; background: #1e293b; color: white; padding: 14px 24px; border-radius: 16px; z-index: 1200; animation: slideIn 0.3s ease; }
+    @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    
+    .user-avatar { width: 42px; height: 42px; background: linear-gradient(135deg, #3b82f6, #8b5cf6); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 16px; box-shadow: 0 4px 10px rgba(59,130,246,0.3); }
+    
+    .progress-bar { height: 8px; background: #e2e8f0; border-radius: 10px; overflow: hidden; }
+    .progress-fill { height: 100%; background: #3b82f6; border-radius: 10px; transition: width 0.5s; }
+    
+    .alert-item { background: #fef2f2; border-left: 3px solid #ef4444; padding: 12px 16px; border-radius: 10px; margin-bottom: 8px; }
+    
+    @media (max-width: 768px) {
+      .sidebar { transform: translateX(-100%); }
+      .sidebar.mobile-open { transform: translateX(0); }
+      .main-content, .main-content.collapsed { margin-left: 0; }
+      .mobile-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 999; display: none; }
+      .mobile-overlay.active { display: block; }
+      .top-bar { padding: 12px 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="mobileOverlay" class="mobile-overlay" onclick="closeMobileSidebar()"></div>
+
+<div id="sidebar" class="sidebar">
+  <div class="p-5 pb-4 border-b border-gray-800">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg logo-icon">
+          <i class="fas fa-chart-line text-white text-lg"></i>
+        </div>
+        <div class="logo-text">
+          <span class="text-white text-xl font-bold">Naya Bato</span>
+          <p class="text-gray-500 text-xs mt-0.5 logo-subtext">Business Platform</p>
+        </div>
+      </div>
+      <button id="toggleSidebarBtn" class="text-gray-400 hover:text-white transition hidden md:block">
+        <i class="fas fa-chevron-left"></i>
+      </button>
+    </div>
+  </div>
+  
+  <nav class="flex-1 py-4">
+    <a href="dashboard.html" class="sidebar-link"><i class="fas fa-tachometer-alt"></i><span class="sidebar-text">Dashboard</span></a>
+    <a href="transactions.html" class="sidebar-link"><i class="fas fa-exchange-alt"></i><span class="sidebar-text">Transactions</span></a>
+    <a href="products.html" class="sidebar-link"><i class="fas fa-box"></i><span class="sidebar-text">Products</span></a>
+    <a href="orders.html" class="sidebar-link"><i class="fas fa-shopping-cart"></i><span class="sidebar-text">Orders</span></a>
+    <a href="customers.html" class="sidebar-link"><i class="fas fa-users"></i><span class="sidebar-text">Customers</span></a>
+    <a href="categories.html" class="sidebar-link"><i class="fas fa-tags"></i><span class="sidebar-text">Categories</span></a>
+    <a href="coupons.html" class="sidebar-link"><i class="fas fa-ticket-alt"></i><span class="sidebar-text">Coupons</span></a>
+    <a href="reviews.html" class="sidebar-link"><i class="fas fa-star"></i><span class="sidebar-text">Reviews</span></a>
+    <a href="inventory.html" class="sidebar-link active"><i class="fas fa-warehouse"></i><span class="sidebar-text">Inventory</span></a>
+    <a href="reports.html" class="sidebar-link"><i class="fas fa-chart-bar"></i><span class="sidebar-text">Reports</span></a>
+    <a href="marketing.html" class="sidebar-link"><i class="fas fa-bullhorn"></i><span class="sidebar-text">Marketing</span></a>
+    <a href="settings.html" class="sidebar-link"><i class="fas fa-cog"></i><span class="sidebar-text">Settings</span></a>
+    <a href="activity-logs.html" class="sidebar-link"><i class="fas fa-history"></i><span class="sidebar-text">Activity Logs</span></a>
+  </nav>
+  
+  <div class="p-5 border-t border-gray-800 mt-auto">
+    <div id="authButtonsSection">
+      <a href="login.html" class="auth-btn flex items-center justify-center gap-2 bg-blue-600 text-white py-3 rounded-xl text-sm font-medium transition hover:bg-blue-700 w-full">
+        <i class="fas fa-sign-in-alt"></i><span class="auth-btn-text">Login</span>
+      </a>
+      <a href="register.html" class="auth-btn flex items-center justify-center gap-2 border border-blue-500 text-blue-400 py-3 rounded-xl text-sm font-medium transition hover:bg-blue-600/10 w-full mt-3">
+        <i class="fas fa-user-plus"></i><span class="auth-btn-text">Register</span>
+      </a>
+    </div>
+    <button id="logoutBtn" onclick="logout()" class="hidden w-full flex items-center justify-center gap-2 bg-red-600/20 text-red-400 py-3 rounded-xl text-sm font-medium transition hover:bg-red-600/30">
+      <i class="fas fa-sign-out-alt"></i><span class="auth-btn-text">Logout</span>
+    </button>
+  </div>
+</div>
+
+<button id="mobileToggleBtn" class="fixed top-4 left-4 z-50 bg-blue-600 text-white p-3 rounded-xl shadow-lg md:hidden">
+  <i class="fas fa-bars text-lg"></i>
+</button>
+
+<div id="mainContent" class="main-content">
+  <div class="top-bar">
+    <h1 class="text-xl font-bold text-gray-800">Inventory Management</h1>
+    <div class="flex items-center gap-4">
+      <span id="userEmail" class="text-gray-500 text-sm hidden md:inline"></span>
+      <div id="userAvatar" class="user-avatar">NB</div>
+    </div>
+  </div>
+
+  <div id="contentArea" class="p-6">
+    <div class="flex justify-center items-center h-64">
+      <div class="loading-spinner"></div>
+      <p class="ml-3 text-gray-500">Loading inventory...</p>
+    </div>
+  </div>
+
+  <footer class="bg-white border-t border-gray-100 py-5 px-6 mt-8">
+    <div class="flex flex-col md:flex-row justify-between items-center text-sm text-gray-400">
+      <p>© 2025 Naya Bato. All rights reserved. Made with ❤️ in Nepal</p>
+      <div class="flex gap-6 mt-3 md:mt-0">
+        <a href="privacy.html" class="hover:text-gray-600 transition">Privacy Policy</a>
+        <a href="terms.html" class="hover:text-gray-600 transition">Terms of Service</a>
+        <a href="support.html" class="hover:text-gray-600 transition">Support</a>
+      </div>
+    </div>
+  </footer>
+</div>
+
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyDJLnUB8XnXWPEtSRAMuQr9ASmD16HLIJc",
+    authDomain: "bishalshrestha17-de676.firebaseapp.com",
+    projectId: "bishalshrestha17-de676",
+    storageBucket: "bishalshrestha17-de676.firebasestorage.app",
+    messagingSenderId: "631628771230",
+    appId: "1:631628771230:web:389c6430535f6a46b6708f"
+  };
+  
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.firestore();
+  let currentUser = null;
+  let allProducts = [];
+  let allStockMovements = [];
+  let isAdmin = false;
+  let stockChart = null;
+  let categoryChart = null;
+
+  auth.onAuthStateChanged(async (user) => {
+    currentUser = user;
+    if (user) {
+      document.getElementById('authButtonsSection').style.display = 'none';
+      document.getElementById('logoutBtn').style.display = 'flex';
+      document.getElementById('userEmail').innerText = user.email;
+      document.getElementById('userAvatar').innerText = user.email.charAt(0).toUpperCase();
+      await checkIfAdmin();
+      await loadProducts();
+      await loadStockMovements();
+    } else {
+      document.getElementById('authButtonsSection').style.display = 'block';
+      document.getElementById('logoutBtn').style.display = 'none';
+      document.getElementById('userEmail').innerText = '';
+      showLoginMessage();
+    }
+  });
+
+  async function checkIfAdmin() {
+    try {
+      const userDoc = await db.collection('users').doc(currentUser.uid).get();
+      isAdmin = userDoc.data()?.role === 'admin';
+    } catch(e) { isAdmin = false; }
+  }
+
+  function logout() { auth.signOut(); showToast('Logged out'); setTimeout(() => location.reload(), 1000); }
+  
+  function showToast(msg, isError = false) { 
+    const t = document.createElement('div'); 
+    t.className = 'toast'; 
+    t.innerHTML = `<i class="fas ${isError ? 'fa-exclamation-circle' : 'fa-check-circle'} mr-2 ${isError ? 'text-red-400' : 'text-green-400'}"></i>${msg}`; 
+    document.body.appendChild(t); 
+    setTimeout(() => t.remove(), 3000); 
+  }
+  
+  function showLoginMessage() {
+    document.getElementById('contentArea').innerHTML = `<div class="empty-state"><i class="fas fa-lock"></i><h3 class="text-xl font-semibold mb-2">Please Login to Continue</h3><p class="text-gray-500 mb-6">Login to view and manage inventory.</p><div class="flex gap-4 justify-center"><a href="login.html" class="bg-blue-600 text-white px-8 py-3 rounded-xl">Login Now</a><a href="register.html" class="border-2 border-blue-600 text-blue-600 px-8 py-3 rounded-xl">Create Account</a></div></div>`;
+  }
+
+  async function loadProducts() {
+    try {
+      let query;
+      if (isAdmin) {
+        query = await db.collection('products').get();
+      } else {
+        query = await db.collection('products').where('userId', '==', currentUser.uid).get();
+      }
+      allProducts = [];
+      query.forEach(doc => {
+        allProducts.push({ id: doc.id, ...doc.data() });
+      });
+      allProducts.sort((a, b) => a.name?.localeCompare(b.name || ''));
+      renderInventory();
+    } catch(e) {
+      document.getElementById('contentArea').innerHTML = `<div class="empty-state"><i class="fas fa-exclamation-triangle text-red-500"></i><h3 class="text-xl font-semibold mb-2">Error</h3><p class="text-gray-500">${e.message}</p><button onclick="location.reload()" class="mt-4 bg-blue-600 text-white px-6 py-2 rounded-xl">Retry</button></div>`;
+    }
+  }
+
+  async function loadStockMovements() {
+    try {
+      const snap = await db.collection('stockMovements').orderBy('createdAt', 'desc').limit(100).get();
+      allStockMovements = [];
+      snap.forEach(doc => allStockMovements.push({ id: doc.id, ...doc.data() }));
+    } catch(e) { console.log('Stock movements error:', e); }
+  }
+
+  async function recordStockMovement(productId, productName, previousStock, newStock, reason, quantity) {
+    await db.collection('stockMovements').add({
+      productId: productId,
+      productName: productName,
+      previousStock: previousStock,
+      newStock: newStock,
+      change: newStock - previousStock,
+      quantity: quantity,
+      reason: reason,
+      userId: currentUser.uid,
+      userEmail: currentUser.email,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+  }
+
+  function getStockStatus(stock, reorderLevel = 10) {
+    if (stock === 0) return { text: 'Out of Stock', class: 'badge-danger', icon: 'fa-times-circle' };
+    if (stock <= reorderLevel) return { text: 'Low Stock', class: 'badge-warning', icon: 'fa-exclamation-triangle' };
+    return { text: 'In Stock', class: 'badge-success', icon: 'fa-check-circle' };
+  }
+
+  async function renderInventory() {
+    const totalProducts = allProducts.length;
+    const totalStock = allProducts.reduce((sum, p) => sum + (p.stock || 0), 0);
+    const totalValue = allProducts.reduce((sum, p) => sum + ((p.price || 0) * (p.stock || 0)), 0);
+    const lowStockCount = allProducts.filter(p => (p.stock || 0) > 0 && (p.stock || 0) <= (p.reorderLevel || 10)).length;
+    const outStockCount = allProducts.filter(p => (p.stock || 0) === 0).length;
+    const totalSales = allProducts.reduce((sum, p) => sum + (p.salesCount || 0), 0);
+    
+    // Category stock distribution
+    const categoryMap = new Map();
+    allProducts.forEach(p => {
+      if (p.category) {
+        categoryMap.set(p.category, (categoryMap.get(p.category) || 0) + (p.stock || 0));
+      }
+    });
+    const chartLabels = Array.from(categoryMap.keys()).slice(0, 6);
+    const chartData = chartLabels.map(l => categoryMap.get(l));
+    
+    // Low stock alerts
+    const lowStockProducts = allProducts.filter(p => (p.stock || 0) <= (p.reorderLevel || 10) && (p.stock || 0) > 0);
+    const outStockProducts = allProducts.filter(p => (p.stock || 0) === 0);
+    
+    const html = `
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5 mb-6">
+        <div class="stat-card"><div><p class="text-gray-500 text-sm">Total Products</p><p class="text-3xl font-bold">${totalProducts}</p><p class="text-xs text-gray-400">Active SKUs</p></div></div>
+        <div class="stat-card"><div><p class="text-gray-500 text-sm">Total Stock</p><p class="text-3xl font-bold">${totalStock.toLocaleString()}</p><p class="text-xs text-gray-400">Units in warehouse</p></div></div>
+        <div class="stat-card"><div><p class="text-gray-500 text-sm">Inventory Value</p><p class="text-3xl font-bold text-green-600">NPR ${totalValue.toLocaleString()}</p></div></div>
+        <div class="stat-card"><div><p class="text-gray-500 text-sm">Low Stock Items</p><p class="text-3xl font-bold text-orange-600">${lowStockCount}</p></div></div>
+        <div class="stat-card"><div><p class="text-gray-500 text-sm">Out of Stock</p><p class="text-3xl font-bold text-red-600">${outStockCount}</p></div></div>
+      </div>
+      
+      <div class="grid lg:grid-cols-2 gap-5 mb-6">
+        <div class="bg-white rounded-xl p-5 shadow-sm"><h3 class="font-semibold mb-3">Stock by Category</h3><canvas id="stockChart" height="150"></canvas></div>
+        <div class="bg-white rounded-xl p-5 shadow-sm"><h3 class="font-semibold mb-3">Inventory Summary</h3><div class="space-y-3"><div class="flex justify-between"><span>Total Stock Value</span><span class="font-bold">NPR ${totalValue.toLocaleString()}</span></div><div class="flex justify-between"><span>Average Stock per Product</span><span class="font-bold">${totalProducts ? Math.round(totalStock / totalProducts) : 0} units</span></div><div class="flex justify-between"><span>Monthly Turnover</span><span class="font-bold">${totalSales.toLocaleString()} units</span></div><div class="flex justify-between"><span>Stock Turnover Rate</span><span class="font-bold">${totalStock ? ((totalSales / totalStock) * 100).toFixed(1) : 0}%</span></div><div class="progress-bar mt-2"><div class="progress-fill" style="width: ${totalStock ? Math.min((totalSales / totalStock) * 100, 100) : 0}%"></div></div></div></div>
+      </div>
+      
+      <!-- Alerts Section -->
+      <div class="grid lg:grid-cols-2 gap-5 mb-6">
+        <div class="bg-white rounded-xl p-5 shadow-sm"><h3 class="font-semibold mb-3"><i class="fas fa-exclamation-triangle text-orange-500 mr-2"></i>Low Stock Alerts (${lowStockCount})</h3><div id="lowStockList" class="max-h-60 overflow-y-auto space-y-2"></div></div>
+        <div class="bg-white rounded-xl p-5 shadow-sm"><h3 class="font-semibold mb-3"><i class="fas fa-times-circle text-red-500 mr-2"></i>Out of Stock Alerts (${outStockCount})</h3><div id="outStockList" class="max-h-60 overflow-y-auto space-y-2"></div></div>
+      </div>
+      
+      <div class="bg-white rounded-xl p-5 mb-6 border border-gray-100">
+        <div class="flex flex-wrap justify-between items-center gap-4">
+          <div class="flex gap-3 flex-1 flex-wrap">
+            <input type="text" id="searchProduct" placeholder="🔍 Search products..." class="flex-1 min-w-[180px] border border-gray-300 rounded-xl px-4 py-3">
+            <select id="categoryFilter" class="border border-gray-300 rounded-xl px-4 py-3"><option value="all">All Categories</option>${[...new Set(allProducts.map(p => p.category).filter(c => c))].map(c => `<option value="${c}">${c}</option>`).join('')}</select>
+            <select id="stockFilter" class="border border-gray-300 rounded-xl px-4 py-3"><option value="all">All Stock</option><option value="low">Low Stock</option><option value="out">Out of Stock</option><option value="instock">In Stock</option></select>
+            <button onclick="filterInventory()" class="bg-gray-600 text-white px-6 py-3 rounded-xl hover:bg-gray-700">Filter</button>
+            <button onclick="exportInventoryCSV()" class="border border-gray-300 px-6 py-3 rounded-xl hover:bg-gray-50"><i class="fas fa-download mr-2"></i>Export</button>
+            <button onclick="openRestockModal()" class="border border-gray-300 px-6 py-3 rounded-xl hover:bg-gray-50"><i class="fas fa-truck mr-2"></i>Bulk Restock</button>
+            <button onclick="openStockAdjustModal()" class="border border-gray-300 px-6 py-3 rounded-xl hover:bg-gray-50"><i class="fas fa-sliders-h mr-2"></i>Stock Adjustment</button>
+          </div>
+          <button onclick="showStockMovements()" class="bg-purple-600 text-white px-6 py-3 rounded-xl font-medium hover:bg-purple-700 shadow-md"><i class="fas fa-history mr-2"></i>Stock History</button>
+        </div>
+      </div>
+      
+      <div id="inventoryList" class="space-y-3"></div>
+      <div id="pagination" class="mt-6 flex justify-center space-x-2"></div>
+    `;
+    
+    document.getElementById('contentArea').innerHTML = html;
+    
+    // Initialize charts
+    const ctx = document.getElementById('stockChart')?.getContext('2d');
+    if (ctx) {
+      if (stockChart) stockChart.destroy();
+      stockChart = new Chart(ctx, { type: 'doughnut', data: { labels: chartLabels, datasets: [{ data: chartData, backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'] }] }, options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { position: 'bottom' } } } });
+    }
+    
+    // Render alerts
+    const lowStockHtml = lowStockProducts.map(p => `<div class="alert-item flex justify-between items-center"><div><p class="font-medium">${p.name}</p><p class="text-sm text-gray-500">Stock: ${p.stock} / Reorder: ${p.reorderLevel || 10}</p></div><button onclick="restockProduct('${p.id}')" class="bg-orange-500 text-white px-3 py-1 rounded-lg text-sm">Restock</button></div>`).join('');
+    const outStockHtml = outStockProducts.map(p => `<div class="alert-item flex justify-between items-center"><div><p class="font-medium">${p.name}</p><p class="text-sm text-gray-500">SKU: ${p.sku || 'N/A'}</p></div><button onclick="restockProduct('${p.id}')" class="bg-red-500 text-white px-3 py-1 rounded-lg text-sm">Add Stock</button></div>`).join('');
+    document.getElementById('lowStockList').innerHTML = lowStockHtml || '<p class="text-gray-400 text-center py-4">No low stock items</p>';
+    document.getElementById('outStockList').innerHTML = outStockHtml || '<p class="text-gray-400 text-center py-4">No out of stock items</p>';
+    
+    renderInventoryList(allProducts);
+    
+    document.getElementById('searchProduct')?.addEventListener('input', () => filterInventory());
+    document.getElementById('categoryFilter')?.addEventListener('change', () => filterInventory());
+    document.getElementById('stockFilter')?.addEventListener('change', () => filterInventory());
+  }
+
+  function filterInventory() {
+    let filtered = [...allProducts];
+    const search = document.getElementById('searchProduct')?.value.toLowerCase();
+    if (search) filtered = filtered.filter(p => (p.name || '').toLowerCase().includes(search) || (p.sku || '').toLowerCase().includes(search));
+    const category = document.getElementById('categoryFilter')?.value;
+    if (category && category !== 'all') filtered = filtered.filter(p => p.category === category);
+    const stock = document.getElementById('stockFilter')?.value;
+    if (stock === 'low') filtered = filtered.filter(p => (p.stock || 0) > 0 && (p.stock || 0) <= (p.reorderLevel || 10));
+    if (stock === 'out') filtered = filtered.filter(p => (p.stock || 0) === 0);
+    if (stock === 'instock') filtered = filtered.filter(p => (p.stock || 0) > (p.reorderLevel || 10));
+    renderInventoryList(filtered);
+  }
+
+  function renderInventoryList(products, page = 1) {
+    const container = document.getElementById('inventoryList');
+    if (!container) return;
+    
+    const itemsPerPage = 10;
+    const start = (page - 1) * itemsPerPage;
+    const end = start + itemsPerPage;
+    const pageProducts = products.slice(start, end);
+    const totalPages = Math.ceil(products.length / itemsPerPage);
+    
+    if (products.length === 0) {
+      container.innerHTML = '<div class="empty-state py-12"><i class="fas fa-boxes"></i><p class="text-gray-400">No products in inventory.</p></div>';
+      if (document.getElementById('pagination')) document.getElementById('pagination').innerHTML = '';
+      return;
+    }
+    
+    let html = '';
+    pageProducts.forEach(product => {
+      const stockStatus = getStockStatus(product.stock || 0, product.reorderLevel || 10);
+      const stockValue = (product.price || 0) * (product.stock || 0);
+      const profit = product.originalPrice ? (product.price || 0) - (product.originalPrice || 0) : 0;
+      
+      html += `
+        <div class="inventory-item">
+          <div class="flex flex-wrap md:flex-nowrap justify-between items-start gap-4">
+            <div class="flex-1">
+              <div class="flex flex-wrap justify-between items-start gap-2">
+                <div><h3 class="font-bold text-lg text-gray-800">${product.name || 'Unnamed'}</h3><div class="flex flex-wrap gap-2 mt-1"><span class="${stockStatus.class}"><i class="fas ${stockStatus.icon} mr-1"></i>${stockStatus.text}</span>${product.isLowStockAlert ? '<span class="badge-warning">⚠️ Alert Enabled</span>' : ''}</div></div>
+                <div class="text-right"><p class="text-2xl font-bold text-blue-600">NPR ${(product.price || 0).toLocaleString()}</p>${profit !== 0 ? `<p class="text-xs text-green-600">Profit: NPR ${profit.toLocaleString()}</p>` : ''}</div>
+              </div>
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mt-3 text-sm"><div><i class="fas fa-barcode text-gray-400 w-4"></i> SKU: ${product.sku || 'N/A'}</div><div><i class="fas fa-tag text-gray-400 w-4"></i> ${product.category || 'Uncategorized'}</div><div><i class="fas fa-chart-line text-gray-400 w-4"></i> Sold: ${product.salesCount || 0}</div><div><i class="fas fa-boxes text-gray-400 w-4"></i> Stock Value: NPR ${stockValue.toLocaleString()}</div></div>
+              <div class="mt-3"><div class="flex justify-between text-sm"><span>Stock Level: ${product.stock || 0} units</span><span>Reorder at: ${product.reorderLevel || 10} units</span></div><div class="progress-bar mt-1"><div class="progress-fill" style="width: ${Math.min(((product.stock || 0) / (product.reorderLevel || 10)) * 100, 100)}%"></div></div></div>
+              <div class="flex flex-wrap gap-2 mt-4 pt-3 border-t border-gray-100">
+                <button onclick="addStock('${product.id}')" class="bg-green-600 text-white rounded-xl px-3 py-1.5 text-sm hover:bg-green-700"><i class="fas fa-plus mr-1"></i>Add Stock</button>
+                <button onclick="reduceStock('${product.id}')" class="bg-red-600 text-white rounded-xl px-3 py-1.5 text-sm hover:bg-red-700"><i class="fas fa-minus mr-1"></i>Reduce Stock</button>
+                <button onclick="setReorderLevel('${product.id}')" class="bg-orange-600 text-white rounded-xl px-3 py-1.5 text-sm hover:bg-orange-700"><i class="fas fa-sliders-h mr-1"></i>Set Reorder</button>
+                <button onclick="viewStockHistory('${product.id}')" class="bg-purple-600 text-white rounded-xl px-3 py-1.5 text-sm hover:bg-purple-700"><i class="fas fa-history mr-1"></i>History</button>
+                <button onclick="generateStockReport('${product.id}')" class="bg-gray-600 text-white rounded-xl px-3 py-1.5 text-sm hover:bg-gray-700"><i class="fas fa-file-pdf mr-1"></i>Report</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    });
+    container.innerHTML = html;
+    
+    if (document.getElementById('pagination')) {
+      let paginationHtml = '';
+      for (let i = 1; i <= Math.min(totalPages, 10); i++) paginationHtml += `<button onclick="renderInventoryList(filteredProducts || allProducts, ${i})" class="px-3 py-1 border rounded ${page === i ? 'bg-blue-600 text-white' : 'hover:bg-gray-100'}">${i}</button>`;
+      document.getElementById('pagination').innerHTML = paginationHtml;
+      window.filteredProducts = products;
+    }
+  }
+
+  async function addStock(productId) {
+    const product = allProducts.find(p => p.id === productId);
+    if (!product) return;
+    const quantity = parseInt(prompt(`Add stock for ${product.name}:`, '10'));
+    if (quantity && quantity > 0) {
+      const previousStock = product.stock || 0;
+      const newStock = previousStock + quantity;
+      await db.collection('products').doc(productId).update({ stock: newStock });
+      await recordStockMovement(productId, product.name, previousStock, newStock, 'Manual Addition', quantity);
+      await loadProducts();
+      showToast(`Added ${quantity} units to ${product.name}`);
+    }
+  }
+
+  async function reduceStock(productId) {
+    const product = allProducts.find(p => p.id === productId);
+    if (!product) return;
+    const quantity = parseInt(prompt(`Reduce stock for ${product.name}:`, '1'));
+    if (quantity && quantity > 0) {
+      if ((product.stock || 0) < quantity) {
+        showToast('Insufficient stock!', true);
+        return;
+      }
+      const previousStock = product.stock || 0;
+      const newStock = previousStock - quantity;
+      await db.collection('products').doc(productId).update({ stock: newStock });
+      await recordStockMovement(productId, product.name, previousStock, newStock, 'Manual Reduction', quantity);
+      await loadProducts();
+      showToast(`Reduced ${quantity} units from ${product.name}`);
+    }
+  }
+
+  async function restockProduct(productId) {
+    const product = allProducts.find(p => p.id === productId);
+    if (!product) return;
+    const quantity = parseInt(prompt(`Restock ${product.name}:`, '50'));
+    if (quantity && quantity > 0) {
+      const previousStock = product.stock || 0;
+      const newStock = previousStock + quantity;
+      await db.collection('products').doc(productId).update({ stock: newStock });
+      await recordStockMovement(productId, product.name, previousStock, newStock, 'Restock', quantity);
+      await loadProducts();
+      showToast(`Restocked ${quantity} units of ${product.name}`);
+    }
+  }
+
+  async function setReorderLevel(productId) {
+    const product = allProducts.find(p => p.id === productId);
+    if (!product) return;
+    const level = parseInt(prompt(`Set reorder level for ${product.name} (current: ${product.reorderLevel || 10}):`, product.reorderLevel || 10));
+    if (level && level >= 0) {
+      await db.collection('products').doc(productId).update({ reorderLevel: level });
+      await loadProducts();
+      showToast(`Reorder level set to ${level} for ${product.name}`);
+    }
+  }
+
+  function openRestockModal() {
+    const products = allProducts.filter(p => (p.stock || 0) <= (p.reorderLevel || 10));
+    if (products.length === 0) {
+      showToast('No products need restocking');
+      return;
+    }
+    let message = 'Products needing restock:\n\n';
+    products.forEach(p => { message += `${p.name}: Current ${p.stock || 0} / Reorder ${p.reorderLevel || 10}\n`; });
+    const addAll = confirm(message + '\n\nAdd 50 units to all?');
+    if (addAll) {
+      products.forEach(async p => {
+        const previousStock = p.stock || 0;
+        const newStock = previousStock + 50;
+        await db.collection('products').doc(p.id).update({ stock: newStock });
+        await recordStockMovement(p.id, p.name, previousStock, newStock, 'Bulk Restock', 50);
+      });
+      setTimeout(() => { loadProducts(); showToast('Bulk restock completed!'); }, 2000);
+    }
+  }
+
+  function openStockAdjustModal() {
+    const percentage = parseInt(prompt('Adjust all stock by percentage (e.g., +10 or -20):', '+10'));
+    if (percentage) {
+      allProducts.forEach(async p => {
+        const previousStock = p.stock || 0;
+        let newStock = Math.max(0, Math.floor(previousStock * (1 + percentage / 100)));
+        await db.collection('products').doc(p.id).update({ stock: newStock });
+        await recordStockMovement(p.id, p.name, previousStock, newStock, `Bulk ${percentage}% Adjustment`, Math.abs(newStock - previousStock));
+      });
+      setTimeout(() => { loadProducts(); showToast(`Stock adjusted by ${percentage}%`); }, 2000);
+    }
+  }
+
+  function showStockMovements() {
+    let html = '<div class="space-y-2 max-h-96 overflow-y-auto">';
+    allStockMovements.slice(0, 50).forEach(m => {
+      html += `<div class="border-b pb-2"><div class="flex justify-between"><span class="font-medium">${m.productName}</span><span class="text-sm ${m.change > 0 ? 'text-green-600' : 'text-red-600'}">${m.change > 0 ? '+' : ''}${m.change}</span></div><p class="text-sm text-gray-500">${m.reason} | Previous: ${m.previousStock} → New: ${m.newStock}</p><p class="text-xs text-gray-400">${m.createdAt?.toDate().toLocaleString() || ''} by ${m.userEmail}</p></div>`;
+    });
+    html += '</div><div class="mt-4"><button onclick="closeModal()" class="border px-4 py-2 rounded-lg">Close</button></div>';
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.style.display = 'flex';
+    modal.innerHTML = `<div class="modal-content"><h2 class="text-xl font-bold mb-4">Stock Movement History</h2>${html}</div>`;
+    document.body.appendChild(modal);
+    modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+  }
+
+  async function viewStockHistory(productId) {
+    const product = allProducts.find(p => p.id === productId);
+    if (!product) return;
+    const movements = allStockMovements.filter(m => m.productId === productId);
+    let html = `<h3 class="font-bold text-lg mb-3">${product.name} - Stock History</h3><div class="space-y-2 max-h-96 overflow-y-auto">`;
+    if (movements.length === 0) html += '<p class="text-gray-400 text-center py-4">No stock movements recorded</p>';
+    movements.forEach(m => {
+      html += `<div class="border-b pb-2"><div class="flex justify-between"><span class="text-sm ${m.change > 0 ? 'text-green-600' : 'text-red-600'}">${m.change > 0 ? '+' : ''}${m.change} units</span><span class="text-xs text-gray-400">${m.createdAt?.toDate().toLocaleString() || ''}</span></div><p class="text-sm">${m.reason}</p><p class="text-xs text-gray-500">Stock: ${m.previousStock} → ${m.newStock}</p></div>`;
+    });
+    html += '</div><div class="mt-4"><button onclick="closeModal()" class="border px-4 py-2 rounded-lg">Close</button></div>';
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.style.display = 'flex';
+    modal.innerHTML = `<div class="modal-content">${html}</div>`;
+    document.body.appendChild(modal);
+    modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+  }
+
+  function generateStockReport(productId) {
+    const product = allProducts.find(p => p.id === productId);
+    if (!product) return;
+    const movements = allStockMovements.filter(m => m.productId === productId);
+    let report = `INVENTORY REPORT\n================\nProduct: ${product.name}\nSKU: ${product.sku || 'N/A'}\nCurrent Stock: ${product.stock || 0}\nReorder Level: ${product.reorderLevel || 10}\nPrice: NPR ${(product.price || 0).toLocaleString()}\nStock Value: NPR ${((product.price || 0) * (product.stock || 0)).toLocaleString()}\n\nMOVEMENT HISTORY:\n`;
+    movements.forEach(m => { report += `\n${m.createdAt?.toDate().toLocaleString()}: ${m.reason} - ${m.change > 0 ? '+' : ''}${m.change} units (${m.previousStock} → ${m.newStock})`; });
+    const blob = new Blob([report], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${product.name}_inventory_report.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('Report downloaded');
+  }
+
+  function exportInventoryCSV() {
+    const headers = ['Product Name', 'SKU', 'Category', 'Price', 'Stock', 'Stock Value', 'Reorder Level', 'Status', 'Sales Count'];
+    const rows = allProducts.map(p => [p.name, p.sku, p.category, p.price, p.stock, (p.price || 0) * (p.stock || 0), p.reorderLevel || 10, getStockStatus(p.stock || 0, p.reorderLevel || 10).text, p.salesCount || 0]);
+    let csv = headers.join(',') + '\n';
+    rows.forEach(row => { csv += row.map(cell => `"${cell || ''}"`).join(',') + '\n'; });
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `inventory_${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('Inventory exported!');
+  }
+
+  function closeModal() {
+    const modals = document.querySelectorAll('.modal');
+    modals.forEach(m => m.remove());
+  }
+
+  // Sidebar Toggle
+  let isExpanded = true;
+  const sidebar = document.getElementById('sidebar');
+  const main = document.getElementById('mainContent');
+  const toggle = document.getElementById('toggleSidebarBtn');
+  function toggleSidebar() {
+    isExpanded = !isExpanded;
+    if (isExpanded) { sidebar.classList.remove('collapsed'); main.classList.remove('collapsed'); if(toggle) toggle.innerHTML = '<i class="fas fa-chevron-left"></i>'; }
+    else { sidebar.classList.add('collapsed'); main.classList.add('collapsed'); if(toggle) toggle.innerHTML = '<i class="fas fa-chevron-right"></i>'; }
+    localStorage.setItem('sidebarExpanded', isExpanded);
+  }
+  if (toggle) toggle.addEventListener('click', toggleSidebar);
+  if (localStorage.getItem('sidebarExpanded') === 'false') toggleSidebar();
+  
+  const mobileBtn = document.getElementById('mobileToggleBtn');
+  const mobileOverlay = document.getElementById('mobileOverlay');
+  function openMobileSidebar() { sidebar.classList.add('mobile-open'); mobileOverlay.classList.add('active'); document.body.style.overflow = 'hidden'; }
+  function closeMobileSidebar() { sidebar.classList.remove('mobile-open'); mobileOverlay.classList.remove('active'); document.body.style.overflow = ''; }
+  if (mobileBtn) mobileBtn.addEventListener('click', openMobileSidebar);
+  window.addEventListener('resize', () => { if (window.innerWidth > 768) closeMobileSidebar(); });
+  
+  window.filterInventory = filterInventory;
+  window.exportInventoryCSV = exportInventoryCSV;
+  window.addStock = addStock;
+  window.reduceStock = reduceStock;
+  window.restockProduct = restockProduct;
+  window.setReorderLevel = setReorderLevel;
+  window.openRestockModal = openRestockModal;
+  window.openStockAdjustModal = openStockAdjustModal;
+  window.showStockMovements = showStockMovements;
+  window.viewStockHistory = viewStockHistory;
+  window.generateStockReport = generateStockReport;
+  window.renderInventoryList = renderInventoryList;
+  window.closeModal = closeModal;
+</script>
+</body>
+</html>

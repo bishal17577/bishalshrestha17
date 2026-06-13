@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>Customers - Naya Bato</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+    body { background: #f1f5f9; overflow-x: hidden; }
+    
+    /* Sidebar Styles */
+    .sidebar {
+      position: fixed;
+      left: 0;
+      top: 0;
+      width: 280px;
+      height: 100vh;
+      background: linear-gradient(180deg, #0f172a 0%, #020617 100%);
+      transition: all 0.3s ease;
+      z-index: 1000;
+      overflow-y: auto;
+      overflow-x: hidden;
+      box-shadow: 4px 0 20px rgba(0,0,0,0.2);
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .sidebar.collapsed { width: 85px; }
+    .sidebar.collapsed .sidebar-text { display: none; }
+    .sidebar.collapsed .logo-text { display: none; }
+    .sidebar.collapsed .logo-subtext { display: none; }
+    .sidebar.collapsed .sidebar-link { justify-content: center; padding: 14px 0; margin: 6px 12px; }
+    .sidebar.collapsed .sidebar-link i { margin-right: 0; font-size: 1.3rem; }
+    .sidebar.collapsed .logo-icon { margin: 0 auto; }
+    .sidebar.collapsed .auth-btn-text { display: none; }
+    .sidebar.collapsed .auth-btn { justify-content: center; padding: 12px 0; }
+    
+    .sidebar::-webkit-scrollbar { width: 4px; }
+    .sidebar::-webkit-scrollbar-track { background: #1e293b; }
+    .sidebar::-webkit-scrollbar-thumb { background: #3b82f6; border-radius: 10px; }
+    
+    .sidebar-link {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 12px 20px;
+      margin: 6px 16px;
+      border-radius: 12px;
+      color: #94a3b8;
+      transition: all 0.2s;
+      text-decoration: none;
+      white-space: nowrap;
+      font-weight: 500;
+    }
+    .sidebar-link:hover { background: rgba(59, 130, 246, 0.15); color: white; transform: translateX(4px); }
+    .sidebar-link.active { background: #3b82f6; color: white; box-shadow: 0 4px 12px rgba(59,130,246,0.4); }
+    .sidebar-link i { width: 22px; font-size: 1.1rem; }
+    
+    /* Main Content */
+    .main-content { margin-left: 280px; transition: all 0.3s ease; min-height: 100vh; }
+    .main-content.collapsed { margin-left: 85px; }
+    
+    /* Top Bar */
+    .top-bar { background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.05); padding: 16px 24px; position: sticky; top: 0; z-index: 99; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; }
+    
+    /* Cards */
+    .stat-card { background: white; border-radius: 20px; padding: 20px; transition: all 0.3s; border: 1px solid #e2e8f0; }
+    .stat-card:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(0,0,0,0.08); }
+    
+    /* Modal */
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1100; justify-content: center; align-items: center; }
+    .modal-content { background: white; border-radius: 24px; padding: 28px; max-width: 550px; width: 90%; max-height: 85vh; overflow-y: auto; }
+    
+    /* Customer Card */
+    .customer-card { background: white; border-radius: 20px; padding: 20px; transition: all 0.2s; border: 1px solid #e2e8f0; margin-bottom: 16px; }
+    .customer-card:hover { transform: translateX(5px); border-color: #3b82f6; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+    
+    /* Badges */
+    .badge-active { background: #dcfce7; color: #166534; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+    .badge-vip { background: #fef3c7; color: #92400e; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+    .badge-inactive { background: #fee2e2; color: #991b1b; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+    
+    /* Loading */
+    .loading-spinner { width: 45px; height: 45px; border: 3px solid #e2e8f0; border-top-color: #3b82f6; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .empty-state { text-align: center; padding: 60px 20px; background: white; border-radius: 20px; }
+    .empty-state i { font-size: 64px; color: #cbd5e1; margin-bottom: 20px; }
+    
+    /* Toast */
+    .toast { position: fixed; bottom: 24px; right: 24px; background: #1e293b; color: white; padding: 14px 24px; border-radius: 16px; z-index: 1200; animation: slideIn 0.3s ease; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+    @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    
+    .user-avatar { width: 42px; height: 42px; background: linear-gradient(135deg, #3b82f6, #8b5cf6); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 16px; box-shadow: 0 4px 10px rgba(59,130,246,0.3); }
+    
+    /* Customer Avatar Circle */
+    .customer-avatar { width: 50px; height: 50px; background: linear-gradient(135deg, #3b82f6, #8b5cf6); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 18px; }
+    
+    @media (max-width: 768px) {
+      .sidebar { transform: translateX(-100%); }
+      .sidebar.mobile-open { transform: translateX(0); }
+      .main-content, .main-content.collapsed { margin-left: 0; }
+      .mobile-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 999; display: none; }
+      .mobile-overlay.active { display: block; }
+      .top-bar { padding: 12px 16px; }
+      .customer-card { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Mobile Overlay -->
+<div id="mobileOverlay" class="mobile-overlay" onclick="closeMobileSidebar()"></div>
+
+<!-- Sidebar -->
+<div id="sidebar" class="sidebar">
+  <div class="p-5 pb-4 border-b border-gray-800">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg logo-icon">
+          <i class="fas fa-chart-line text-white text-lg"></i>
+        </div>
+        <div class="logo-text">
+          <span class="text-white text-xl font-bold">Naya Bato</span>
+          <p class="text-gray-500 text-xs mt-0.5 logo-subtext">Business Platform</p>
+        </div>
+      </div>
+      <button id="toggleSidebarBtn" class="text-gray-400 hover:text-white transition hidden md:block">
+        <i class="fas fa-chevron-left"></i>
+      </button>
+    </div>
+  </div>
+  
+  <nav class="flex-1 py-4">
+    <a href="dashboard.html" class="sidebar-link"><i class="fas fa-tachometer-alt"></i><span class="sidebar-text">Dashboard</span></a>
+    <a href="transactions.html" class="sidebar-link"><i class="fas fa-exchange-alt"></i><span class="sidebar-text">Transactions</span></a>
+    <a href="products.html" class="sidebar-link"><i class="fas fa-box"></i><span class="sidebar-text">Products</span></a>
+    <a href="orders.html" class="sidebar-link"><i class="fas fa-shopping-cart"></i><span class="sidebar-text">Orders</span></a>
+    <a href="customers.html" class="sidebar-link active"><i class="fas fa-users"></i><span class="sidebar-text">Customers</span></a>
+    <a href="categories.html" class="sidebar-link"><i class="fas fa-tags"></i><span class="sidebar-text">Categories</span></a>
+    <a href="coupons.html" class="sidebar-link"><i class="fas fa-ticket-alt"></i><span class="sidebar-text">Coupons</span></a>
+    <a href="reviews.html" class="sidebar-link"><i class="fas fa-star"></i><span class="sidebar-text">Reviews</span></a>
+    <a href="inventory.html" class="sidebar-link"><i class="fas fa-warehouse"></i><span class="sidebar-text">Inventory</span></a>
+    <a href="reports.html" class="sidebar-link"><i class="fas fa-chart-bar"></i><span class="sidebar-text">Reports</span></a>
+    <a href="marketing.html" class="sidebar-link"><i class="fas fa-bullhorn"></i><span class="sidebar-text">Marketing</span></a>
+    <a href="settings.html" class="sidebar-link"><i class="fas fa-cog"></i><span class="sidebar-text">Settings</span></a>
+    <a href="activity-logs.html" class="sidebar-link"><i class="fas fa-history"></i><span class="sidebar-text">Activity Logs</span></a>
+  </nav>
+  
+  <div class="p-5 border-t border-gray-800 mt-auto">
+    <div id="authButtonsSection">
+      <a href="login.html" class="auth-btn flex items-center justify-center gap-2 bg-blue-600 text-white py-3 rounded-xl text-sm font-medium transition hover:bg-blue-700 w-full">
+        <i class="fas fa-sign-in-alt"></i><span class="auth-btn-text">Login</span>
+      </a>
+      <a href="register.html" class="auth-btn flex items-center justify-center gap-2 border border-blue-500 text-blue-400 py-3 rounded-xl text-sm font-medium transition hover:bg-blue-600/10 w-full mt-3">
+        <i class="fas fa-user-plus"></i><span class="auth-btn-text">Register</span>
+      </a>
+    </div>
+    <button id="logoutBtn" onclick="logout()" class="hidden w-full flex items-center justify-center gap-2 bg-red-600/20 text-red-400 py-3 rounded-xl text-sm font-medium transition hover:bg-red-600/30">
+      <i class="fas fa-sign-out-alt"></i><span class="auth-btn-text">Logout</span>
+    </button>
+  </div>
+</div>
+
+<!-- Mobile Toggle -->
+<button id="mobileToggleBtn" class="fixed top-4 left-4 z-50 bg-blue-600 text-white p-3 rounded-xl shadow-lg md:hidden">
+  <i class="fas fa-bars text-lg"></i>
+</button>
+
+<!-- Main Content -->
+<div id="mainContent" class="main-content">
+  <div class="top-bar">
+    <h1 class="text-xl font-bold text-gray-800">Customers</h1>
+    <div class="flex items-center gap-4">
+      <span id="userEmail" class="text-gray-500 text-sm hidden md:inline"></span>
+      <div id="userAvatar" class="user-avatar">NB</div>
+    </div>
+  </div>
+
+  <div id="contentArea" class="p-6">
+    <div class="flex justify-center items-center h-64">
+      <div class="loading-spinner"></div>
+      <p class="ml-3 text-gray-500">Loading customers...</p>
+    </div>
+  </div>
+
+  <footer class="bg-white border-t border-gray-100 py-5 px-6 mt-8">
+    <div class="flex flex-col md:flex-row justify-between items-center text-sm text-gray-400">
+      <p>© 2025 Naya Bato. All rights reserved. Made with ❤️ in Nepal</p>
+      <div class="flex gap-6 mt-3 md:mt-0">
+        <a href="privacy.html" class="hover:text-gray-600 transition">Privacy Policy</a>
+        <a href="terms.html" class="hover:text-gray-600 transition">Terms of Service</a>
+        <a href="support.html" class="hover:text-gray-600 transition">Support</a>
+      </div>
+    </div>
+  </footer>
+</div>
+
+<!-- Add/Edit Customer Modal -->
+<div id="customerModal" class="modal">
+  <div class="modal-content">
+    <div class="flex justify-between items-center mb-5">
+      <h2 id="modalTitle" class="text-xl font-bold text-gray-800"><i class="fas fa-user-plus text-blue-500 mr-2"></i>Add Customer</h2>
+      <button onclick="closeCustomerModal()" class="text-gray-400 hover:text-gray-600 text-xl">&times;</button>
+    </div>
+    
+    <div class="space-y-4">
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Full Name *</label>
+        <input type="text" id="customerName" placeholder="e.g., John Doe" class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+      </div>
+      
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+        <input type="email" id="customerEmail" placeholder="customer@example.com" class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+      </div>
+      
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+        <input type="tel" id="customerPhone" placeholder="+977 9812345678" class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+      </div>
+      
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Address</label>
+        <input type="text" id="customerAddress" placeholder="Kathmandu, Nepal" class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+      </div>
+      
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">City</label>
+          <input type="text" id="customerCity" placeholder="Kathmandu" class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Country</label>
+          <select id="customerCountry" class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            <option value="Nepal">🇳🇵 Nepal</option>
+            <option value="India">🇮🇳 India</option>
+            <option value="USA">🇺🇸 USA</option>
+            <option value="UK">🇬🇧 UK</option>
+            <option value="Australia">🇦🇺 Australia</option>
+            <option value="Other">🌍 Other</option>
+          </select>
+        </div>
+      </div>
+      
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Date of Birth</label>
+        <input type="date" id="customerDob" class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+      </div>
+      
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Customer Type</label>
+          <select id="customerType" class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            <option value="Regular">Regular</option>
+            <option value="VIP">VIP</option>
+            <option value="Wholesale">Wholesale</option>
+            <option value="Corporate">Corporate</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+          <select id="customerStatus" class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            <option value="active">✅ Active</option>
+            <option value="inactive">⭕ Inactive</option>
+            <option value="blocked">🚫 Blocked</option>
+          </select>
+        </div>
+      </div>
+      
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+        <textarea id="customerNotes" rows="2" placeholder="Additional information about the customer..." class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
+      </div>
+      
+      <div class="flex gap-3 pt-4">
+        <button onclick="closeCustomerModal()" class="flex-1 border border-gray-300 text-gray-700 py-3 rounded-xl font-medium hover:bg-gray-50 transition">Cancel</button>
+        <button onclick="saveCustomer()" class="flex-1 bg-blue-600 text-white py-3 rounded-xl font-medium hover:bg-blue-700 transition">Save Customer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyDJLnUB8XnXWPEtSRAMuQr9ASmD16HLIJc",
+    authDomain: "bishalshrestha17-de676.firebaseapp.com",
+    projectId: "bishalshrestha17-de676",
+    storageBucket: "bishalshrestha17-de676.firebasestorage.app",
+    messagingSenderId: "631628771230",
+    appId: "1:631628771230:web:389c6430535f6a46b6708f"
+  };
+  
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.firestore();
+  let currentUser = null;
+  let allCustomers = [];
+  let editingCustomerId = null;
+  let allOrders = [];
+
+  auth.onAuthStateChanged(async (user) => {
+    currentUser = user;
+    if (user) {
+      document.getElementById('authButtonsSection').style.display = 'none';
+      document.getElementById('logoutBtn').style.display = 'flex';
+      document.getElementById('userEmail').innerText = user.email;
+      document.getElementById('userAvatar').innerText = user.email.charAt(0).toUpperCase();
+      await loadCustomers();
+      await loadOrders();
+    } else {
+      document.getElementById('authButtonsSection').style.display = 'block';
+      document.getElementById('logoutBtn').style.display = 'none';
+      document.getElementById('userEmail').innerText = '';
+      showLoginMessage();
+    }
+  });
+
+  function logout() { auth.signOut(); showToast('Logged out'); setTimeout(() => location.reload(), 1000); }
+  function showToast(msg) { const t = document.createElement('div'); t.className = 'toast'; t.innerHTML = `<i class="fas fa-check-circle mr-2 text-green-400"></i>${msg}`; document.body.appendChild(t); setTimeout(() => t.remove(), 3000); }
+  
+  function showLoginMessage() {
+    document.getElementById('contentArea').innerHTML = `
+      <div class="empty-state">
+        <i class="fas fa-lock"></i>
+        <h3 class="text-xl font-semibold mb-2">Please Login to Continue</h3>
+        <p class="text-gray-500 mb-6">Login to view and manage your customers.</p>
+        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+          <a href="login.html" class="bg-blue-600 text-white px-8 py-3 rounded-xl font-medium hover:bg-blue-700">Login Now</a>
+          <a href="register.html" class="border-2 border-blue-600 text-blue-600 px-8 py-3 rounded-xl font-medium hover:bg-blue-50">Create Account</a>
+        </div>
+      </div>
+    `;
+  }
+
+  async function loadOrders() {
+    try {
+      const snap = await db.collection('orders').where('userId', '==', currentUser.uid).get();
+      allOrders = [];
+      snap.forEach(doc => allOrders.push({ id: doc.id, ...doc.data() }));
+    } catch(e) { console.log('Orders load error:', e); }
+  }
+
+  async function loadCustomers() {
+    document.getElementById('contentArea').innerHTML = '<div class="flex justify-center items-center h-64"><div class="loading-spinner"></div><p class="ml-3 text-gray-500">Loading customers...</p></div>';
+    
+    try {
+      const snap = await db.collection('customers').where('userId', '==', currentUser.uid).get();
+      allCustomers = [];
+      snap.forEach(doc => allCustomers.push({ id: doc.id, ...doc.data() }));
+      allCustomers.sort((a, b) => (b.createdAt?.toDate() || new Date()) - (a.createdAt?.toDate() || new Date()));
+      renderCustomers();
+    } catch(e) {
+      document.getElementById('contentArea').innerHTML = `<div class="empty-state"><i class="fas fa-exclamation-triangle text-red-500"></i><h3 class="text-xl font-semibold mb-2">Error</h3><p class="text-gray-500">${e.message}</p><button onclick="location.reload()" class="mt-4 bg-blue-600 text-white px-6 py-2 rounded-xl">Retry</button></div>`;
+    }
+  }
+
+  function getCustomerStats() {
+    let totalSpent = 0, vipCount = 0, activeCount = 0;
+    allCustomers.forEach(c => {
+      totalSpent += c.totalSpent || 0;
+      if (c.type === 'VIP') vipCount++;
+      if (c.status === 'active') activeCount++;
+    });
+    return { totalSpent, vipCount, activeCount, totalCustomers: allCustomers.length };
+  }
+
+  function getCustomerOrderStats(customerId, customerEmail, customerName) {
+    let customerOrders = allOrders.filter(o => 
+      o.customerEmail === customerEmail || 
+      o.customerName === customerName ||
+      o.customerId === customerId
+    );
+    let totalOrders = customerOrders.length;
+    let totalSpent = 0;
+    customerOrders.forEach(o => totalSpent += o.totalAmount || 0);
+    let lastOrder = customerOrders.length > 0 ? customerOrders.sort((a,b) => (b.orderDate || '').localeCompare(a.orderDate || ''))[0] : null;
+    return { totalOrders, totalSpent, lastOrderDate: lastOrder?.orderDate || null };
+  }
+
+  function renderCustomers() {
+    const stats = getCustomerStats();
+    
+    const html = `
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5 mb-6">
+        <div class="stat-card"><div><p class="text-gray-500 text-sm">Total Customers</p><p class="text-3xl font-bold">${stats.totalCustomers}</p></div></div>
+        <div class="stat-card"><div><p class="text-gray-500 text-sm">Active Customers</p><p class="text-3xl font-bold text-green-600">${stats.activeCount}</p></div></div>
+        <div class="stat-card"><div><p class="text-gray-500 text-sm">VIP Customers</p><p class="text-3xl font-bold text-yellow-600">${stats.vipCount}</p></div></div>
+        <div class="stat-card"><div><p class="text-gray-500 text-sm">Total Spent</p><p class="text-3xl font-bold text-blue-600">NPR ${stats.totalSpent.toLocaleString()}</p></div></div>
+        <div class="stat-card"><div><p class="text-gray-500 text-sm">Avg. per Customer</p><p class="text-3xl font-bold">NPR ${stats.totalCustomers > 0 ? Math.round(stats.totalSpent / stats.totalCustomers).toLocaleString() : 0}</p></div></div>
+      </div>
+      
+      <div class="bg-white rounded-xl p-5 mb-6 border border-gray-100">
+        <div class="flex flex-wrap justify-between items-center gap-4">
+          <div class="flex gap-3 flex-1 flex-wrap">
+            <input type="text" id="searchCustomer" placeholder="🔍 Search by name, email or phone..." class="flex-1 min-w-[200px] border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500">
+            <select id="typeFilter" class="border border-gray-300 rounded-xl px-4 py-3">
+              <option value="all">All Types</option>
+              <option value="Regular">Regular</option>
+              <option value="VIP">VIP</option>
+              <option value="Wholesale">Wholesale</option>
+              <option value="Corporate">Corporate</option>
+            </select>
+            <select id="statusFilter" class="border border-gray-300 rounded-xl px-4 py-3">
+              <option value="all">All Status</option>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+              <option value="blocked">Blocked</option>
+            </select>
+            <button onclick="filterCustomers()" class="bg-gray-600 text-white px-6 py-3 rounded-xl hover:bg-gray-700 transition">Filter</button>
+            <button onclick="exportCustomersCSV()" class="border border-gray-300 px-6 py-3 rounded-xl hover:bg-gray-50 transition"><i class="fas fa-download mr-2"></i>Export</button>
+          </div>
+          <button onclick="openAddCustomerModal()" class="bg-blue-600 text-white px-6 py-3 rounded-xl font-medium hover:bg-blue-700 transition shadow-md">
+            <i class="fas fa-plus mr-2"></i>Add Customer
+          </button>
+        </div>
+      </div>
+      
+      <div id="customersList" class="space-y-3"></div>
+    `;
+    
+    document.getElementById('contentArea').innerHTML = html;
+    renderCustomersList(allCustomers);
+    
+    document.getElementById('searchCustomer')?.addEventListener('input', () => filterCustomers());
+    document.getElementById('typeFilter')?.addEventListener('change', () => filterCustomers());
+    document.getElementById('statusFilter')?.addEventListener('change', () => filterCustomers());
+  }
+
+  function filterCustomers() {
+    let filtered = [...allCustomers];
+    const search = document.getElementById('searchCustomer')?.value.toLowerCase();
+    if (search) {
+      filtered = filtered.filter(c => 
+        (c.name || '').toLowerCase().includes(search) ||
+        (c.email || '').toLowerCase().includes(search) ||
+        (c.phone || '').toLowerCase().includes(search)
+      );
+    }
+    const type = document.getElementById('typeFilter')?.value;
+    if (type && type !== 'all') filtered = filtered.filter(c => c.type === type);
+    const status = document.getElementById('statusFilter')?.value;
+    if (status && status !== 'all') filtered = filtered.filter(c => c.status === status);
+    renderCustomersList(filtered);
+  }
+
+  function renderCustomersList(customers) {
+    const container = document.getElementById('customersList');
+    if (!container) return;
+    
+    if (customers.length === 0) {
+      container.innerHTML = '<div class="empty-state py-12"><i class="fas fa-users"></i><p class="text-gray-400">No customers found. Click "Add Customer" to get started.</p></div>';
+      return;
+    }
+    
+    let html = '';
+    customers.forEach(customer => {
+      const orderStats = getCustomerOrderStats(customer.id, customer.email, customer.name);
+      const initial = (customer.name || 'C').charAt(0).toUpperCase();
+      const bgColor = customer.type === 'VIP' ? 'bg-yellow-500' : (customer.type === 'Wholesale' ? 'bg-purple-500' : 'bg-blue-500');
+      
+      html += `
+        <div class="customer-card">
+          <div class="flex flex-wrap md:flex-nowrap gap-4">
+            <div class="flex-shrink-0">
+              <div class="customer-avatar ${bgColor}">${initial}</div>
+            </div>
+            <div class="flex-1">
+              <div class="flex flex-wrap justify-between items-start gap-2">
+                <div>
+                  <h3 class="font-bold text-lg text-gray-800">${customer.name || 'Unnamed'}</h3>
+                  <div class="flex flex-wrap gap-2 mt-1">
+                    <span class="${customer.status === 'active' ? 'badge-active' : customer.status === 'blocked' ? 'badge-inactive' : 'badge-inactive'}">${customer.status === 'active' ? 'Active' : customer.status === 'blocked' ? 'Blocked' : 'Inactive'}</span>
+                    <span class="badge-vip">${customer.type || 'Regular'}</span>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <p class="text-2xl font-bold text-blue-600">NPR ${(orderStats.totalSpent || 0).toLocaleString()}</p>
+                  <p class="text-sm text-gray-500">Total Spent</p>
+                </div>
+              </div>
+              
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4 pt-3 border-t border-gray-100">
+                <div><i class="fas fa-envelope text-gray-400 w-5"></i> <span class="text-sm">${customer.email || 'No email'}</span></div>
+                <div><i class="fas fa-phone text-gray-400 w-5"></i> <span class="text-sm">${customer.phone || 'No phone'}</span></div>
+                <div><i class="fas fa-map-marker-alt text-gray-400 w-5"></i> <span class="text-sm">${customer.city ? `${customer.city}, ${customer.country || 'Nepal'}` : (customer.address || 'No address')}</span></div>
+              </div>
+              
+              <div class="grid grid-cols-3 gap-4 mt-3">
+                <div class="bg-gray-50 rounded-xl p-2 text-center">
+                  <p class="text-xs text-gray-500">Total Orders</p>
+                  <p class="font-bold text-lg">${orderStats.totalOrders}</p>
+                </div>
+                <div class="bg-gray-50 rounded-xl p-2 text-center">
+                  <p class="text-xs text-gray-500">Avg. Order</p>
+                  <p class="font-bold text-sm">NPR ${orderStats.totalOrders > 0 ? Math.round(orderStats.totalSpent / orderStats.totalOrders).toLocaleString() : 0}</p>
+                </div>
+                <div class="bg-gray-50 rounded-xl p-2 text-center">
+                  <p class="text-xs text-gray-500">Last Order</p>
+                  <p class="font-bold text-sm">${orderStats.lastOrderDate || 'Never'}</p>
+                </div>
+              </div>
+              
+              ${customer.notes ? `<p class="text-sm text-gray-500 mt-3"><i class="fas fa-sticky-note mr-1"></i>${customer.notes.substring(0, 100)}${customer.notes.length > 100 ? '...' : ''}</p>` : ''}
+              
+              <div class="flex gap-2 mt-4 pt-3 border-t border-gray-100">
+                <button onclick="editCustomer('${customer.id}')" class="text-blue-600 border border-blue-600 rounded-xl px-4 py-2 text-sm font-medium hover:bg-blue-50 transition"><i class="fas fa-edit mr-1"></i>Edit</button>
+                <button onclick="deleteCustomer('${customer.id}')" class="text-red-600 border border-red-600 rounded-xl px-4 py-2 text-sm font-medium hover:bg-red-50 transition"><i class="fas fa-trash-alt mr-1"></i>Delete</button>
+                <button onclick="sendMessage('${customer.email}', '${customer.name}')" class="text-green-600 border border-green-600 rounded-xl px-4 py-2 text-sm font-medium hover:bg-green-50 transition"><i class="fas fa-envelope mr-1"></i>Message</button>
+                <button onclick="viewCustomerOrders('${customer.id}', '${customer.name}')" class="text-purple-600 border border-purple-600 rounded-xl px-4 py-2 text-sm font-medium hover:bg-purple-50 transition"><i class="fas fa-shopping-cart mr-1"></i>Orders</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    });
+    container.innerHTML = html;
+  }
+
+  function openAddCustomerModal() {
+    editingCustomerId = null;
+    document.getElementById('modalTitle').innerHTML = '<i class="fas fa-user-plus text-blue-500 mr-2"></i>Add Customer';
+    document.getElementById('customerName').value = '';
+    document.getElementById('customerEmail').value = '';
+    document.getElementById('customerPhone').value = '';
+    document.getElementById('customerAddress').value = '';
+    document.getElementById('customerCity').value = '';
+    document.getElementById('customerCountry').value = 'Nepal';
+    document.getElementById('customerDob').value = '';
+    document.getElementById('customerType').value = 'Regular';
+    document.getElementById('customerStatus').value = 'active';
+    document.getElementById('customerNotes').value = '';
+    document.getElementById('customerModal').style.display = 'flex';
+  }
+
+  async function editCustomer(id) {
+    const customer = allCustomers.find(c => c.id === id);
+    if (!customer) return;
+    
+    editingCustomerId = id;
+    document.getElementById('modalTitle').innerHTML = '<i class="fas fa-edit text-blue-500 mr-2"></i>Edit Customer';
+    document.getElementById('customerName').value = customer.name || '';
+    document.getElementById('customerEmail').value = customer.email || '';
+    document.getElementById('customerPhone').value = customer.phone || '';
+    document.getElementById('customerAddress').value = customer.address || '';
+    document.getElementById('customerCity').value = customer.city || '';
+    document.getElementById('customerCountry').value = customer.country || 'Nepal';
+    document.getElementById('customerDob').value = customer.dob || '';
+    document.getElementById('customerType').value = customer.type || 'Regular';
+    document.getElementById('customerStatus').value = customer.status || 'active';
+    document.getElementById('customerNotes').value = customer.notes || '';
+    document.getElementById('customerModal').style.display = 'flex';
+  }
+
+  function closeCustomerModal() { document.getElementById('customerModal').style.display = 'none'; }
+
+  async function saveCustomer() {
+    const name = document.getElementById('customerName').value.trim();
+    if (!name) { showToast('Customer name is required'); return; }
+    
+    const data = {
+      userId: currentUser.uid,
+      name: name,
+      email: document.getElementById('customerEmail').value,
+      phone: document.getElementById('customerPhone').value,
+      address: document.getElementById('customerAddress').value,
+      city: document.getElementById('customerCity').value,
+      country: document.getElementById('customerCountry').value,
+      dob: document.getElementById('customerDob').value,
+      type: document.getElementById('customerType').value,
+      status: document.getElementById('customerStatus').value,
+      notes: document.getElementById('customerNotes').value,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    };
+    
+    if (editingCustomerId) {
+      await db.collection('customers').doc(editingCustomerId).update(data);
+      showToast('Customer updated successfully!');
+    } else {
+      data.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+      data.totalSpent = 0;
+      data.totalOrders = 0;
+      await db.collection('customers').add(data);
+      showToast('Customer added successfully!');
+    }
+    
+    closeCustomerModal();
+    await loadCustomers();
+  }
+
+  async function deleteCustomer(id) {
+    if (confirm('Are you sure you want to delete this customer?')) {
+      await db.collection('customers').doc(id).delete();
+      await loadCustomers();
+      showToast('Customer deleted');
+    }
+  }
+
+  function sendMessage(email, name) {
+    if (!email) {
+      showToast('No email address for this customer');
+      return;
+    }
+    window.location.href = `mailto:${email}?subject=Special Offer from Naya Bato&body=Hello ${name},\n\nWe have a special offer for you!`;
+    showToast('Opening email client...');
+  }
+
+  function viewCustomerOrders(customerId, customerName) {
+    let customerOrders = allOrders.filter(o => 
+      o.customerEmail === allCustomers.find(c => c.id === customerId)?.email ||
+      o.customerName === customerName
+    );
+    
+    if (customerOrders.length === 0) {
+      showToast(`No orders found for ${customerName}`);
+      return;
+    }
+    
+    let ordersHtml = `<div class="space-y-2 max-h-96 overflow-y-auto">`;
+    customerOrders.forEach(order => {
+      ordersHtml += `
+        <div class="border rounded-xl p-3">
+          <div class="flex justify-between">
+            <span class="font-mono text-sm">#${order.id?.slice(0,8)}</span>
+            <span class="badge-${order.status === 'Completed' ? 'active' : 'pending'}">${order.status || 'Pending'}</span>
+          </div>
+          <p class="text-sm mt-1">${order.productName} x ${order.quantity}</p>
+          <p class="font-bold text-blue-600 mt-1">NPR ${(order.totalAmount || 0).toLocaleString()}</p>
+          <p class="text-xs text-gray-400">${order.orderDate || ''}</p>
+        </div>
+      `;
+    });
+    ordersHtml += `</div><div class="mt-4 text-right"><button onclick="closeModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg">Close</button></div>`;
+    
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.style.display = 'flex';
+    modal.innerHTML = `<div class="modal-content"><h3 class="text-xl font-bold mb-4">Orders for ${customerName}</h3>${ordersHtml}</div>`;
+    document.body.appendChild(modal);
+    modal.querySelector('.modal-content button')?.addEventListener('click', () => modal.remove());
+    modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+  }
+
+  function exportCustomersCSV() {
+    let filtered = [...allCustomers];
+    const search = document.getElementById('searchCustomer')?.value.toLowerCase();
+    if (search) filtered = filtered.filter(c => (c.name || '').toLowerCase().includes(search));
+    
+    const headers = ['Name', 'Email', 'Phone', 'Address', 'City', 'Country', 'Type', 'Status', 'Total Spent', 'Joined Date'];
+    const rows = filtered.map(c => [
+      c.name || '', c.email || '', c.phone || '', c.address || '', 
+      c.city || '', c.country || '', c.type || 'Regular', c.status || 'active',
+      (c.totalSpent || 0).toLocaleString(),
+      c.createdAt?.toDate().toLocaleDateString() || ''
+    ]);
+    
+    let csv = headers.join(',') + '\n';
+    rows.forEach(row => { csv += row.map(cell => `"${cell}"`).join(',') + '\n'; });
+    
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `customers_${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('Customers exported successfully!');
+  }
+
+  // Sidebar Toggle
+  let isExpanded = true;
+  const sidebar = document.getElementById('sidebar');
+  const main = document.getElementById('mainContent');
+  const toggle = document.getElementById('toggleSidebarBtn');
+  
+  function toggleSidebar() {
+    isExpanded = !isExpanded;
+    if (isExpanded) { sidebar.classList.remove('collapsed'); main.classList.remove('collapsed'); if(toggle) toggle.innerHTML = '<i class="fas fa-chevron-left"></i>'; }
+    else { sidebar.classList.add('collapsed'); main.classList.add('collapsed'); if(toggle) toggle.innerHTML = '<i class="fas fa-chevron-right"></i>'; }
+    localStorage.setItem('sidebarExpanded', isExpanded);
+  }
+  if (toggle) toggle.addEventListener('click', toggleSidebar);
+  if (localStorage.getItem('sidebarExpanded') === 'false') toggleSidebar();
+  
+  // Mobile
+  const mobileBtn = document.getElementById('mobileToggleBtn');
+  const mobileOverlay = document.getElementById('mobileOverlay');
+  function openMobileSidebar() { sidebar.classList.add('mobile-open'); mobileOverlay.classList.add('active'); document.body.style.overflow = 'hidden'; }
+  function closeMobileSidebar() { sidebar.classList.remove('mobile-open'); mobileOverlay.classList.remove('active'); document.body.style.overflow = ''; }
+  if (mobileBtn) mobileBtn.addEventListener('click', openMobileSidebar);
+  window.addEventListener('resize', () => { if (window.innerWidth > 768) closeMobileSidebar(); });
+  
+  window.openAddCustomerModal = openAddCustomerModal;
+  window.editCustomer = editCustomer;
+  window.deleteCustomer = deleteCustomer;
+  window.saveCustomer = saveCustomer;
+  window.closeCustomerModal = closeCustomerModal;
+  window.sendMessage = sendMessage;
+  window.viewCustomerOrders = viewCustomerOrders;
+  window.filterCustomers = filterCustomers;
+  window.exportCustomersCSV = exportCustomersCSV;
+</script>
+</body>
+</html>

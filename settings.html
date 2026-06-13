@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>Settings - Naya Bato | User Preferences</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-storage-compat.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+    body { background: #f1f5f9; overflow-x: hidden; transition: font-size 0.3s, background 0.3s; }
+    
+    /* Font size classes */
+    .font-small { font-size: 12px; }
+    .font-medium { font-size: 14px; }
+    .font-large { font-size: 16px; }
+    .font-xlarge { font-size: 18px; }
+    
+    /* Page size classes */
+    .page-compact { max-width: 1000px; margin: 0 auto; }
+    .page-normal { max-width: 1200px; margin: 0 auto; }
+    .page-wide { max-width: 1400px; margin: 0 auto; }
+    .page-full { max-width: 100%; margin: 0 auto; }
+    
+    .sidebar {
+      position: fixed;
+      left: 0;
+      top: 0;
+      width: 280px;
+      height: 100vh;
+      background: linear-gradient(180deg, #0f172a 0%, #020617 100%);
+      transition: all 0.3s ease;
+      z-index: 1000;
+      overflow-y: auto;
+      overflow-x: hidden;
+      box-shadow: 4px 0 20px rgba(0,0,0,0.2);
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .sidebar.collapsed { width: 85px; }
+    .sidebar.collapsed .sidebar-text { display: none; }
+    .sidebar.collapsed .logo-text { display: none; }
+    .sidebar.collapsed .logo-subtext { display: none; }
+    .sidebar.collapsed .sidebar-link { justify-content: center; padding: 14px 0; margin: 6px 12px; }
+    .sidebar.collapsed .sidebar-link i { margin-right: 0; font-size: 1.3rem; }
+    .sidebar.collapsed .logo-icon { margin: 0 auto; }
+    .sidebar.collapsed .auth-btn-text { display: none; }
+    .sidebar.collapsed .auth-btn { justify-content: center; padding: 12px 0; }
+    
+    .sidebar::-webkit-scrollbar { width: 4px; }
+    .sidebar::-webkit-scrollbar-track { background: #1e293b; }
+    .sidebar::-webkit-scrollbar-thumb { background: #3b82f6; border-radius: 10px; }
+    
+    .sidebar-link {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 12px 20px;
+      margin: 6px 16px;
+      border-radius: 12px;
+      color: #94a3b8;
+      transition: all 0.2s;
+      text-decoration: none;
+      white-space: nowrap;
+      font-weight: 500;
+    }
+    .sidebar-link:hover { background: rgba(59, 130, 246, 0.15); color: white; transform: translateX(4px); }
+    .sidebar-link.active { background: #3b82f6; color: white; box-shadow: 0 4px 12px rgba(59,130,246,0.4); }
+    .sidebar-link i { width: 22px; font-size: 1.1rem; }
+    
+    .main-content { margin-left: 280px; transition: all 0.3s ease; min-height: 100vh; }
+    .main-content.collapsed { margin-left: 85px; }
+    
+    .top-bar { background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.05); padding: 16px 24px; position: sticky; top: 0; z-index: 99; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; }
+    
+    .settings-card { background: white; border-radius: 20px; padding: 24px; transition: all 0.3s; border: 1px solid #e2e8f0; margin-bottom: 24px; }
+    .settings-card:hover { box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+    
+    .settings-section { border-bottom: 1px solid #eef2f6; padding-bottom: 16px; margin-bottom: 16px; }
+    .settings-section:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+    
+    .toggle-switch { position: relative; display: inline-block; width: 52px; height: 28px; }
+    .toggle-switch input { opacity: 0; width: 0; height: 0; }
+    .toggle-slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #cbd5e1; transition: 0.3s; border-radius: 34px; }
+    .toggle-slider:before { position: absolute; content: ""; height: 22px; width: 22px; left: 3px; bottom: 3px; background-color: white; transition: 0.3s; border-radius: 50%; }
+    input:checked + .toggle-slider { background-color: #3b82f6; }
+    input:checked + .toggle-slider:before { transform: translateX(24px); }
+    
+    .badge-admin { background: #8b5cf6; color: white; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; display: inline-block; }
+    
+    .loading-spinner { width: 45px; height: 45px; border: 3px solid #e2e8f0; border-top-color: #3b82f6; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    
+    .toast { position: fixed; bottom: 24px; right: 24px; background: #1e293b; color: white; padding: 14px 24px; border-radius: 16px; z-index: 1200; animation: slideIn 0.3s ease; }
+    @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    
+    .user-avatar { width: 42px; height: 42px; background: linear-gradient(135deg, #3b82f6, #8b5cf6); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 16px; box-shadow: 0 4px 10px rgba(59,130,246,0.3); }
+    
+    .admin-btn { background: linear-gradient(135deg, #8b5cf6, #6d28d9); transition: all 0.3s; }
+    .admin-btn:hover { transform: scale(1.02); box-shadow: 0 10px 20px rgba(139,92,246,0.3); }
+    
+    @media (max-width: 768px) {
+      .sidebar { transform: translateX(-100%); }
+      .sidebar.mobile-open { transform: translateX(0); }
+      .main-content, .main-content.collapsed { margin-left: 0; }
+      .mobile-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 999; display: none; }
+      .mobile-overlay.active { display: block; }
+      .top-bar { padding: 12px 16px; }
+    }
+  </style>
+</head>
+<body id="appBody">
+
+<div id="mobileOverlay" class="mobile-overlay" onclick="closeMobileSidebar()"></div>
+
+<div id="sidebar" class="sidebar">
+  <div class="p-5 pb-4 border-b border-gray-800">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg logo-icon">
+          <i class="fas fa-chart-line text-white text-lg"></i>
+        </div>
+        <div class="logo-text">
+          <span class="text-white text-xl font-bold">Naya Bato</span>
+          <p class="text-gray-500 text-xs mt-0.5 logo-subtext">Business Platform</p>
+        </div>
+      </div>
+      <button id="toggleSidebarBtn" class="text-gray-400 hover:text-white transition hidden md:block">
+        <i class="fas fa-chevron-left"></i>
+      </button>
+    </div>
+  </div>
+  
+  <nav class="flex-1 py-4">
+    <a href="dashboard.html" class="sidebar-link"><i class="fas fa-tachometer-alt"></i><span class="sidebar-text">Dashboard</span></a>
+    <a href="transactions.html" class="sidebar-link"><i class="fas fa-exchange-alt"></i><span class="sidebar-text">Transactions</span></a>
+    <a href="products.html" class="sidebar-link"><i class="fas fa-box"></i><span class="sidebar-text">Products</span></a>
+    <a href="orders.html" class="sidebar-link"><i class="fas fa-shopping-cart"></i><span class="sidebar-text">Orders</span></a>
+    <a href="customers.html" class="sidebar-link"><i class="fas fa-users"></i><span class="sidebar-text">Customers</span></a>
+    <a href="categories.html" class="sidebar-link"><i class="fas fa-tags"></i><span class="sidebar-text">Categories</span></a>
+    <a href="coupons.html" class="sidebar-link"><i class="fas fa-ticket-alt"></i><span class="sidebar-text">Coupons</span></a>
+    <a href="reviews.html" class="sidebar-link"><i class="fas fa-star"></i><span class="sidebar-text">Reviews</span></a>
+    <a href="inventory.html" class="sidebar-link"><i class="fas fa-warehouse"></i><span class="sidebar-text">Inventory</span></a>
+    <a href="reports.html" class="sidebar-link"><i class="fas fa-chart-bar"></i><span class="sidebar-text">Reports</span></a>
+    <a href="marketing.html" class="sidebar-link"><i class="fas fa-bullhorn"></i><span class="sidebar-text">Marketing</span></a>
+    <a href="settings.html" class="sidebar-link active"><i class="fas fa-cog"></i><span class="sidebar-text">Settings</span></a>
+    <a href="activity-logs.html" class="sidebar-link"><i class="fas fa-history"></i><span class="sidebar-text">Activity Logs</span></a>
+  </nav>
+  
+  <div class="p-5 border-t border-gray-800 mt-auto">
+    <div id="authButtonsSection">
+      <a href="login.html" class="auth-btn flex items-center justify-center gap-2 bg-blue-600 text-white py-3 rounded-xl text-sm font-medium transition hover:bg-blue-700 w-full">
+        <i class="fas fa-sign-in-alt"></i><span class="auth-btn-text">Login</span>
+      </a>
+      <a href="register.html" class="auth-btn flex items-center justify-center gap-2 border border-blue-500 text-blue-400 py-3 rounded-xl text-sm font-medium transition hover:bg-blue-600/10 w-full mt-3">
+        <i class="fas fa-user-plus"></i><span class="auth-btn-text">Register</span>
+      </a>
+    </div>
+    <button id="logoutBtn" onclick="logout()" class="hidden w-full flex items-center justify-center gap-2 bg-red-600/20 text-red-400 py-3 rounded-xl text-sm font-medium transition hover:bg-red-600/30">
+      <i class="fas fa-sign-out-alt"></i><span class="auth-btn-text">Logout</span>
+    </button>
+  </div>
+</div>
+
+<button id="mobileToggleBtn" class="fixed top-4 left-4 z-50 bg-blue-600 text-white p-3 rounded-xl shadow-lg md:hidden">
+  <i class="fas fa-bars text-lg"></i>
+</button>
+
+<div id="mainContent" class="main-content">
+  <div class="top-bar">
+    <h1 class="text-xl font-bold text-gray-800">Settings</h1>
+    <div class="flex items-center gap-4">
+      <span id="userEmail" class="text-gray-500 text-sm hidden md:inline"></span>
+      <div id="userAvatar" class="user-avatar">NB</div>
+    </div>
+  </div>
+
+  <div id="contentArea" class="p-6">
+    <div class="flex justify-center items-center h-64">
+      <div class="loading-spinner"></div>
+      <p class="ml-3 text-gray-500">Loading settings...</p>
+    </div>
+  </div>
+
+  <footer class="bg-white border-t border-gray-100 py-5 px-6 mt-8">
+    <div class="flex flex-col md:flex-row justify-between items-center text-sm text-gray-400">
+      <p>© 2025 Naya Bato. All rights reserved. Made with ❤️ in Nepal</p>
+      <div class="flex gap-6 mt-3 md:mt-0">
+        <a href="privacy.html" class="hover:text-gray-600 transition">Privacy Policy</a>
+        <a href="terms.html" class="hover:text-gray-600 transition">Terms of Service</a>
+        <a href="support.html" class="hover:text-gray-600 transition">Support</a>
+      </div>
+    </div>
+  </footer>
+</div>
+
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyDJLnUB8XnXWPEtSRAMuQr9ASmD16HLIJc",
+    authDomain: "bishalshrestha17-de676.firebaseapp.com",
+    projectId: "bishalshrestha17-de676",
+    storageBucket: "bishalshrestha17-de676.firebasestorage.app",
+    messagingSenderId: "631628771230",
+    appId: "1:631628771230:web:389c6430535f6a46b6708f"
+  };
+  
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.firestore();
+  const storage = firebase.storage();
+  
+  let currentUser = null;
+  let userSettings = {};
+  let isAdmin = false;
+
+  auth.onAuthStateChanged(async (user) => {
+    currentUser = user;
+    if (user) {
+      document.getElementById('authButtonsSection').style.display = 'none';
+      document.getElementById('logoutBtn').style.display = 'flex';
+      document.getElementById('userEmail').innerText = user.email;
+      document.getElementById('userAvatar').innerText = user.email.charAt(0).toUpperCase();
+      await checkIfAdmin();
+      await loadUserSettings();
+      renderSettings();
+    } else {
+      document.getElementById('authButtonsSection').style.display = 'block';
+      document.getElementById('logoutBtn').style.display = 'none';
+      document.getElementById('userEmail').innerText = '';
+      showLoginMessage();
+    }
+  });
+
+  async function checkIfAdmin() {
+    try {
+      const userDoc = await db.collection('users').doc(currentUser.uid).get();
+      isAdmin = userDoc.data()?.role === 'admin';
+    } catch(e) { isAdmin = false; }
+  }
+
+  function logout() { auth.signOut(); showToast('Logged out'); setTimeout(() => location.reload(), 1000); }
+  
+  function showToast(msg, isError = false) { 
+    const t = document.createElement('div'); 
+    t.className = 'toast'; 
+    t.innerHTML = `<i class="fas ${isError ? 'fa-exclamation-circle' : 'fa-check-circle'} mr-2 ${isError ? 'text-red-400' : 'text-green-400'}"></i>${msg}`; 
+    document.body.appendChild(t); 
+    setTimeout(() => t.remove(), 3000); 
+  }
+  
+  function showLoginMessage() {
+    document.getElementById('contentArea').innerHTML = `<div class="empty-state"><i class="fas fa-lock"></i><h3 class="text-xl font-semibold mb-2">Please Login to Continue</h3><p class="text-gray-500 mb-6">Login to access your settings.</p><div class="flex gap-4 justify-center"><a href="login.html" class="bg-blue-600 text-white px-8 py-3 rounded-xl">Login Now</a><a href="register.html" class="border-2 border-blue-600 text-blue-600 px-8 py-3 rounded-xl">Create Account</a></div></div>`;
+  }
+
+  async function loadUserSettings() {
+    try {
+      const settingsDoc = await db.collection('userSettings').doc(currentUser.uid).get();
+      if (settingsDoc.exists) {
+        userSettings = settingsDoc.data();
+      } else {
+        userSettings = getDefaultUserSettings();
+        await db.collection('userSettings').doc(currentUser.uid).set(userSettings);
+      }
+      applyUserSettings();
+    } catch(e) { userSettings = getDefaultUserSettings(); }
+  }
+
+  function getDefaultUserSettings() {
+    return {
+      profile: { fullName: currentUser?.email?.split('@')[0] || 'User', phone: '', address: '', bio: '', company: '' },
+      preferences: { fontSize: 'medium', pageSize: 'normal', sidebarCompact: false, animations: true, reducedMotion: false },
+      appearance: { theme: 'light', primaryColor: '#3b82f6', cardStyle: 'rounded', density: 'comfortable' },
+      notifications: { emailAlerts: true, pushAlerts: true, orderUpdates: true, marketingEmails: false, lowStockAlerts: true },
+      security: { twoFactorEnabled: false, loginAlerts: true, deviceRemember: true, sessionTimeout: 30 },
+      display: { showLabels: true, showImages: true, compactView: false, showStats: true, showRecentActivities: true },
+      dashboard: { defaultView: 'overview', widgetOrder: [], showWelcomeCard: true, showStatsCards: true, showCharts: true },
+      language: { locale: 'en', dateFormat: 'DD/MM/YYYY', timezone: 'Asia/Kathmandu', currency: 'NPR' },
+      accessibility: { highContrast: false, screenReader: false, fontSize: 'medium', lineHeight: 'normal' }
+    };
+  }
+
+  function applyUserSettings() {
+    // Apply font size
+    const body = document.getElementById('appBody');
+    body.classList.remove('font-small', 'font-medium', 'font-large', 'font-xlarge');
+    body.classList.add(`font-${userSettings.preferences?.fontSize || 'medium'}`);
+    
+    // Apply page size
+    const mainContent = document.querySelector('.main-content');
+    if (mainContent) {
+      mainContent.classList.remove('page-compact', 'page-normal', 'page-wide', 'page-full');
+      mainContent.classList.add(`page-${userSettings.preferences?.pageSize || 'normal'}`);
+    }
+    
+    // Apply theme
+    if (userSettings.appearance?.theme === 'dark') {
+      document.body.classList.add('dark');
+    } else {
+      document.body.classList.remove('dark');
+    }
+  }
+
+  async function saveUserSettings(updatedSettings) {
+    userSettings = { ...userSettings, ...updatedSettings };
+    await db.collection('userSettings').doc(currentUser.uid).set(userSettings);
+    applyUserSettings();
+    showToast('Settings saved successfully!');
+  }
+
+  function renderSettings() {
+    const html = `
+      ${isAdmin ? `
+      <div class="mb-6">
+        <button onclick="goToAdminPanel()" class="admin-btn w-full flex items-center justify-center gap-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-4 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all">
+          <i class="fas fa-shield-alt text-xl"></i>
+          <span>Admin Control Panel</span>
+          <i class="fas fa-arrow-right"></i>
+        </button>
+        <p class="text-xs text-center text-gray-500 mt-2">Admin only - Full system configuration</p>
+      </div>
+      ` : ''}
+      
+      <!-- Profile Settings -->
+      <div class="settings-card">
+        <h2 class="text-xl font-bold mb-4"><i class="fas fa-user-circle text-blue-500 mr-2"></i>Profile Information</h2>
+        <div class="space-y-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div><label class="block text-sm font-medium mb-1">Full Name</label><input type="text" id="fullName" value="${userSettings.profile?.fullName || ''}" class="w-full border rounded-xl px-4 py-2"></div>
+            <div><label class="block text-sm font-medium mb-1">Email</label><input type="email" value="${currentUser?.email || ''}" disabled class="w-full border rounded-xl px-4 py-2 bg-gray-50"></div>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div><label class="block text-sm font-medium mb-1">Phone Number</label><input type="tel" id="phone" value="${userSettings.profile?.phone || ''}" class="w-full border rounded-xl px-4 py-2"></div>
+            <div><label class="block text-sm font-medium mb-1">Company/Organization</label><input type="text" id="company" value="${userSettings.profile?.company || ''}" class="w-full border rounded-xl px-4 py-2"></div>
+          </div>
+          <div><label class="block text-sm font-medium mb-1">Address</label><input type="text" id="address" value="${userSettings.profile?.address || ''}" class="w-full border rounded-xl px-4 py-2"></div>
+          <div><label class="block text-sm font-medium mb-1">Bio / About</label><textarea id="bio" rows="3" class="w-full border rounded-xl px-4 py-2">${userSettings.profile?.bio || ''}</textarea></div>
+          <button onclick="saveProfileSettings()" class="bg-blue-600 text-white px-6 py-2 rounded-xl hover:bg-blue-700">Save Profile</button>
+        </div>
+      </div>
+      
+      <!-- Display & Appearance -->
+      <div class="settings-card">
+        <h2 class="text-xl font-bold mb-4"><i class="fas fa-palette text-purple-500 mr-2"></i>Display & Appearance</h2>
+        <div class="space-y-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div><label class="block text-sm font-medium mb-1">Font Size</label><select id="fontSize" class="w-full border rounded-xl px-4 py-2"><option value="small" ${userSettings.preferences?.fontSize === 'small' ? 'selected' : ''}>Small</option><option value="medium" ${userSettings.preferences?.fontSize === 'medium' ? 'selected' : ''}>Medium</option><option value="large" ${userSettings.preferences?.fontSize === 'large' ? 'selected' : ''}>Large</option><option value="xlarge" ${userSettings.preferences?.fontSize === 'xlarge' ? 'selected' : ''}>Extra Large</option></select></div>
+            <div><label class="block text-sm font-medium mb-1">Page Width</label><select id="pageSize" class="w-full border rounded-xl px-4 py-2"><option value="compact" ${userSettings.preferences?.pageSize === 'compact' ? 'selected' : ''}>Compact (1000px)</option><option value="normal" ${userSettings.preferences?.pageSize === 'normal' ? 'selected' : ''}>Normal (1200px)</option><option value="wide" ${userSettings.preferences?.pageSize === 'wide' ? 'selected' : ''}>Wide (1400px)</option><option value="full" ${userSettings.preferences?.pageSize === 'full' ? 'selected' : ''}>Full Width</option></select></div>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div><label class="block text-sm font-medium mb-1">Theme</label><select id="theme" class="w-full border rounded-xl px-4 py-2"><option value="light" ${userSettings.appearance?.theme === 'light' ? 'selected' : ''}>Light</option><option value="dark" ${userSettings.appearance?.theme === 'dark' ? 'selected' : ''}>Dark</option><option value="system" ${userSettings.appearance?.theme === 'system' ? 'selected' : ''}>System Default</option></select></div>
+            <div><label class="block text-sm font-medium mb-1">Card Style</label><select id="cardStyle" class="w-full border rounded-xl px-4 py-2"><option value="rounded" ${userSettings.appearance?.cardStyle === 'rounded' ? 'selected' : ''}>Rounded</option><option value="sharp" ${userSettings.appearance?.cardStyle === 'sharp' ? 'selected' : ''}>Sharp</option><option value="glass" ${userSettings.appearance?.cardStyle === 'glass' ? 'selected' : ''}>Glassmorphism</option></select></div>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div><label class="block text-sm font-medium mb-1">Primary Color</label><input type="color" id="primaryColor" value="${userSettings.appearance?.primaryColor || '#3b82f6'}" class="w-20 h-10 border rounded"></div>
+            <div><label class="block text-sm font-medium mb-1">UI Density</label><select id="density" class="w-full border rounded-xl px-4 py-2"><option value="compact" ${userSettings.appearance?.density === 'compact' ? 'selected' : ''}>Compact</option><option value="comfortable" ${userSettings.appearance?.density === 'comfortable' ? 'selected' : ''}>Comfortable</option><option value="spacious" ${userSettings.appearance?.density === 'spacious' ? 'selected' : ''}>Spacious</option></select></div>
+          </div>
+          <div class="flex gap-4"><label class="flex items-center"><input type="checkbox" id="showAnimations" ${userSettings.preferences?.animations !== false ? 'checked' : ''} class="mr-2"> Enable Animations</label><label class="flex items-center"><input type="checkbox" id="reducedMotion" ${userSettings.preferences?.reducedMotion ? 'checked' : ''} class="mr-2"> Reduced Motion</label></div>
+          <button onclick="saveDisplaySettings()" class="bg-blue-600 text-white px-6 py-2 rounded-xl hover:bg-blue-700">Save Display Settings</button>
+        </div>
+      </div>
+      
+      <!-- Notification Preferences -->
+      <div class="settings-card">
+        <h2 class="text-xl font-bold mb-4"><i class="fas fa-bell text-yellow-500 mr-2"></i>Notification Preferences</h2>
+        <div class="space-y-3">
+          <div class="flex justify-between items-center py-2 border-b"><span><i class="fas fa-envelope mr-2"></i>Email Alerts</span><label class="toggle-switch"><input type="checkbox" id="emailAlerts" ${userSettings.notifications?.emailAlerts ? 'checked' : ''}><span class="toggle-slider"></span></label></div>
+          <div class="flex justify-between items-center py-2 border-b"><span><i class="fas fa-bell mr-2"></i>Push Notifications</span><label class="toggle-switch"><input type="checkbox" id="pushAlerts" ${userSettings.notifications?.pushAlerts ? 'checked' : ''}><span class="toggle-slider"></span></label></div>
+          <div class="flex justify-between items-center py-2 border-b"><span><i class="fas fa-shopping-cart mr-2"></i>Order Updates</span><label class="toggle-switch"><input type="checkbox" id="orderUpdates" ${userSettings.notifications?.orderUpdates ? 'checked' : ''}><span class="toggle-slider"></span></label></div>
+          <div class="flex justify-between items-center py-2 border-b"><span><i class="fas fa-tag mr-2"></i>Marketing Emails</span><label class="toggle-switch"><input type="checkbox" id="marketingEmails" ${userSettings.notifications?.marketingEmails ? 'checked' : ''}><span class="toggle-slider"></span></label></div>
+          <div class="flex justify-between items-center py-2 border-b"><span><i class="fas fa-exclamation-triangle mr-2"></i>Low Stock Alerts</span><label class="toggle-switch"><input type="checkbox" id="lowStockAlerts" ${userSettings.notifications?.lowStockAlerts ? 'checked' : ''}><span class="toggle-slider"></span></label></div>
+          <button onclick="saveNotificationSettings()" class="bg-blue-600 text-white px-6 py-2 rounded-xl hover:bg-blue-700">Save Notification Settings</button>
+        </div>
+      </div>
+      
+      <!-- Language & Region -->
+      <div class="settings-card">
+        <h2 class="text-xl font-bold mb-4"><i class="fas fa-globe text-green-500 mr-2"></i>Language & Region</h2>
+        <div class="space-y-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div><label class="block text-sm font-medium mb-1">Language</label><select id="locale" class="w-full border rounded-xl px-4 py-2"><option value="en" ${userSettings.language?.locale === 'en' ? 'selected' : ''}>English</option><option value="ne" ${userSettings.language?.locale === 'ne' ? 'selected' : ''}>Nepali</option><option value="hi" ${userSettings.language?.locale === 'hi' ? 'selected' : ''}>Hindi</option></select></div>
+            <div><label class="block text-sm font-medium mb-1">Date Format</label><select id="dateFormat" class="w-full border rounded-xl px-4 py-2"><option value="DD/MM/YYYY" ${userSettings.language?.dateFormat === 'DD/MM/YYYY' ? 'selected' : ''}>DD/MM/YYYY</option><option value="MM/DD/YYYY" ${userSettings.language?.dateFormat === 'MM/DD/YYYY' ? 'selected' : ''}>MM/DD/YYYY</option><option value="YYYY-MM-DD" ${userSettings.language?.dateFormat === 'YYYY-MM-DD' ? 'selected' : ''}>YYYY-MM-DD</option></select></div>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div><label class="block text-sm font-medium mb-1">Timezone</label><select id="timezone" class="w-full border rounded-xl px-4 py-2"><option value="Asia/Kathmandu" ${userSettings.language?.timezone === 'Asia/Kathmandu' ? 'selected' : ''}>Asia/Kathmandu (NPT)</option><option value="Asia/Kolkata" ${userSettings.language?.timezone === 'Asia/Kolkata' ? 'selected' : ''}>Asia/Kolkata (IST)</option><option value="UTC" ${userSettings.language?.timezone === 'UTC' ? 'selected' : ''}>UTC</option></select></div>
+            <div><label class="block text-sm font-medium mb-1">Currency</label><select id="currency" class="w-full border rounded-xl px-4 py-2"><option value="NPR" ${userSettings.language?.currency === 'NPR' ? 'selected' : ''}>NPR (₨)</option><option value="USD" ${userSettings.language?.currency === 'USD' ? 'selected' : ''}>USD ($)</option><option value="INR" ${userSettings.language?.currency === 'INR' ? 'selected' : ''}>INR (₹)</option></select></div>
+          </div>
+          <button onclick="saveLanguageSettings()" class="bg-blue-600 text-white px-6 py-2 rounded-xl hover:bg-blue-700">Save Language Settings</button>
+        </div>
+      </div>
+      
+      <!-- Dashboard Preferences -->
+      <div class="settings-card">
+        <h2 class="text-xl font-bold mb-4"><i class="fas fa-tachometer-alt text-indigo-500 mr-2"></i>Dashboard Preferences</h2>
+        <div class="space-y-3">
+          <div class="flex justify-between items-center py-2 border-b"><span><i class="fas fa-chart-line mr-2"></i>Show Stats Cards</span><label class="toggle-switch"><input type="checkbox" id="showStatsCards" ${userSettings.dashboard?.showStatsCards !== false ? 'checked' : ''}><span class="toggle-slider"></span></label></div>
+          <div class="flex justify-between items-center py-2 border-b"><span><i class="fas fa-chart-pie mr-2"></i>Show Charts</span><label class="toggle-switch"><input type="checkbox" id="showCharts" ${userSettings.dashboard?.showCharts !== false ? 'checked' : ''}><span class="toggle-slider"></span></label></div>
+          <div class="flex justify-between items-center py-2 border-b"><span><i class="fas fa-smile mr-2"></i>Show Welcome Card</span><label class="toggle-switch"><input type="checkbox" id="showWelcomeCard" ${userSettings.dashboard?.showWelcomeCard !== false ? 'checked' : ''}><span class="toggle-slider"></span></label></div>
+          <div class="flex justify-between items-center py-2 border-b"><span><i class="fas fa-history mr-2"></i>Show Recent Activities</span><label class="toggle-switch"><input type="checkbox" id="showRecentActivities" ${userSettings.dashboard?.showRecentActivities !== false ? 'checked' : ''}><span class="toggle-slider"></span></label></div>
+          <button onclick="saveDashboardSettings()" class="bg-blue-600 text-white px-6 py-2 rounded-xl hover:bg-blue-700">Save Dashboard Settings</button>
+        </div>
+      </div>
+      
+      <!-- Security Settings -->
+      <div class="settings-card">
+        <h2 class="text-xl font-bold mb-4"><i class="fas fa-shield-alt text-red-500 mr-2"></i>Security</h2>
+        <div class="space-y-3">
+          <div class="flex justify-between items-center py-2 border-b"><span><i class="fas fa-mobile-alt mr-2"></i>Two-Factor Authentication</span><label class="toggle-switch"><input type="checkbox" id="twoFactorEnabled" ${userSettings.security?.twoFactorEnabled ? 'checked' : ''}><span class="toggle-slider"></span></label></div>
+          <div class="flex justify-between items-center py-2 border-b"><span><i class="fas fa-envelope mr-2"></i>Login Alerts</span><label class="toggle-switch"><input type="checkbox" id="loginAlerts" ${userSettings.security?.loginAlerts !== false ? 'checked' : ''}><span class="toggle-slider"></span></label></div>
+          <div><label class="block text-sm font-medium mb-1">Session Timeout (minutes)</label><input type="number" id="sessionTimeout" value="${userSettings.security?.sessionTimeout || 30}" class="w-full border rounded-xl px-4 py-2"></div>
+          <button onclick="changePassword()" class="bg-orange-600 text-white px-6 py-2 rounded-xl hover:bg-orange-700"><i class="fas fa-key mr-2"></i>Change Password</button>
+          <button onclick="saveSecuritySettings()" class="bg-blue-600 text-white px-6 py-2 rounded-xl hover:bg-blue-700">Save Security Settings</button>
+        </div>
+      </div>
+      
+      <!-- Data & Privacy -->
+      <div class="settings-card">
+        <h2 class="text-xl font-bold mb-4"><i class="fas fa-database text-cyan-500 mr-2"></i>Data & Privacy</h2>
+        <div class="space-y-3">
+          <button onclick="exportMyData()" class="w-full border border-gray-300 py-2 rounded-xl hover:bg-gray-50"><i class="fas fa-download mr-2"></i>Export My Data</button>
+          <button onclick="requestAccountDeletion()" class="w-full border border-red-300 text-red-600 py-2 rounded-xl hover:bg-red-50"><i class="fas fa-trash-alt mr-2"></i>Request Account Deletion</button>
+        </div>
+      </div>
+    `;
+    
+    document.getElementById('contentArea').innerHTML = html;
+  }
+
+  // Save Functions
+  async function saveProfileSettings() {
+    await saveUserSettings({
+      profile: {
+        fullName: document.getElementById('fullName')?.value,
+        phone: document.getElementById('phone')?.value,
+        address: document.getElementById('address')?.value,
+        bio: document.getElementById('bio')?.value,
+        company: document.getElementById('company')?.value
+      }
+    });
+  }
+
+  async function saveDisplaySettings() {
+    await saveUserSettings({
+      preferences: {
+        fontSize: document.getElementById('fontSize')?.value,
+        pageSize: document.getElementById('pageSize')?.value,
+        animations: document.getElementById('showAnimations')?.checked,
+        reducedMotion: document.getElementById('reducedMotion')?.checked
+      },
+      appearance: {
+        theme: document.getElementById('theme')?.value,
+        primaryColor: document.getElementById('primaryColor')?.value,
+        cardStyle: document.getElementById('cardStyle')?.value,
+        density: document.getElementById('density')?.value
+      }
+    });
+  }
+
+  async function saveNotificationSettings() {
+    await saveUserSettings({
+      notifications: {
+        emailAlerts: document.getElementById('emailAlerts')?.checked,
+        pushAlerts: document.getElementById('pushAlerts')?.checked,
+        orderUpdates: document.getElementById('orderUpdates')?.checked,
+        marketingEmails: document.getElementById('marketingEmails')?.checked,
+        lowStockAlerts: document.getElementById('lowStockAlerts')?.checked
+      }
+    });
+  }
+
+  async function saveLanguageSettings() {
+    await saveUserSettings({
+      language: {
+        locale: document.getElementById('locale')?.value,
+        dateFormat: document.getElementById('dateFormat')?.value,
+        timezone: document.getElementById('timezone')?.value,
+        currency: document.getElementById('currency')?.value
+      }
+    });
+  }
+
+  async function saveDashboardSettings() {
+    await saveUserSettings({
+      dashboard: {
+        showStatsCards: document.getElementById('showStatsCards')?.checked,
+        showCharts: document.getElementById('showCharts')?.checked,
+        showWelcomeCard: document.getElementById('showWelcomeCard')?.checked,
+        showRecentActivities: document.getElementById('showRecentActivities')?.checked
+      }
+    });
+  }
+
+  async function saveSecuritySettings() {
+    await saveUserSettings({
+      security: {
+        twoFactorEnabled: document.getElementById('twoFactorEnabled')?.checked,
+        loginAlerts: document.getElementById('loginAlerts')?.checked,
+        sessionTimeout: parseInt(document.getElementById('sessionTimeout')?.value) || 30
+      }
+    });
+  }
+
+  function changePassword() {
+    const newPassword = prompt('Enter new password:');
+    if (newPassword && newPassword.length >= 6) {
+      currentUser.updatePassword(newPassword).then(() => {
+        showToast('Password changed successfully!');
+      }).catch(e => showToast(e.message, true));
+    } else if (newPassword) {
+      showToast('Password must be at least 6 characters', true);
+    }
+  }
+
+  function exportMyData() {
+    const dataStr = JSON.stringify(userSettings, null, 2);
+    const blob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `nayabato_data_${new Date().toISOString().split('T')[0]}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('Your data has been exported!');
+  }
+
+  function requestAccountDeletion() {
+    if (confirm('⚠️ WARNING: This will delete all your data. This action cannot be undone. Continue?')) {
+      showToast('Deletion request sent to admin. You will be contacted within 48 hours.');
+    }
+  }
+
+  function goToAdminPanel() {
+    window.location.href = 'admin.html';
+  }
+
+  // Sidebar Toggle
+  let isExpanded = true;
+  const sidebar = document.getElementById('sidebar');
+  const main = document.getElementById('mainContent');
+  const toggleBtn = document.getElementById('toggleSidebarBtn');
+  
+  function toggleSidebar() {
+    isExpanded = !isExpanded;
+    if (isExpanded) { sidebar.classList.remove('collapsed'); main.classList.remove('collapsed'); if(toggleBtn) toggleBtn.innerHTML = '<i class="fas fa-chevron-left"></i>'; }
+    else { sidebar.classList.add('collapsed'); main.classList.add('collapsed'); if(toggleBtn) toggleBtn.innerHTML = '<i class="fas fa-chevron-right"></i>'; }
+    localStorage.setItem('sidebarExpanded', isExpanded);
+  }
+  
+  if (toggleBtn) toggleBtn.addEventListener('click', toggleSidebar);
+  if (localStorage.getItem('sidebarExpanded') === 'false') toggleSidebar();
+  
+  const mobileBtn = document.getElementById('mobileToggleBtn');
+  const mobileOverlay = document.getElementById('mobileOverlay');
+  
+  function openMobileSidebar() { sidebar.classList.add('mobile-open'); mobileOverlay.classList.add('active'); document.body.style.overflow = 'hidden'; }
+  function closeMobileSidebar() { sidebar.classList.remove('mobile-open'); mobileOverlay.classList.remove('active'); document.body.style.overflow = ''; }
+  
+  if (mobileBtn) mobileBtn.addEventListener('click', openMobileSidebar);
+  window.addEventListener('resize', () => { if (window.innerWidth > 768) closeMobileSidebar(); });
+  
+  // Expose functions
+  window.saveProfileSettings = saveProfileSettings;
+  window.saveDisplaySettings = saveDisplaySettings;
+  window.saveNotificationSettings = saveNotificationSettings;
+  window.saveLanguageSettings = saveLanguageSettings;
+  window.saveDashboardSettings = saveDashboardSettings;
+  window.saveSecuritySettings = saveSecuritySettings;
+  window.changePassword = changePassword;
+  window.exportMyData = exportMyData;
+  window.requestAccountDeletion = requestAccountDeletion;
+  window.goToAdminPanel = goToAdminPanel;
+</script>
+</body>
+</html>
